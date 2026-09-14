@@ -1,8 +1,4 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -25,6 +21,10 @@ import LoginAuth from "./Components/Authscreens/LoginAuth";
 import NewDetails from "./Components/Newsletter/NewDetails";
 import Researchpage from "./Components/Researchpage";
 import Altdbmain from "./Components/Altdb/Altdbmain";
+import ArticlePage from "./Components/ArticlePage";
+// 👇 Partner pages
+import PartnerDirectory from "./Components/PartnerDirectory";
+import FieraRealEstate from "./Components/PartnerPage/FieraRealEstate";
 
 const Navigater = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -33,7 +33,7 @@ const Navigater = () => {
   const isCrawler =
     typeof navigator !== "undefined" &&
     /ReactSnap|lighthouse|bot|crawler|HeadlessChrome/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     );
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const Navigater = () => {
   }, [email, isCrawler]);
 
   return (
-    <BrowserRouter basename="/arbutus-web/"> 
+    <BrowserRouter basename="/arbutus-web/">
       <ScrollTotop />
       <Header onUserClick={() => setShowLogin(true)} />
 
@@ -59,12 +59,17 @@ const Navigater = () => {
         <Route path="/NewDetails/:slug" element={<NewDetails />} />
         <Route path="/Contactmain" element={<Contactmain />} />
         <Route path="/Levelmain" element={<Levelmain />} />
-        <Route path="/Aboutmain" element={<Aboutmain />} />
         <Route path="/Altdbmain" element={<Altdbmain />} />
         <Route path="/Privacypolicy" element={<Privacypolicy />} />
         <Route path="/TremsandCondition" element={<TremsandCondition />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/Researchpage" element={<Researchpage />} />
+
+        {/* Partner Pages */}
+        <Route path="/PartnerDirectory" element={<PartnerDirectory />} />
+        <Route path="/FieraRealEstate" element={<FieraRealEstate />} />
+        <Route path="/ArticlePage" element={<ArticlePage />} />
+        <Route path="/NewDetails/:slug" element={<ArticlePage />} />
         <Route path="*" element={<Notfound />} />
       </Routes>
 
