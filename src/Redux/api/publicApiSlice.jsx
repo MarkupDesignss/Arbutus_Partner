@@ -176,6 +176,13 @@ export const publicApiSlice = createApi({
       }),
     }),
 
+    getCommentaryPage: builder.query({
+      query: () => "/commentary-page",
+    }),
+
+    getMemberPage: builder.query({
+      query: () => "/member-directory",
+    }),
 
   }),
 });
@@ -206,5 +213,7 @@ export const {
   useGetHeaderQuery,
   useGetPageQuery,
   useGetMediaQuery,
-  useGetatlsectionQuery
+  useGetatlsectionQuery,
+  useGetCommentaryPageQuery,
+  useGetMemberPageQuery
 } = publicApiSlice;

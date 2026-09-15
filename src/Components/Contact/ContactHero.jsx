@@ -4,11 +4,11 @@ import { Link } from "react-router-dom";
 import BannerSkeleton from "../../Skeleton/Home/BannerSkeleton";
 
 const ContactHero = () => {
-  const { data, isError ,isLoading,} = useGetWebBannersQuery();
+  const { data, isError, isLoading } = useGetWebBannersQuery();
 
   if (isLoading) {
     return (
-      <section className="relative w-full h-[40vh] md:h-[60vh]">
+      <section className="relative w-full h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh]">
         <BannerSkeleton />
       </section>
     );
@@ -16,7 +16,7 @@ const ContactHero = () => {
 
   if (isError || !data?.data) {
     return (
-      <section className="relative w-full h-[40vh] md:h-[60vh] flex items-center justify-center">
+      <section className="relative w-full h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh] flex items-center justify-center">
         <p className="text-red-500">Banner not found</p>
       </section>
     );
@@ -25,17 +25,15 @@ const ContactHero = () => {
   const contactPage = data.data.find((page) =>
     page.title.toLowerCase() === "contact"
   );
-  
-  const bannerImage =
-  contactPage?.banner_image
-  const pageTitle = contactPage?.title || "Contact";
 
+  const bannerImage = contactPage?.banner_image;
+  const pageTitle = contactPage?.title || "Contact";
 
   return (
     <section
       className="
         relative w-full 
-        h-[40vh] sm:h-[45vh] md:h-[60vh]
+        h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh]
         bg-cover bg-center 
         flex items-center justify-center
       "

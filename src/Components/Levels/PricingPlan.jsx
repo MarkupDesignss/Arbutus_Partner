@@ -3,7 +3,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useGetSubscribePriceQuery } from "../../Redux/api/publicApiSlice";
 import PricingPlanSkeleton from "../../Skeleton/Level/PricingPlanSkeleton";
 import LoginAuth from "../Authscreens/LoginAuth";
-import { useSendPaymentGatewayMutation, useSendGetSubscriptionMutation } from "../../Redux/api/privateApiSlice";
+import {
+  useSendPaymentGatewayMutation,
+  useSendGetSubscriptionMutation,
+} from "../../Redux/api/privateApiSlice";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 
@@ -20,7 +23,9 @@ export default function PricingPlan() {
   const [getSubscriptions, { isLoading: isSubsLoading }] =
     useSendGetSubscriptionMutation();
 
-  const { token } = useSelector((state) => state.auth);
+  // ✅ auth se email aur token dono lo
+  const { token, email } = useSelector((state) => state.auth);
+  const isLoggedIn = !!token && !!email;
 
   const { data: priceRes, isLoading } = useGetSubscribePriceQuery();
   const plans = priceRes?.data || [];
@@ -67,7 +72,10 @@ export default function PricingPlan() {
     if (!features) return [];
     if (Array.isArray(features)) return features;
     if (typeof features === "string") {
-      return features.split(",").map((f) => f.trim()).filter(Boolean);
+      return features
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean);
     }
     return [String(features)];
   };
@@ -88,7 +96,7 @@ export default function PricingPlan() {
           const todayNow = new Date();
           const endDate = s.end_date ? new Date(s.end_date) : null;
           const isExpired = endDate ? endDate < todayNow : false;
-  
+
           return {
             id: Number(s.subscription_id),
             planType: normalizePlanType(s.plan_type) || "monthly",
@@ -103,7 +111,6 @@ export default function PricingPlan() {
           };
         });
 
-        // keep only latest per planId-planType
         const map = new Map();
         mapped.forEach((item) => {
           const key = `${item.id}-${item.planType}`;
@@ -141,7 +148,8 @@ export default function PricingPlan() {
     }
 
     if (status !== "success") {
-      const message = query.get("message") || "Something went wrong with your payment.";
+      const message =
+        query.get("message") || "Something went wrong with your payment.";
       Swal.fire("Payment Failed", message, "error");
       navigate(location.pathname, { replace: true });
       return;
@@ -169,7 +177,11 @@ export default function PricingPlan() {
       };
       setPurchasedPlans((prev) => {
         const filteredPrev = prev.filter(
-          (p) => !(Number(p.id) === subscriptionId && normalizePlanType(p.planType) === planType)
+          (p) =>
+            !(
+              Number(p.id) === subscriptionId &&
+              normalizePlanType(p.planType) === planType
+            )
         );
         return [...filteredPrev, newEntry];
       });
@@ -189,7 +201,9 @@ export default function PricingPlan() {
     } else {
       Swal.fire(
         "Payment Successful",
-        `You purchased ${matchedPlan.name} (${planType}) — ${formatPrice(priceValue)}.`,
+        `You purchased ${matchedPlan.name} (${planType}) — ${formatPrice(
+          priceValue
+        )}.`,
         "success"
       );
     }
@@ -206,7 +220,8 @@ export default function PricingPlan() {
         (p) =>
           !(
             Number(p.id) === newEntry.id &&
-            normalizePlanType(p.planType) === normalizePlanType(newEntry.planType)
+            normalizePlanType(p.planType) ===
+              normalizePlanType(newEntry.planType)
           )
       );
       return [...filtered, newEntry];
@@ -215,15 +230,77 @@ export default function PricingPlan() {
     navigate(location.pathname, { replace: true });
   }, [location.search, plans, navigate]);
 
-  const handleUpgrade = async (plan) => {
-    // Disabled - Coming Soon
-    Swal.fire({
-      icon: "info",
-      title: "Coming Soon!",
-      text: "Payment functionality will be available soon.",
-      confirmButtonText: "OK",
-    });
-    return;
+
+  const getPlanButtonConfig = (plan, index, purchasedThisCycle, expiredThisCycle) => {
+    const isFree = String(plan.name).toLowerCase() === "free";
+
+    // ---- GUEST (logged out) ----
+    if (!isLoggedIn) {
+      if (isFree) {
+        return {
+          label: "Current Plan",
+          disabled: true,
+          className:
+            "w-full py-3 border rounded-lg text-gray-500 cursor-not-allowed opacity-60",
+        };
+      }
+
+      if (index === 1) {
+        // second plan -> Sign In
+        return {
+          label: "Sign In",
+          disabled: false,
+          onClick: () => setShowLogin(true),
+          className:
+            "w-full py-3 bg-[#2A57C4] cursor-pointer text-white rounded-lg hover:bg-[#1e46a8] transition flex items-center justify-center gap-2 font-medium",
+        };
+      }
+
+      // third (aur baaki) -> Coming Soon
+      return {
+        label: "Coming Soon",
+        disabled: true,
+        className:
+          "w-full py-3 rounded-lg bg-gray-400 text-white cursor-not-allowed flex items-center justify-center gap-2",
+      };
+    }
+
+    // ---- LOGGED IN ----
+    if (isFree) {
+      return {
+        label: "Free Plan",
+        disabled: true,
+        className:
+          "w-full py-3 border rounded-lg text-gray-500 cursor-not-allowed opacity-60",
+      };
+    }
+
+    if (purchasedThisCycle) {
+      return {
+        label: `Active (${billingCycle})`,
+        disabled: true,
+        className:
+          "w-full py-3 bg-teal-700 text-white rounded-lg cursor-not-allowed flex items-center justify-center gap-2",
+      };
+    }
+
+    if (index === 1) {
+      // second plan -> Current Plan (kyunki user logged in hai)
+      return {
+        label: "Current Plan",
+        disabled: true,
+        className:
+          "w-full py-3 bg-[#2A57C4] text-white rounded-lg cursor-not-allowed flex items-center justify-center gap-2 font-medium",
+      };
+    }
+
+    // third aur baaki -> Coming Soon
+    return {
+      label: expiredThisCycle ? "Coming Soon" : "Coming Soon",
+      disabled: true,
+      className:
+        "w-full py-3 rounded-lg bg-gray-400 text-white cursor-not-allowed flex items-center justify-center gap-2",
+    };
   };
 
   if (isLoading) return <PricingPlanSkeleton />;
@@ -231,14 +308,13 @@ export default function PricingPlan() {
   return (
     <div className="min-h-screen py-10 px-4">
       <div className="max-w-7xl mx-auto">
-
         {/* HEADER */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl mb-4 roboto-bold">
-            Clean And Fair Pricing Plan
-          </h1>
+          <h1 className="text-4xl mb-4 roboto-bold">TBD</h1>
           <p className="max-w-2xl mx-auto text-gray-700">
-            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo.
+            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+            accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
+            quae ab illo.
           </p>
         </div>
 
@@ -247,20 +323,22 @@ export default function PricingPlan() {
           <div className="inline-flex rounded-full bg-white border border-gray-300 p-1 gap-2">
             <button
               onClick={() => setBillingCycle("monthly")}
-              className={`px-8 py-3 rounded-full text-sm ${billingCycle === "monthly"
-                ? "bg-[#2A57C4] text-white"
-                : "text-gray-700"
-                }`}
+              className={`px-8 py-3 rounded-full text-sm ${
+                billingCycle === "monthly"
+                  ? "bg-[#2A57C4] text-white"
+                  : "text-gray-700"
+              }`}
             >
               Monthly
             </button>
 
             <button
               onClick={() => setBillingCycle("yearly")}
-              className={`px-8 py-3 rounded-full text-sm flex items-center gap-2 ${billingCycle === "yearly"
-                ? "bg-[#2A57C4] text-white"
-                : "text-gray-700 border border-[#4A4A4A]"
-                }`}
+              className={`px-8 py-3 rounded-full text-sm flex items-center gap-2 ${
+                billingCycle === "yearly"
+                  ? "bg-[#2A57C4] text-white"
+                  : "text-gray-700 border border-[#4A4A4A]"
+              }`}
             >
               Annual
               <span className="text-xs px-2 py-1 rounded bg-white text-black">
@@ -273,7 +351,9 @@ export default function PricingPlan() {
         {/* PRICING CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto relative">
           {plans.length === 0 && (
-            <div className="col-span-full text-center text-gray-500">No plans available.</div>
+            <div className="col-span-full text-center text-gray-500">
+              No plans available.
+            </div>
           )}
 
           {isSubsLoading && (
@@ -284,11 +364,13 @@ export default function PricingPlan() {
             </div>
           )}
 
-          {plans.map((plan) => {
+          {plans.map((plan, index) => {
             const features = normalizeFeatures(plan.features);
-            const isPopular = String(plan.is_popular) === "1" || plan.is_popular === 1 || plan.is_popular === true;
+            const isPopular =
+              String(plan.is_popular) === "1" ||
+              plan.is_popular === 1 ||
+              plan.is_popular === true;
 
-            // determine purchased/expired for this plan & current billing cycle
             const purchasedThisCycle = isPurchasedForCurrentCycle(plan.id);
             const expiredThisCycle = purchasedPlans.some(
               (p) =>
@@ -297,44 +379,50 @@ export default function PricingPlan() {
                 p.isExpired
             );
 
+            const btn = getPlanButtonConfig(
+              plan,
+              index,
+              purchasedThisCycle,
+              expiredThisCycle
+            );
+
             return (
               <div
                 key={plan.id}
-                className={`relative bg-white rounded-2xl p-8 border-2 flex flex-col justify-between ${purchasedThisCycle
+                className={`relative bg-white rounded-2xl p-8 border-2 flex flex-col justify-between ${
+                  purchasedThisCycle
                     ? "border-teal-500 shadow-lg"
                     : "border-gray-200"
-                  }`}
+                }`}
               >
                 {/* MOST POPULAR BADGE */}
                 {isPopular && (
                   <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10">
                     <span className="bg-[#2A57C4] text-white text-sm px-8 py-2.5 rounded-full shadow-md">
-                      Most Popular
+                      3 Levels
                     </span>
                   </div>
                 )}
 
                 <div>
-                  <h3 className="text-2xl font-semibold mb-2">
-                    {plan.name}
-                  </h3>
+                  <h3 className="text-2xl font-semibold mb-2">{plan.name}</h3>
 
                   {plan.title && (
-                    <p className="text-gray-500 text-sm mb-6 ">
-                      {plan.title}
-                    </p>
+                    <p className="text-gray-500 text-sm mb-6">{plan.title}</p>
                   )}
 
                   <div className="mb-6">
-                    <span className="text-4xl font-bold">{getPrice(plan)}</span>
+                    <span className="text-4xl font-bold">
+                      {getPrice(plan)}
+                    </span>
                     <p className="text-gray-500 text-sm mt-2">
                       {getPeriodText(plan)}
                     </p>
                   </div>
 
                   <ul className="space-y-3 mb-8">
-                    {features.slice(0, 3).map((feature, index) => (
-                      <li key={index} className="flex items-start">
+                    {features.slice(0, 3).map((feature, i) => (
+                      <li key={i} className="flex items-start">
                         <img
                           src="/arbutus-web/assets/Levels/correct.png"
                           alt="tick"
@@ -347,35 +435,13 @@ export default function PricingPlan() {
                 </div>
 
                 <div>
-                  {String(plan.name).toLowerCase() === "free" ? (
-                    <button 
-                      disabled
-                      className="w-full py-3 border rounded-lg text-gray-500 cursor-not-allowed opacity-60"
-                    >
-                      Current Plan
-                    </button>
-                  ) : purchasedThisCycle ? (
-                    <button
-                      disabled
-                      className="w-full py-3 bg-teal-700 text-white rounded-lg cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      <span>Active ({billingCycle})</span>
-                    </button>
-                  ) : expiredThisCycle ? (
-                    <button
-                      disabled
-                      className="w-full py-3 rounded-lg bg-gray-400 text-white cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      <span>Coming Soon</span>
-                    </button>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full py-3 rounded-lg bg-gray-400 text-white cursor-not-allowed flex items-center justify-center gap-2 transition"
-                    >
-                      <span>Coming Soon</span>
-                    </button>
-                  )}
+                  <button
+                    disabled={btn.disabled}
+                    onClick={btn.onClick}
+                    className={btn.className}
+                  >
+                    {btn.label}
+                  </button>
 
                   <p className="text-center text-gray-500 text-sm mt-4">
                     30 days money back guarantee
@@ -383,7 +449,6 @@ export default function PricingPlan() {
                 </div>
               </div>
             );
-
           })}
         </div>
 

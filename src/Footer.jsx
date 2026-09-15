@@ -5,7 +5,6 @@ import {
   useGetFooterQuery,
 } from "./Redux/api/publicApiSlice";
 import Swal from "sweetalert2";
-import { FaFacebookF } from "react-icons/fa";
 
 const Footer = () => {
   const [email, setEmail] = useState("");

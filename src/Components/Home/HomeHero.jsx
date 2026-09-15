@@ -22,7 +22,7 @@ const HomeHero = () => {
   };
 
   return (
-    <section className="relative w-full h-[50vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] overflow-hidden">
+    <section className="relative w-full h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh] overflow-hidden">
       {/* SLIDES WRAPPER */}
       <div
         className="flex h-full transition-transform duration-700 ease-in-out"

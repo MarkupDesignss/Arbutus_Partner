@@ -19,6 +19,7 @@ import { getImagePath } from "./utils/assetHelper";
 // ✅ Route mapping — API titles ke exact match
 const getRoutePath = (title) => {
   const routeMap = {
+    Home: "/",
     "Alt Database": "/AltDatabaseMain",
     Altdb: "/Altdbmain",
     AltDB: "/Altdbmain",
@@ -27,8 +28,8 @@ const getRoutePath = (title) => {
     Contact: "/Contactmain",
     Levels: "/Levelmain",
     Commentary: "/ArticlePage",
-    "Partner Directory": "/PartnerDirectory", 
-    "Partner Page": "/FieraRealEstate", 
+    "Partner Directory": "/PartnerDirectory",
+    "Partner Page": "/FieraRealEstate",
   };
   return routeMap[title] || `/${title.toLowerCase().replace(/\s+/g, "")}`;
 };
@@ -40,7 +41,7 @@ export default function Header({ onUserClick }) {
     useSendPaymentLogoutMutation();
 
   // Fetch header data from API
-  const { data: headerData, isLoading: isHeaderLoading } = useGetHeaderQuery();
+  const { data: headerData } = useGetHeaderQuery();
 
   const { email } = useSelector((state) => state.auth);
 
@@ -54,21 +55,29 @@ export default function Header({ onUserClick }) {
   const menus = headerData?.data?.menus || [];
   const logoUrl = headerData?.data?.logo || getImagePath("Header/Logo.png");
 
+  // ✅ Home menu ko sabse pehle add karo (agar API me nahi hai)
+  const homeMenu = { id: "home", title: "Home", sort_order: "-1" };
+  const menusWithHome = menus.some(
+    (m) => m.title?.toLowerCase() === "home"
+  )
+    ? menus
+    : [homeMenu, ...menus];
+
   // User name formatting
   const userName = email
     ? email.split("@")[0].split(".")[0].charAt(0).toUpperCase() +
-      email.split("@")[0].split(".")[0].slice(1)
+    email.split("@")[0].split(".")[0].slice(1)
     : "Guest";
 
   // User initials
   const userInitials = email
     ? email
-        .split("@")[0]
-        .split(".")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+      .split("@")[0]
+      .split(".")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
     : "G";
 
   // Nav class with hover underline animation
@@ -119,15 +128,9 @@ export default function Header({ onUserClick }) {
     }
   };
 
-  // Mobile menu click
-  const handleMobileMenuClick = (menuTitle) => {
-    setIsOpen(false);
-    const route = getRoutePath(menuTitle);
-    navigate(route);
-  };
 
-  // Sort menus by sort_order
-  const sortedMenus = [...menus].sort((a, b) => {
+  // Sort menus by sort_order (Home sabse pehle rahega)
+  const sortedMenus = [...menusWithHome].sort((a, b) => {
     const orderA = parseInt(a.sort_order) || 0;
     const orderB = parseInt(b.sort_order) || 0;
     return orderA - orderB;
@@ -138,14 +141,13 @@ export default function Header({ onUserClick }) {
       <header
         ref={headerRef}
         className={`w-full sticky top-0 z-50 font-ubuntu transition-all duration-500
-          ${
-            isScrolled
-              ? "bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20"
-              : "bg-white/70 backdrop-blur-sm shadow-sm"
+          ${isScrolled
+            ? "bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20"
+            : "bg-white/70 backdrop-blur-sm shadow-sm"
           }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="max-w-[1300px] mx-auto px-3 sm:px-5">
+          <div className="flex items-center justify-between h-16 lg:h-20 gap-2">
             {/* Logo */}
             <Link
               to="/"
@@ -154,7 +156,7 @@ export default function Header({ onUserClick }) {
               <img
                 src={logoUrl}
                 alt="AltDB"
-                className="h-10 sm:h-14 lg:h-16 object-contain transition-all duration-500 group-hover:scale-105 group-hover:rotate-[-2deg]"
+                className="h-9 sm:h-12 lg:h-14 object-contain transition-all duration-500 group-hover:scale-105 group-hover:rotate-[-2deg]"
                 onError={(e) => {
                   e.target.src = "/placeholder-logo.png";
                   console.warn("Logo not found, using fallback");
@@ -163,22 +165,23 @@ export default function Header({ onUserClick }) {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-2 ml-8 font-roboto">
+            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 flex-nowrap whitespace-nowrap mx-2 xl:mx-4 font-roboto">
               {sortedMenus.map((menu, index) => {
                 const route = getRoutePath(menu.title);
+                const isHome = route === "/";
 
                 return (
                   <NavLink
                     key={menu.id || index}
                     to={route}
+                    end={isHome}
                     className={({ isActive }) => `
-                      ${
-                        isActive
-                          ? "text-[#0760F0] bg-blue-50/80 backdrop-blur-sm"
-                          : "text-gray-700 hover:bg-white/50 hover:backdrop-blur-sm"
+                      ${isActive
+                        ? "text-[#0760F0] bg-blue-50/80 backdrop-blur-sm"
+                        : "text-gray-700 hover:bg-white/50 hover:backdrop-blur-sm"
                       }
-                      px-3 xl:px-4 py-2 rounded-lg text-sm font-medium
-                      transition-all duration-300 relative
+                      px-2 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-medium
+                      transition-all duration-300 relative whitespace-nowrap flex-shrink-0
                       ${navClass({ isActive })}
                     `}
                   >
@@ -190,17 +193,16 @@ export default function Header({ onUserClick }) {
 
             {/* Right Section */}
             <div
-              className="flex items-center gap-2 sm:gap-3 relative cursor-pointer"
+              className="flex items-center gap-2 sm:gap-3 relative cursor-pointer flex-shrink-0"
               ref={profileRef}
             >
               <button
                 onClick={handleProfileClick}
-                className={`hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full 
+                className={`hidden sm:flex items-center gap-2 cursor-pointer px-3 sm:px-4 py-2 rounded-full 
                   backdrop-blur-sm transition-all duration-300 group
-                  ${
-                    email
-                      ? "border border-blue-200/50 bg-blue-50/60 hover:bg-blue-100/80 hover:backdrop-blur-md"
-                      : "border border-gray-200/50 bg-white/60 hover:bg-white/90 hover:backdrop-blur-md"
+                  ${email
+                    ? "border border-blue-200/50 bg-blue-50/60 hover:bg-blue-100/80 hover:backdrop-blur-md"
+                    : "border border-gray-200/50 bg-white/60 hover:bg-white/90 hover:backdrop-blur-md"
                   }
                   ${isScrolled ? "shadow-md" : "shadow-sm"}`}
               >
@@ -219,13 +221,12 @@ export default function Header({ onUserClick }) {
                   </>
                 ) : (
                   <>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 flex items-center justify-center text-white shadow-md">
+                    <div className="w-7 h-7 rounded-full cursor-pointer bg-gradient-to-r from-gray-400 to-gray-500 flex items-center justify-center text-white shadow-md">
                       <User className="w-4 h-4" />
                     </div>
                     <span className="text-sm font-medium text-gray-700">
                       Guest
                     </span>
-                    <Sparkles className="w-3.5 h-3.5 text-yellow-500 animate-pulse" />
                   </>
                 )}
               </button>
@@ -253,10 +254,9 @@ export default function Header({ onUserClick }) {
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                     className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-all duration-300
-                      ${
-                        isLoggingOut
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "text-red-600 hover:bg-red-50/80 hover:backdrop-blur-sm hover:gap-4"
+                      ${isLoggingOut
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-red-600 hover:bg-red-50/80 hover:backdrop-blur-sm hover:gap-4"
                       }`}
                   >
                     {isLoggingOut ? (
@@ -295,10 +295,9 @@ export default function Header({ onUserClick }) {
               {/* Mobile Toggle */}
               <button
                 className={`lg:hidden p-2 rounded-lg transition-all duration-300 relative
-                  ${
-                    isScrolled
-                      ? "bg-white/50 backdrop-blur-sm hover:bg-white/80"
-                      : "hover:bg-gray-100/50"
+                  ${isScrolled
+                    ? "bg-white/50 backdrop-blur-sm hover:bg-white/80"
+                    : "hover:bg-gray-100/50"
                   }`}
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="Toggle menu"
@@ -358,21 +357,47 @@ export default function Header({ onUserClick }) {
 
             {/* Mobile Nav Links */}
             <nav className="flex flex-col gap-1">
-              {sortedMenus.map((menu, index) => (
-                <button
-                  key={menu.id || index}
-                  onClick={() => handleMobileMenuClick(menu.title)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/50 backdrop-blur-sm transition-all duration-300 group relative"
-                >
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-[#0760F0] transition-colors">
-                    {menu.title}
-                  </span>
-                  <span className="ml-auto text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
-                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-[#0760F0] to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-                </button>
-              ))}
+              {sortedMenus.map((menu, index) => {
+                const route = getRoutePath(menu.title);
+                const isHome = route === "/";
+
+                return (
+                  <NavLink
+                    key={menu.id || index}
+                    to={route}
+                    end={isHome}
+                    onClick={() => setIsOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-4 py-3 rounded-xl backdrop-blur-sm transition-all duration-300 group relative ${isActive
+                        ? "bg-white/60 text-[#0760F0]"
+                        : "hover:bg-white/50 text-gray-700"
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span
+                          className={`text-sm font-medium transition-colors ${isActive
+                              ? "text-[#0760F0]"
+                              : "text-gray-700 group-hover:text-[#0760F0]"
+                            }`}
+                        >
+                          {menu.title}
+                        </span>
+                        <span className="ml-auto text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
+                          →
+                        </span>
+                        <span
+                          className={`absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-[#0760F0] to-purple-500 transition-transform duration-300 origin-left ${isActive
+                              ? "scale-x-100"
+                              : "scale-x-0 group-hover:scale-x-100"
+                            }`}
+                        ></span>
+                      </>
+                    )}
+                  </NavLink>
+                );
+              })}
             </nav>
 
             {/* Bottom Actions */}
@@ -385,10 +410,9 @@ export default function Header({ onUserClick }) {
                   }}
                   disabled={isLoggingOut}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl backdrop-blur-sm
-                    ${
-                      isLoggingOut
-                        ? "bg-gray-100/50 text-gray-400"
-                        : "bg-red-50/80 text-red-600 hover:bg-red-100/80"
+                    ${isLoggingOut
+                      ? "bg-gray-100/50 text-gray-400"
+                      : "bg-red-50/80 text-red-600 hover:bg-red-100/80"
                     } 
                     transition-all duration-300 font-medium text-sm border border-red-200/30`}
                 >

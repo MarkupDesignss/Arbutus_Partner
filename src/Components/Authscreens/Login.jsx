@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { useDispatch } from "react-redux";
 import { useSendMailMutation } from "../../Redux/api/publicApiSlice";
 import { setEmail as setAuthEmail } from "../../Redux/authSlice";
+import { Link } from "react-router-dom";
 
 const Login = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
@@ -118,13 +119,13 @@ const Login = ({ isOpen, onClose }) => {
           </div>
 
           <div className="text-center text-xs">
-            <a href="/TremsandCondition" className="underline hover:text-gray-800">
+            <Link to="/TremsandCondition" className="underline hover:text-gray-800">
               Terms Of Use
-            </a>
+            </Link>
             <span> & </span>
-            <a href="/Privacypolicy" className="underline hover:text-gray-800">
+            <Link to="/Privacypolicy" className="underline hover:text-gray-800">
               Privacy Policy
-            </a>
+            </Link>
           </div>
 
         </div>

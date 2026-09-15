@@ -47,47 +47,7 @@ export default function Privacypolicy() {
         </div>
       </main>
 
-      {/* Cookie Popup */}
-      {/* {showPopup && (
-        <div className="fixed inset-0 bg-black/5 backdrop-blur-[2px] z-40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <button
-              onClick={handleDecline}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
-
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-3 goldman-regular">
-                {policy?.title}
-              </h2>
-
-              <p className="text-gray-600 leading-relaxed font-ubuntu">
-                We use cookies to enhance your browsing experience and analyze
-                our traffic. By clicking <strong>"Accept"</strong>, you consent
-                to our use of cookies.
-              </p>
-            </div>
-
-            <div className="flex gap-3 font-ubuntu">
-              <button
-                onClick={handleAccept}
-                className="flex-1 bg-cyan-400 hover:bg-cyan-500 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
-              >
-                Accept
-              </button>
-
-              <button
-                onClick={handleDecline}
-                className="flex-1 bg-white hover:bg-gray-50 text-cyan-400 font-medium py-3 px-6 rounded-xl border-2 border-cyan-400 transition-all duration-200 hover:scale-105"
-              >
-                Decline
-              </button>
-            </div>
-          </div>
-        </div>
-      )} */}
+    
     </div>
   );
 }

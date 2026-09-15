@@ -8,7 +8,7 @@ const AltDatabaseHero = () => {
 
   if (isLoading) {
     return (
-      <section className="relative w-full h-[40vh] md:h-[60vh]">
+      <section className="relative w-full h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh]">
         <BannerSkeleton />
       </section>
     );
@@ -16,7 +16,7 @@ const AltDatabaseHero = () => {
 
   if (isError || !data?.data) {
     return (
-      <section className="relative w-full h-[40vh] md:h-[60vh] flex items-center justify-center">
+      <section className="relative w-full h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh] flex items-center justify-center">
         <p className="text-red-500">Banner not found</p>
       </section>
     );
@@ -31,7 +31,7 @@ const AltDatabaseHero = () => {
     <section
       className="
         relative w-full 
-        h-[40vh] sm:h-[45vh] md:h-[60vh]
+        h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh]
         bg-cover bg-center 
         flex items-center justify-center
       "
