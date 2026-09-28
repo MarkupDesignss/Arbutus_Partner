@@ -8,7 +8,6 @@ export const publicApiSlice = createApi({
   }),
 
   endpoints: (builder) => ({
-
     // GET USERS
     getUsers: builder.query({
       query: () => "/users",
@@ -19,87 +18,94 @@ export const publicApiSlice = createApi({
       query: () => "/banners",
     }),
 
-    //GET Our Values
+    // GET OUR VALUES
     getOurValues: builder.query({
       query: () => "/our-values",
     }),
 
-    //GET Banners
+    // GET WEB BANNERS
     getWebBanners: builder.query({
       query: () => "/web-pages",
     }),
 
-    //Get Footer
+    // GET FOOTER
     getFooter: builder.query({
       query: () => "/settings",
     }),
 
-    //Get Privacy Policy
+    // GET PRIVACY POLICY
     getprivacyPolicy: builder.query({
       query: () => "/pages/privacy_policy",
     }),
 
-    //Get Terms and Conditions
+    // GET TERMS AND CONDITIONS
     getTermsAndConditions: builder.query({
-      query: () => "pages/trems_and_condition",
+      query: () => "/pages/trems_and_condition",
     }),
 
-    //Get Subscribe price
+    // GET SUBSCRIBE PRICE
     getSubscribePrice: builder.query({
       query: () => "/subscriptions",
     }),
 
+    // GET PAGE BY SLUG
     getPage: builder.query({
       query: (slug) => `/pages/${slug}`,
     }),
 
-    //Get Assets Classes
+    // GET ASSET CLASSES
     getAssetClasses: builder.query({
       query: () => "/asset-classes",
     }),
 
-    //Get Types of Categories 
+    // GET CATEGORIES
     getCategories: builder.query({
       query: () => "/categories",
     }),
 
-    //get Types of Strategies
+    // GET STRATEGIES
     getStrategies: builder.query({
       query: () => "/strategies",
     }),
 
-    //get Types of Types
+    // GET TYPES
     getTypes: builder.query({
       query: () => "/types",
     }),
 
-    //get Blogs
+    // GET BLOGS
     getBlog: builder.query({
       query: () => "/blogs",
     }),
 
-    //Get Sponsers
+    // GET SPONSORS
     getSponsers: builder.query({
-      query: () => "/sponsors-list"
+      query: () => "/sponsors-list",
     }),
 
-    //Get Fund
+    // GET FUNDS
     getFund: builder.query({
-      query: () => "/funds"
+      query: () => "/funds",
     }),
 
+    // GET HEADER
     getHeader: builder.query({
       query: () => "/header",
     }),
 
-
+    // GET FUND GRAPH DATA
     getFundGraphData: builder.query({
-      query: (id) => `/funds/${id}/graph-data`
+      query: (id) => `/funds/${id}/graph-data`,
     }),
 
-    // Filter Funds
+    // FILTER FUNDS
     filterFunds: builder.query({
-      query: ({ asset_class_id, category_id, type_id, strategy_id }) => ({
+      query: ({
+        asset_class_id,
+        category_id,
+        type_id,
+        strategy_id,
+      }) => ({
         url: "/filter-funds",
         params: {
           asset_class_id,
@@ -110,20 +116,22 @@ export const publicApiSlice = createApi({
       }),
     }),
 
-    //Get Blogdetails
+    // GET BLOG DETAILS
     getBlogDetails: builder.query({
-      query: (slug) => `blog-details/${slug}`,
+      query: (slug) => `/blog-details/${slug}`,
     }),
 
+    // GET MEDIA
     getMedia: builder.query({
-      query: () => "media",
+      query: () => "/media",
     }),
 
+    // GET ATL SECTION
     getatlsection: builder.query({
-      query: () => "home-fund-data",
+      query: () => "/home-fund-data",
     }),
-    
-    // SEND mail
+
+    // SEND MAIL
     SendMail: builder.mutation({
       query: (data) => ({
         url: "/send-email",
@@ -132,7 +140,7 @@ export const publicApiSlice = createApi({
       }),
     }),
 
-    //SEND MAIL OTP
+    // SEND MAIL OTP
     sendOtp: builder.mutation({
       query: (data) => ({
         url: "/send-otp",
@@ -141,7 +149,7 @@ export const publicApiSlice = createApi({
       }),
     }),
 
-    //verify MAIL OTP
+    // VERIFY MAIL OTP
     verifyOtp: builder.mutation({
       query: (data) => ({
         url: "/verify-otp",
@@ -159,7 +167,7 @@ export const publicApiSlice = createApi({
       }),
     }),
 
-    //SEND Subscribe SUBSCRIPTION
+    // SEND SUBSCRIBE
     SendSubscribe: builder.mutation({
       query: (data) => ({
         url: "/add-subscribe",
@@ -168,22 +176,33 @@ export const publicApiSlice = createApi({
       }),
     }),
 
-    SendSubscribe: builder.mutation({
-      query: (data) => ({
-        url: "/add-subscribe",
-        method: "POST",
-        body: data,
-      }),
-    }),
-
+    // GET COMMENTARY PAGE
     getCommentaryPage: builder.query({
       query: () => "/commentary-page",
     }),
 
+    // GET MEMBER PAGE
     getMemberPage: builder.query({
       query: () => "/member-directory",
     }),
 
+    // GET MEMBER DIRECTORY BY ID
+    getMemberDirectoryById: builder.query({
+      query: (id) => `/member-directory/${id}`,
+    }),
+
+    // GET INSIGHT REPORTS
+    getInsightReports: builder.query({
+      query: (params = {}) => ({
+        url: "/insight-reports",
+        params: {
+          topic: params.topic || undefined,
+          search: params.search || undefined,
+          page: params.page || 1,
+          per_page: params.per_page || 9,
+        },
+      }),
+    }),
   }),
 });
 
@@ -215,5 +234,7 @@ export const {
   useGetMediaQuery,
   useGetatlsectionQuery,
   useGetCommentaryPageQuery,
-  useGetMemberPageQuery
+  useGetMemberPageQuery,
+  useGetMemberDirectoryByIdQuery,
+  useGetInsightReportsQuery,
 } = publicApiSlice;

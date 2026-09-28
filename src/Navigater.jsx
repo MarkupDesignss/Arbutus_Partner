@@ -22,9 +22,10 @@ import NewDetails from "./Components/Newsletter/NewDetails";
 import Researchpage from "./Components/Researchpage";
 import Altdbmain from "./Components/Altdb/Altdbmain";
 import ArticlePage from "./Components/ArticlePage";
-// 👇 Partner pages
+//  Partner pages
 import PartnerDirectory from "./Components/PartnerDirectory";
 import FieraRealEstate from "./Components/PartnerPage/FieraRealEstate";
+import AlternativeInvestmentsPage from "./Components/Insightreport/Alternativeinvestments";
 
 const Navigater = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -67,7 +68,8 @@ const Navigater = () => {
 
         {/* Partner Pages */}
         <Route path="/PartnerDirectory" element={<PartnerDirectory />} />
-        <Route path="/FieraRealEstate" element={<FieraRealEstate />} />
+        <Route path="/FieraRealEstate/:id" element={<FieraRealEstate />} />
+        <Route path="/insightreports" element={<AlternativeInvestmentsPage />} />
         <Route path="/ArticlePage" element={<ArticlePage />} />
         <Route path="/NewDetails/:slug" element={<ArticlePage />} />
         <Route path="*" element={<Notfound />} />

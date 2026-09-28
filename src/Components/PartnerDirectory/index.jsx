@@ -7,21 +7,34 @@ import {
   Star,
   Link2,
   ArrowRight,
+  Mail,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { useGetMemberPageQuery } from "../../Redux/api/publicApiSlice";
-
-// ============================================================================
-// IMAGES
-// ============================================================================
-
-const UNSPLASH = "https://images.unsplash.com";
-
-const HERO_IMAGE = `${UNSPLASH}/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=90`;
+import {
+  useGetMemberPageQuery,
+  useGetWebBannersQuery,
+} from "../../Redux/api/publicApiSlice";
 
 const FALLBACK_CARD_IMAGE =
-  `${UNSPLASH}/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85`;
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85";
+
+const FALLBACK_HERO_IMAGE =
+  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1800&q=90";
+
+const cleanImageUrl = (url) => {
+  if (!url) return "";
+
+  const value = String(url).trim();
+
+  const markdownMatch = value.match(/\((https?:\/\/[^)]+)\)/);
+
+  if (markdownMatch?.[1]) {
+    return markdownMatch[1];
+  }
+
+  return value;
+};
 
 // ============================================================================
 // ANIMATION VARIANTS
@@ -31,8 +44,8 @@ const containerVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.08,
+      staggerChildren: 0.07,
+      delayChildren: 0.05,
     },
   },
 };
@@ -57,13 +70,13 @@ const cardVariants = {
 const fadeUpVariants = {
   hidden: {
     opacity: 0,
-    y: 20,
+    y: 18,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.55,
+      duration: 0.5,
       ease: [0.22, 1, 0.36, 1],
     },
   },
@@ -72,7 +85,7 @@ const fadeUpVariants = {
 const heroTextVariants = {
   hidden: {
     opacity: 0,
-    x: -30,
+    x: -25,
   },
   visible: {
     opacity: 1,
@@ -86,7 +99,7 @@ const heroTextVariants = {
 
 const heroImageVariants = {
   hidden: {
-    scale: 1.08,
+    scale: 1.06,
     opacity: 0,
   },
   visible: {
@@ -104,13 +117,16 @@ const heroImageVariants = {
 // ============================================================================
 
 const PartnerCard = ({ partner }) => {
+  const hasWebsite = Boolean(partner?.website_url);
+  const memberId = partner?.id;
+
   return (
     <motion.div
       variants={cardVariants}
       initial="hidden"
       animate="visible"
       whileHover={{
-        y: -5,
+        y: -4,
         transition: {
           duration: 0.2,
           ease: "easeOut",
@@ -122,85 +138,54 @@ const PartnerCard = ({ partner }) => {
         rounded-[10px]
         overflow-hidden
         border
-        border-[#e8e8e8]
-        shadow-[0_3px_12px_rgba(0,0,0,0.07)]
-        hover:shadow-[0_10px_28px_rgba(0,0,0,0.13)]
+        border-[#E8E8E8]
+        shadow-[0_2px_10px_rgba(0,0,0,0.06)]
+        hover:shadow-[0_10px_28px_rgba(0,0,0,0.11)]
         transition-shadow
         duration-300
-        min-h-[350px]
+        min-h-[425px]
         flex
         flex-col
+        w-full
       "
     >
       {/* ================================================================
-          CARD IMAGE
+          CARD LOGO / BANNER
       ================================================================= */}
 
-      <div className="relative h-[105px] shrink-0 overflow-hidden">
+      <div
+        className="
+          relative
+          h-[115px]
+          shrink-0
+          overflow-hidden
+          bg-[#F6F6F600]
+          flex
+          items-center
+          justify-center
+          px-[25px]
+        "
+      >
         <motion.img
-          src={partner.banner_url || FALLBACK_CARD_IMAGE}
-          alt={`${partner.name || "Partner"} banner`}
+          src={cleanImageUrl(partner?.logo_url) || FALLBACK_CARD_IMAGE}
+          alt={`${partner?.name || "Partner"} logo`}
           initial={{ scale: 1 }}
-          whileHover={{ scale: 1.06 }}
-          transition={{ duration: 0.55, ease: "easeOut" }}
+          whileHover={{ scale: 1.04 }}
+          transition={{
+            duration: 0.45,
+            ease: "easeOut",
+          }}
           className="
-            absolute
-            inset-0
-            w-full
-            h-full
-            object-cover
+            max-w-full
+            max-h-full
+            w-auto
+            h-auto
+            object-contain
           "
           onError={(e) => {
             e.currentTarget.src = FALLBACK_CARD_IMAGE;
           }}
         />
-
-        {/* Light overlay */}
-        <div
-          className="
-            absolute
-            inset-0
-            bg-gradient-to-r
-            from-white/85
-            via-white/25
-            to-transparent
-          "
-        />
-
-        {/* Logo */}
-        <motion.div
-          whileHover={{
-            scale: 1.04,
-          }}
-          transition={{ duration: 0.2 }}
-          className="
-            absolute
-            left-[18px]
-            bottom-[12px]
-            h-[42px]
-            min-w-[135px]
-            px-[12px]
-            bg-white
-            rounded-[4px]
-            flex
-            items-center
-            justify-center
-            shadow-[0_2px_6px_rgba(0,0,0,0.08)]
-          "
-        >
-          <img
-            src={partner.logo_url || FALLBACK_CARD_IMAGE}
-            alt={`${partner.name || "Partner"} logo`}
-            className="
-              max-h-[34px]
-              max-w-[120px]
-              object-contain
-            "
-            onError={(e) => {
-              e.currentTarget.src = FALLBACK_CARD_IMAGE;
-            }}
-          />
-        </motion.div>
       </div>
 
       {/* ================================================================
@@ -209,156 +194,210 @@ const PartnerCard = ({ partner }) => {
 
       <div
         className="
-          px-[18px]
-          pt-[17px]
-          pb-[16px]
           flex
           flex-col
           flex-1
+          px-[26px]
+          pt-[24px]
+          pb-[18px]
+          bg-[#F6F6F600]
         "
       >
         {/* Partner Name */}
+
         <h3
           className="
-            text-[14px]
+            text-[18px]
             font-bold
-            uppercase
-            tracking-[0.01em]
-            text-[#273238]
-            leading-[19px]
+            text-[#37434a]
+            leading-[24px]
+            tracking-[-0.01em]
             mb-[7px]
-            min-h-[19px]
           "
         >
-          {partner.name || "Partner"}
+          {partner?.name || "Partner"}
         </h3>
 
         {/* Description */}
+
         <p
           className="
-            text-[12px]
+            text-[14px]
+            font-normal
             text-[#666666]
-            leading-[18px]
-            min-h-[54px]
-            line-clamp-3
+            leading-[23px]
+            line-clamp-2
+            min-h-[46px]
             overflow-hidden
-            mb-[12px]
+            mb-[13px]
           "
         >
-          {partner.description || "No description available."}
+          {partner?.description || "No description available."}
         </p>
 
         {/* Category */}
+
         <motion.span
-          whileHover={{
-            scale: 1.03,
-          }}
+          whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.2 }}
           className="
             self-start
             inline-flex
             items-center
-            bg-[#edf2ff]
-            text-[#3157b7]
+            justify-center
+            bg-[#eef2fb]
+            text-[#315dcc]
             rounded-full
-            px-[12px]
-            h-[25px]
-            text-[10px]
-            uppercase
+            px-[14px]
+            h-[28px]
+            text-[12px]
+            leading-none
             font-medium
             tracking-[0.01em]
-            mb-[15px]
+            mb-[18px]
           "
         >
-          {partner.category || "General"}
+          {partner?.category || "General"}
         </motion.span>
 
-        {/* ============================================================
+        {/* ================================================================
             BUTTONS
-        ============================================================ */}
+        ================================================================= */}
 
         <div className="mt-auto">
-          {/* Contact Member */}
-          <motion.a
-            href="/arbutus-web/Contactmain"
-            whileHover={{
-              scale: 1.015,
-            }}
-            whileTap={{
-              scale: 0.985,
-            }}
-            transition={{ duration: 0.18 }}
-            className="
-              h-[34px]
-              w-full
-              border
-              border-[#e1e5ea]
-              rounded-[6px]
-              bg-white
-              text-[#3157b7]
-              text-[10px]
-              font-medium
-              flex
-              items-center
-              justify-center
-              gap-[6px]
-              hover:bg-[#f7f9ff]
-              hover:border-[#cbd6ef]
-              transition-colors
-              mb-[9px]
-            "
-          >
-            <Link2 size={13} />
-            <span>Contact Member</span>
-          </motion.a>
+          {/* Website + Contact */}
 
-          {/* Read More */}
-          <motion.a
-            href={partner.website_url || "#"}
-            target={partner.website_url ? "_blank" : undefined}
-            rel={
-              partner.website_url
-                ? "noopener noreferrer"
-                : undefined
-            }
-            onClick={(e) => {
-              if (!partner.website_url) {
-                e.preventDefault();
-              }
-            }}
-            whileHover={{
-              scale: 1.015,
-            }}
-            whileTap={{
-              scale: 0.985,
-            }}
-            transition={{ duration: 0.18 }}
-            className="
-              h-[35px]
-              w-full
-              bg-[#2d58be]
-              hover:bg-[#234ba8]
-              rounded-[6px]
-              text-white
-              text-[11px]
-              font-medium
-              flex
-              items-center
-              justify-center
-              gap-[6px]
-              transition-colors
-            "
-          >
-            <span>Read More</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[16px]">
+            {/* Website Link — unchanged (opens external website) */}
 
-            <motion.span
-              whileHover={{ x: 3 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center"
+            <motion.a
+              href={hasWebsite ? partner.website_url : "#"}
+              target={hasWebsite ? "_blank" : undefined}
+              rel={hasWebsite ? "noopener noreferrer" : undefined}
+              onClick={(e) => {
+                if (!hasWebsite) {
+                  e.preventDefault();
+                }
+              }}
+              whileHover={{
+                scale: 1.012,
+              }}
+              whileTap={{
+                scale: 0.988,
+              }}
+              transition={{ duration: 0.18 }}
+              className="
+                h-[43px]
+                w-full
+                border
+                border-[#E8E8E8]
+                rounded-[7px]
+                bg-white
+                text-[#315dcc]
+                text-[14px]
+                font-medium
+                flex
+                items-center
+                justify-center
+                gap-[10px]
+                hover:bg-[#f8faff]
+                hover:border-[#cad4ea]
+                transition-all
+              "
             >
-              <ArrowRight size={13} />
-            </motion.span>
-          </motion.a>
+              <Link2
+                size={16}
+                strokeWidth={1.9}
+                className="shrink-0"
+              />
+
+              <span>Website Link</span>
+            </motion.a>
+
+            {/* Contact Member */}
+
+            <motion.a
+              href="/arbutus-web/Contactmain"
+              whileHover={{
+                scale: 1.012,
+              }}
+              whileTap={{
+                scale: 0.988,
+              }}
+              transition={{ duration: 0.18 }}
+              className="
+                h-[43px]
+                w-full
+                border
+                border-[#E8E8E8]
+                rounded-[7px]
+                bg-white
+                text-[#315dcc]
+                text-[14px]
+                font-medium
+                flex
+                items-center
+                justify-center
+                gap-[10px]
+                hover:bg-[#f8faff]
+                hover:border-[#cad4ea]
+                transition-all
+              "
+            >
+              <Mail
+                size={16}
+                strokeWidth={1.9}
+                className="shrink-0"
+              />
+
+              <span>Contact Member</span>
+            </motion.a>
+          </div>
+
+          {/* ================================================================
+              READ MORE → navigate to /FieraRealEstate/:id
+          ================================================================= */}
+
+          <Link to={`/FieraRealEstate/${memberId}`} className="block">
+            <motion.div
+              whileHover={{
+                scale: 1.008,
+              }}
+              whileTap={{
+                scale: 0.992,
+              }}
+              transition={{ duration: 0.18 }}
+              className="
+                h-[42px]
+                w-full
+                bg-[#315dcc]
+                hover:bg-[#2852b5]
+                rounded-[7px]
+                text-white
+                text-[14px]
+                font-medium
+                flex
+                items-center
+                justify-center
+                gap-[8px]
+                transition-colors
+                cursor-pointer
+              "
+            >
+              <span>Read More</span>
+
+              <motion.span
+                className="flex items-center"
+                whileHover={{ x: 3 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ArrowRight
+                  size={17}
+                  strokeWidth={2}
+                />
+              </motion.span>
+            </motion.div>
+          </Link>
         </div>
       </div>
     </motion.div>
@@ -372,11 +411,11 @@ const PartnerCard = ({ partner }) => {
 const PartnerDirectory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
-  const [sortBy, setSortBy] = useState("order");
+  const [sortBy, setSortBy] = useState("az");
 
-  // ==========================================================================
-  // API
-  // ==========================================================================
+  // ========================================================================
+  // MEMBER API
+  // ========================================================================
 
   const {
     data: response,
@@ -394,11 +433,52 @@ const PartnerDirectory = () => {
     sort_by: sortBy,
   });
 
-  // ==========================================================================
-  // API DATA
-  // ==========================================================================
+  // ========================================================================
+  // WEB BANNER API
+  // ========================================================================
 
-  const members = response?.data?.items || [];
+  const {
+    data: webBannerResponse,
+    isLoading: isBannerLoading,
+  } = useGetWebBannersQuery();
+
+  // ========================================================================
+  // PARTNER DIRECTORY WEB PAGE
+  // ========================================================================
+
+  const partnerDirectoryPage = useMemo(() => {
+    const pages = webBannerResponse?.data || [];
+
+    return (
+      pages.find(
+        (item) =>
+          String(item?.slug || "").toLowerCase() ===
+          "partner-directory"
+      ) || null
+    );
+  }, [webBannerResponse]);
+
+  // ========================================================================
+  // HERO DATA
+  // ========================================================================
+
+  const heroLabel =
+    partnerDirectoryPage?.label || "Our Network";
+
+  const heroTitle =
+    partnerDirectoryPage?.title || "Partner Directory";
+
+  const heroImage =
+    cleanImageUrl(
+      partnerDirectoryPage?.banner_image
+    ) || FALLBACK_HERO_IMAGE;
+
+  // ========================================================================
+  // API DATA
+  // ========================================================================
+
+  const members =
+    response?.data?.items || [];
 
   const categories =
     response?.data?.filters?.categories || [];
@@ -407,11 +487,11 @@ const PartnerDirectory = () => {
     response?.data?.filters?.sort_options || [
       {
         value: "az",
-        label: "Sort by A–Z",
+        label: "Sort by A-Z",
       },
       {
         value: "za",
-        label: "Sort by Z–A",
+        label: "Sort by Z-A",
       },
       {
         value: "order",
@@ -419,15 +499,17 @@ const PartnerDirectory = () => {
       },
     ];
 
-  // ==========================================================================
-  // LOCAL FILTER + SORT
-  // ==========================================================================
+  // ========================================================================
+  // FILTER + SORT
+  // ========================================================================
 
   const filteredPartners = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
+    const query =
+      searchQuery.toLowerCase().trim();
 
     let data = [...members];
 
+    // Search
     if (query) {
       data = data.filter((partner) => {
         return (
@@ -444,6 +526,7 @@ const PartnerDirectory = () => {
       });
     }
 
+    // Category
     if (category !== "All Categories") {
       data = data.filter(
         (partner) =>
@@ -452,19 +535,24 @@ const PartnerDirectory = () => {
       );
     }
 
+    // Sort
     if (sortBy === "az") {
       data.sort((a, b) =>
         (a?.name || "").localeCompare(
           b?.name || ""
         )
       );
-    } else if (sortBy === "za") {
+    }
+
+    if (sortBy === "za") {
       data.sort((a, b) =>
         (b?.name || "").localeCompare(
           a?.name || ""
         )
       );
-    } else if (sortBy === "order") {
+    }
+
+    if (sortBy === "order") {
       data.sort(
         (a, b) =>
           Number(a?.display_order || 0) -
@@ -480,38 +568,24 @@ const PartnerDirectory = () => {
     sortBy,
   ]);
 
-  // ==========================================================================
-  // LOADING
-  // ==========================================================================
+  // ========================================================================
+  // LOADING STATE
+  // ========================================================================
 
-  if (isLoading) {
+  if (isLoading || isBannerLoading) {
     return (
-      <div
-        className="
-          min-h-screen
-          bg-[#fafafa]
-          text-[#273238]
-          font-sans
-        "
-      >
-        {/* Header Skeleton */}
-        <section
-          className="
-            bg-white
-            min-h-[240px]
-            border-b
-            border-[#eeeeee]
-            overflow-hidden
-          "
-        >
+      <div className="min-h-screen bg-[#F6F6F600]">
+        {/* Hero Skeleton */}
+
+        <section className="bg-[#F6F6F600] min-h-[210px] overflow-hidden">
           <div
             className="
-              max-w-[1200px]
-              min-h-[240px]
+              max-w-7xl
               mx-auto
+              min-h-[210px]
               grid
               grid-cols-1
-              lg:grid-cols-[1.05fr_1fr]
+              lg:grid-cols-[1.05fr_0.95fr]
             "
           >
             <div
@@ -520,68 +594,61 @@ const PartnerDirectory = () => {
                 flex-col
                 justify-center
                 px-[25px]
-                lg:px-[40px]
+                sm:px-[40px]
+                lg:px-0
+                lg:pr-[50px]
                 py-[30px]
               "
             >
-              <div className="w-[100px] h-[10px] bg-gray-200 rounded mb-[14px] animate-pulse" />
+              <div className="w-[120px] h-[14px] bg-gray-200 rounded mb-[18px] animate-pulse" />
 
-              <div className="w-[280px] h-[34px] bg-gray-200 rounded mb-[14px] animate-pulse" />
+              <div className="w-[350px] max-w-full h-[38px] bg-gray-200 rounded mb-[22px] animate-pulse" />
 
-              <div className="w-[430px] max-w-full h-[38px] bg-gray-200 rounded mb-[18px] animate-pulse" />
+              <div className="flex items-center gap-[18px]">
+                <div className="w-[42px] h-[42px] bg-gray-200 rounded-full animate-pulse" />
+                <div className="w-[75px] h-[15px] bg-gray-200 rounded animate-pulse" />
 
-              <div className="flex gap-[20px]">
-                <div className="w-[110px] h-[34px] bg-gray-200 rounded-full animate-pulse" />
-                <div className="w-[150px] h-[34px] bg-gray-200 rounded-full animate-pulse" />
+                <div className="w-[42px] h-[42px] bg-gray-200 rounded-full animate-pulse ml-[10px]" />
+                <div className="w-[135px] h-[15px] bg-gray-200 rounded animate-pulse" />
               </div>
             </div>
 
-            <div className="min-h-[240px] bg-gray-200 animate-pulse" />
+            <div className="min-h-[210px] bg-gray-200 animate-pulse" />
           </div>
         </section>
 
         {/* Filter Skeleton */}
-        <section
-          className="
-            min-h-[72px]
-            bg-white
-            border-b
-            border-[#eeeeee]
-          "
-        >
+
+        <section className="bg-[#F6F6F600]">
           <div
             className="
-              max-w-[1200px]
-              min-h-[72px]
+              max-w-7xl
               mx-auto
               px-[20px]
               lg:px-0
-              py-[15px]
+              py-[28px]
               flex
               flex-col
-              md:flex-row
-              items-stretch
-              md:items-center
-              gap-[12px]
-              md:gap-[18px]
+              lg:flex-row
+              gap-[20px]
             "
           >
-            <div className="flex-1 h-[40px] bg-gray-200 rounded-full animate-pulse" />
+            <div className="flex-1 h-[47px] bg-gray-200 rounded-full animate-pulse" />
 
-            <div className="w-full md:w-[190px] h-[40px] bg-gray-200 rounded-full animate-pulse" />
+            <div className="w-full lg:w-[255px] h-[47px] bg-gray-200 rounded-full animate-pulse" />
 
-            <div className="w-full md:w-[170px] h-[40px] bg-gray-200 rounded-full animate-pulse" />
+            <div className="w-full lg:w-[255px] h-[47px] bg-gray-200 rounded-full animate-pulse" />
           </div>
         </section>
 
-        {/* Cards Skeleton */}
+        {/* Card Skeleton */}
+
         <main
           className="
-            max-w-[1200px]
+            max-w-7xl
             mx-auto
             px-[20px]
             lg:px-0
-            pt-[24px]
             pb-[70px]
           "
         >
@@ -591,8 +658,7 @@ const PartnerDirectory = () => {
               grid-cols-1
               sm:grid-cols-2
               lg:grid-cols-3
-              gap-[18px]
-              lg:gap-[22px]
+              gap-[20px]
             "
           >
             {Array.from({ length: 6 }).map(
@@ -601,7 +667,7 @@ const PartnerDirectory = () => {
                   key={index}
                   initial={{
                     opacity: 0,
-                    y: 20,
+                    y: 15,
                   }}
                   animate={{
                     opacity: 1,
@@ -616,23 +682,27 @@ const PartnerDirectory = () => {
                     rounded-[10px]
                     overflow-hidden
                     border
-                    border-[#e8e8e8]
-                    min-h-[350px]
+                    border-[#E8E8E8]
+                    min-h-[425px]
                     animate-pulse
+                    w-full
                   "
                 >
-                  <div className="h-[105px] bg-gray-200" />
+                  <div className="h-[115px] bg-gray-200" />
 
-                  <div className="px-[18px] pt-[17px] pb-[16px]">
-                    <div className="h-[16px] w-[70%] bg-gray-200 rounded mb-[12px]" />
+                  <div className="px-[26px] pt-[24px] pb-[18px]">
+                    <div className="h-[22px] w-[55%] bg-gray-200 rounded mb-[10px]" />
 
-                    <div className="h-[50px] bg-gray-200 rounded mb-[12px]" />
+                    <div className="h-[45px] bg-gray-200 rounded mb-[15px]" />
 
-                    <div className="h-[25px] w-[120px] bg-gray-200 rounded-full mb-[15px]" />
+                    <div className="h-[28px] w-[140px] bg-gray-200 rounded-full mb-[18px]" />
 
-                    <div className="h-[34px] bg-gray-200 rounded mb-[9px]" />
+                    <div className="grid grid-cols-2 gap-[10px] mb-[16px]">
+                      <div className="h-[43px] bg-gray-200 rounded" />
+                      <div className="h-[43px] bg-gray-200 rounded" />
+                    </div>
 
-                    <div className="h-[35px] bg-gray-200 rounded" />
+                    <div className="h-[42px] bg-gray-200 rounded" />
                   </div>
                 </motion.div>
               )
@@ -643,9 +713,9 @@ const PartnerDirectory = () => {
     );
   }
 
-  // ==========================================================================
+  // ========================================================================
   // JSX
-  // ==========================================================================
+  // ========================================================================
 
   return (
     <motion.div
@@ -654,37 +724,35 @@ const PartnerDirectory = () => {
       variants={containerVariants}
       className="
         min-h-screen
-        bg-[#fafafa]
+        bg-[#F6F6F600]
         text-[#273238]
         font-sans
       "
     >
-      {/* ==================================================================
-          TOP HEADER
-      ================================================================== */}
+      {/* ====================================================================
+          HERO
+      ==================================================================== */}
 
       <section
         className="
-          bg-white
-          min-h-[240px]
-          border-b
-          border-[#eeeeee]
+          bg-[#F6F6F600]
+          min-h-[210px]
           overflow-hidden
         "
       >
         <div
           className="
-            max-w-[1200px]
-            min-h-[240px]
+            max-w-7xl
+            min-h-[210px]
             mx-auto
             grid
             grid-cols-1
-            lg:grid-cols-[1.05fr_1fr]
+            lg:grid-cols-[1.02fr_0.98fr]
           "
         >
-          {/* ============================================================
-              LEFT HEADER
-          ============================================================ */}
+          {/* ================================================================
+              HERO LEFT
+          ================================================================= */}
 
           <motion.div
             variants={fadeUpVariants}
@@ -695,122 +763,109 @@ const PartnerDirectory = () => {
               flex-col
               justify-center
               px-[25px]
-              lg:px-[40px]
+              sm:px-[40px]
+              lg:px-0
+              lg:pr-[55px]
               py-[30px]
             "
           >
-            {/* Our Network */}
+            {/* Label */}
+
             <motion.div
               variants={heroTextVariants}
-              className="flex items-center gap-[10px] mb-[12px]"
+              className="
+                flex
+                items-center
+                gap-[10px]
+                mb-[22px]
+              "
             >
               <span
                 className="
-                  text-[10px]
+                  text-[14px]
                   font-bold
                   uppercase
-                  tracking-[0.1em]
-                  text-[#25323a]
+                  tracking-[0.01em]
+                  text-[#36434a]
                   whitespace-nowrap
                 "
               >
-                Our Network
+                {heroLabel}
               </span>
 
-              <motion.span
-                initial={{
-                  width: 0,
-                  opacity: 0,
-                }}
-                animate={{
-                  width: 38,
-                  opacity: 1,
-                }}
-                transition={{
-                  delay: 0.45,
-                  duration: 0.45,
-                  ease: "easeOut",
-                }}
+              <span
                 className="
-                  h-[1px]
+                  h-[2px]
+                  w-[54px]
                   bg-[#d9dde0]
                 "
               />
             </motion.div>
 
-            {/* Heading */}
+            {/* Title */}
+
             <motion.h1
               variants={heroTextVariants}
               className="
-                text-[28px]
-                lg:text-[32px]
-                font-bold
-                text-[#111820]
-                leading-tight
-                mb-[14px]
+                text-[31px]
+                sm:text-[30px]
+                lg:text-[30px]
+                font-semibold
+                text-[#111111]
+                leading-[1.12]
+                tracking-[-0.02em]
+                mb-[22px]
               "
             >
-              Partner Directory
+              {heroTitle}
             </motion.h1>
 
-            {/* Description */}
-            <motion.p
-              variants={heroTextVariants}
-              className="
-                text-[12px]
-                lg:text-[13px]
-                text-[#555f65]
-                leading-[19px]
-                max-w-[430px]
-                mb-[18px]
-              "
-            >
-              Interested in becoming a member of
-              Canadian Family Offices?
-              <br />
-              Learn more and register by visiting
-              our contact page.
-            </motion.p>
+            {/* Feature Items */}
 
-            {/* Header feature items */}
             <motion.div
               variants={containerVariants}
               className="
                 flex
                 flex-wrap
                 items-center
-                gap-[20px]
+                gap-[26px]
               "
             >
               {/* Insights */}
+
               <motion.div
                 variants={fadeUpVariants}
                 whileHover={{ y: -2 }}
-                className="flex items-center gap-[8px]"
+                className="
+                  flex
+                  items-center
+                  gap-[10px]
+                "
               >
                 <span
                   className="
-                    w-[34px]
-                    h-[34px]
+                    w-[42px]
+                    h-[42px]
                     rounded-full
-                    bg-[#e7efff]
+                    bg-[#e4ebfa]
                     flex
                     items-center
                     justify-center
+                    shrink-0
                   "
                 >
                   <BarChart3
-                    size={17}
+                    size={20}
                     strokeWidth={2}
-                    className="text-[#3157b7]"
+                    className="text-[#315dcc]"
                   />
                 </span>
 
                 <span
                   className="
-                    text-[12px]
-                    text-[#333333]
-                    font-medium
+                    text-[17px]
+                    text-[#222222]
+                    font-normal
                   "
                 >
                   Insights
@@ -818,34 +873,41 @@ const PartnerDirectory = () => {
               </motion.div>
 
               {/* Shared Expertise */}
+
               <motion.div
                 variants={fadeUpVariants}
                 whileHover={{ y: -2 }}
-                className="flex items-center gap-[8px]"
+                className="
+                  flex
+                  items-center
+                  gap-[10px]
+                "
               >
                 <span
                   className="
-                    w-[34px]
-                    h-[34px]
+                    w-[42px]
+                    h-[42px]
                     rounded-full
-                    bg-[#e7efff]
+                    bg-[#e4ebfa]
                     flex
                     items-center
                     justify-center
+                    shrink-0
                   "
                 >
                   <Star
-                    size={16}
+                    size={19}
                     strokeWidth={2}
-                    className="text-[#3157b7]"
+                    fill="currentColor"
+                    className="text-[#315dcc]"
                   />
                 </span>
 
                 <span
                   className="
-                    text-[12px]
-                    text-[#333333]
-                    font-medium
+                    text-[17px]
+                    text-[#222222]
+                    font-normal
                   "
                 >
                   Shared Expertise
@@ -854,9 +916,9 @@ const PartnerDirectory = () => {
             </motion.div>
           </motion.div>
 
-          {/* ============================================================
-              RIGHT HERO
-          ============================================================ */}
+          {/* ================================================================
+              HERO RIGHT IMAGE
+          ================================================================= */}
 
           <motion.div
             initial="hidden"
@@ -864,46 +926,62 @@ const PartnerDirectory = () => {
             variants={heroImageVariants}
             className="
               relative
-              min-h-[240px]
+              min-h-[210px]
               overflow-hidden
+              -ml-[1px]
             "
           >
-            {/* Hero Image */}
             <motion.img
-              src={HERO_IMAGE}
-              alt="Mountain lake landscape"
-              initial={{ scale: 1.08 }}
+              src={heroImage}
+              alt={heroTitle || "Partner Directory"}
+              initial={{ scale: 1.05 }}
               animate={{ scale: 1 }}
               transition={{
-                duration: 1.2,
+                duration: 1.25,
                 ease: "easeOut",
               }}
               className="
                 absolute
                 inset-0
                 w-full
+                text-[12px]
                 h-full
                 object-cover
+                object-center
               "
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_HERO_IMAGE;
+              }}
             />
 
-            {/* White fade */}
             <div
               className="
                 absolute
                 inset-0
                 bg-gradient-to-r
                 from-white
-                via-white/45
+                via-white/70
+                via-[18%]
                 to-transparent
               "
             />
 
-            {/* Hero Text */}
+            <div
+              className="
+                absolute
+                inset-x-0
+                bottom-0
+                h-[55px]
+                bg-gradient-to-t
+                from-white/70
+                to-transparent
+              "
+            />
+
             <motion.div
               initial={{
                 opacity: 0,
-                x: -25,
+                x: -20,
               }}
               animate={{
                 opacity: 1,
@@ -917,9 +995,11 @@ const PartnerDirectory = () => {
               className="
                 absolute
                 left-[30px]
-                top-[55px]
-                lg:left-[45px]
-                lg:top-[65px]
+                sm:left-[45px]
+                lg:left-[48px]
+                top-[38px]
+                sm:top-[48px]
+                lg:top-[52px]
               "
             >
               <h2
@@ -927,11 +1007,11 @@ const PartnerDirectory = () => {
                   font-serif
                   font-semibold
                   text-[22px]
-                  lg:text-[26px]
-                  leading-[30px]
-                  lg:leading-[35px]
-                  tracking-[0.02em]
-                  text-[#35434a]
+                  sm:text-[25px]
+                  lg:text-[27px]
+                  leading-[1.42]
+                  tracking-[-0.01em]
+                  text-[#3b474c]
                 "
               >
                 A STRONGER
@@ -940,79 +1020,48 @@ const PartnerDirectory = () => {
                 <br />
                 TOGETHER
               </h2>
-
-              <motion.div
-                initial={{
-                  width: 0,
-                  opacity: 0,
-                }}
-                animate={{
-                  width: 40,
-                  opacity: 1,
-                }}
-                transition={{
-                  delay: 0.85,
-                  duration: 0.45,
-                  ease: "easeOut",
-                }}
-                className="
-                  h-[2px]
-                  bg-[#536068]
-                  mt-[18px]
-                "
-              />
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* ==================================================================
+      {/* ====================================================================
           SEARCH + FILTER BAR
-      ================================================================== */}
+      ==================================================================== */}
 
       <motion.section
         variants={fadeUpVariants}
         className="
-          min-h-[72px]
-          bg-white
-          border-b
-          border-[#eeeeee]
+          bg-[#F6F6F600]
         "
       >
         <div
           className="
-            max-w-[1200px]
-            min-h-[72px]
+            max-w-7xl
             mx-auto
             px-[20px]
             lg:px-0
-            py-[15px]
+            py-[28px]
             flex
             flex-col
-            md:flex-row
+            lg:flex-row
             items-stretch
-            md:items-center
-            gap-[12px]
-            md:gap-[18px]
+            lg:items-center
+            gap-[20px]
           "
         >
-          {/* ============================================================
-              SEARCH
-          ============================================================ */}
+          {/* Search */}
 
-          <motion.div
-            whileFocus={{ scale: 1.005 }}
-            className="relative flex-1"
-          >
+          <div className="relative flex-1">
             <Search
-              size={16}
-              strokeWidth={2}
+              size={19}
+              strokeWidth={1.8}
               className="
                 absolute
-                left-[16px]
+                left-[27px]
                 top-1/2
                 -translate-y-1/2
-                text-[#aeb4b9]
+                text-[#7d9ce3]
               "
             />
 
@@ -1025,34 +1074,31 @@ const PartnerDirectory = () => {
               placeholder="Search members by name, industry or keyword..."
               className="
                 w-full
-                h-[40px]
-                pl-[42px]
-                pr-[15px]
+                h-[47px]
+                pl-[58px]
+                pr-[20px]
                 rounded-full
-                bg-[#f6f6f6]
+                bg-[#f7f7f7]
                 border
-                border-[#eeeeee]
-                text-[12px]
+                border-transparent
+                text-[14px]
                 text-[#444444]
-                placeholder:text-[#a5abb0]
+                placeholder:text-[#7d9ce3]
                 outline-none
-                focus:border-[#b9c7e8]
                 focus:bg-white
-                transition-colors
+                focus:border-[#d7e0f6]
+                transition-all
               "
             />
-          </motion.div>
+          </div>
 
-          {/* ============================================================
-              CATEGORY
-          ============================================================ */}
+          {/* Category */}
 
-          <motion.div
-            whileHover={{ y: -1 }}
+          <div
             className="
               relative
               w-full
-              md:w-[190px]
+              lg:w-[255px]
               shrink-0
             "
           >
@@ -1064,15 +1110,15 @@ const PartnerDirectory = () => {
               className="
                 appearance-none
                 w-full
-                h-[40px]
-                px-[16px]
-                pr-[38px]
+                h-[47px]
+                px-[18px]
+                pr-[48px]
                 rounded-full
                 bg-white
                 border
-                border-[#e8e8e8]
-                text-[12px]
-                text-[#666666]
+                border-[#E8E8E8]
+                text-[14px]
+                text-[#7895d8]
                 outline-none
                 cursor-pointer
                 focus:border-[#b9c7e8]
@@ -1093,29 +1139,26 @@ const PartnerDirectory = () => {
             </select>
 
             <ChevronDown
-              size={15}
-              strokeWidth={2}
+              size={17}
+              strokeWidth={1.8}
               className="
                 absolute
-                right-[14px]
+                right-[19px]
                 top-1/2
                 -translate-y-1/2
-                text-[#777777]
+                text-[#111111]
                 pointer-events-none
               "
             />
-          </motion.div>
+          </div>
 
-          {/* ============================================================
-              SORT
-          ============================================================ */}
+          {/* Sort */}
 
-          <motion.div
-            whileHover={{ y: -1 }}
+          <div
             className="
               relative
               w-full
-              md:w-[170px]
+              lg:w-[255px]
               shrink-0
             "
           >
@@ -1127,15 +1170,15 @@ const PartnerDirectory = () => {
               className="
                 appearance-none
                 w-full
-                h-[40px]
-                px-[16px]
-                pr-[38px]
+                h-[47px]
+                px-[18px]
+                pr-[48px]
                 rounded-full
                 bg-white
                 border
-                border-[#e8e8e8]
-                text-[12px]
-                text-[#666666]
+                border-[#E8E8E8]
+                text-[14px]
+                text-[#7895d8]
                 outline-none
                 cursor-pointer
                 focus:border-[#b9c7e8]
@@ -1152,36 +1195,37 @@ const PartnerDirectory = () => {
             </select>
 
             <ChevronDown
-              size={15}
-              strokeWidth={2}
+              size={17}
+              strokeWidth={1.8}
               className="
                 absolute
-                right-[14px]
+                right-[19px]
                 top-1/2
                 -translate-y-1/2
-                text-[#777777]
+                text-[#111111]
                 pointer-events-none
               "
             />
-          </motion.div>
+          </div>
         </div>
       </motion.section>
 
-      {/* ==================================================================
+      {/* ====================================================================
           PARTNER GRID
-      ================================================================== */}
+      ==================================================================== */}
 
       <main
         className="
-          max-w-[1200px]
+          max-w-7xl
           mx-auto
           px-[20px]
           lg:px-0
-          pt-[24px]
+          pt-[17px]
           pb-[70px]
         "
       >
-        {/* Small fetching indicator */}
+        {/* Fetching */}
+
         <AnimatePresence>
           {isFetching && (
             <motion.div
@@ -1198,9 +1242,9 @@ const PartnerDirectory = () => {
                 y: -5,
               }}
               className="
-                mb-[12px]
-                text-[11px]
-                text-[#8b8b8b]
+                mb-[14px]
+                text-[12px]
+                text-[#888888]
               "
             >
               Updating members...
@@ -1209,6 +1253,7 @@ const PartnerDirectory = () => {
         </AnimatePresence>
 
         {/* Error */}
+
         {isError ? (
           <motion.div
             initial={{
@@ -1229,7 +1274,8 @@ const PartnerDirectory = () => {
               text-[#999999]
             "
           >
-            Unable to load members. Please try again.
+            Unable to load members. Please try
+            again.
           </motion.div>
         ) : (
           <AnimatePresence mode="popLayout">
@@ -1251,22 +1297,24 @@ const PartnerDirectory = () => {
                   grid-cols-1
                   sm:grid-cols-2
                   lg:grid-cols-3
-                  gap-[18px]
-                  lg:gap-[22px]
+                  gap-[20px]
                 "
               >
-                {filteredPartners.map((partner) => (
-                  <PartnerCard
-                    key={partner.id}
-                    partner={partner}
-                  />
-                ))}
+                {filteredPartners.map(
+                  (partner) => (
+                    <PartnerCard
+                      key={partner.id}
+                      partner={partner}
+                    />
+                  )
+                )}
               </motion.div>
             )}
           </AnimatePresence>
         )}
 
-        {/* No results */}
+        {/* No Results */}
+
         {!isError &&
           filteredPartners.length === 0 && (
             <motion.div
@@ -1288,7 +1336,8 @@ const PartnerDirectory = () => {
                 text-[#999999]
               "
             >
-              No members found matching your search.
+              No members found matching your
+              search.
             </motion.div>
           )}
       </main>

@@ -56,8 +56,8 @@ export default function PricingPlan() {
   };
 
   const getPrice = (plan) => {
-    if (!plan) return "$0.00";
-    if (String(plan.name).toLowerCase() === "free") return "$0.00";
+    if (!plan) return "free";
+    if (String(plan.name).toLowerCase() === "free") return "Free";
     return billingCycle === "monthly"
       ? formatPrice(plan.monthly_price)
       : formatPrice(plan.yearly_price);

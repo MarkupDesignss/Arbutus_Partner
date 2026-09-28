@@ -30,6 +30,10 @@ const getRoutePath = (title) => {
     Commentary: "/ArticlePage",
     "Partner Directory": "/PartnerDirectory",
     "Partner Page": "/FieraRealEstate",
+    "Insight Investment": "/AlternativeInvestmentsPage",
+    "Insights Investment": "/AlternativeInvestmentsPage",
+    "Insight Investments": "/AlternativeInvestmentsPage",
+    "Alternative Investments": "/AlternativeInvestmentsPage",
   };
   return routeMap[title] || `/${title.toLowerCase().replace(/\s+/g, "")}`;
 };
@@ -51,17 +55,20 @@ export default function Header({ onUserClick }) {
   const profileRef = useRef(null);
   const headerRef = useRef(null);
 
-  // Get menus from API
+  // Get menus from API and filter out "Partner Page"
   const menus = headerData?.data?.menus || [];
+  const filteredMenus = menus.filter(
+    (menu) => menu.title?.toLowerCase() !== "partner page"
+  );
   const logoUrl = headerData?.data?.logo || getImagePath("Header/Logo.png");
 
   // ✅ Home menu ko sabse pehle add karo (agar API me nahi hai)
   const homeMenu = { id: "home", title: "Home", sort_order: "-1" };
-  const menusWithHome = menus.some(
+  const menusWithHome = filteredMenus.some(
     (m) => m.title?.toLowerCase() === "home"
   )
-    ? menus
-    : [homeMenu, ...menus];
+    ? filteredMenus
+    : [homeMenu, ...filteredMenus];
 
   // User name formatting
   const userName = email

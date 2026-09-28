@@ -1,903 +1,1174 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import {
-  Share2,
-  Bookmark,
-  Linkedin,
-  Link2,
-  ChevronDown,
-  ArrowRight,
-  User,
-  MoveRightIcon,
-} from "lucide-react";
-
-import {
-  useGetCommentaryPageQuery,
-  useSendSubscribeMutation,
-} from "../../Redux/api/publicApiSlice";
-
-// SweetAlert2
-import Swal from "sweetalert2";
-
-// Local images
-import FeaturedMain from "../../../public/assets/img1.png";
-import CtaBanner from "../../../public/assets/img4.png";
+import { useGetCommentaryPageQuery } from "../../Redux/api/publicApiSlice";
 
 /* =========================================================
-   FRAMER MOTION VARIANTS
+   HELPERS
+========================================================= */
+
+const COLORS = {
+  primary: "#0B4D8C",
+  primaryDark: "#083B6B",
+  heading: "#000000",
+  body: "#4B5563",
+  muted: "#9CA3AF",
+  border: "#E5E7EB",
+};
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200";
+
+function normalizeUrl(value) {
+  if (!value) return "";
+
+  const url = String(value).trim();
+
+  const markdownMatch = url.match(/\((https?:\/\/[^)]+)\)/);
+
+  if (markdownMatch?.[1]) {
+    return markdownMatch[1];
+  }
+
+  return url;
+}
+
+/* =========================================================
+   ANIMATION VARIANTS
 ========================================================= */
 
 const fadeUp = {
   hidden: {
     opacity: 0,
-    y: 25,
+    y: 24,
   },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.65,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
-
-const fadeLeft = {
-  hidden: {
-    opacity: 0,
-    x: -25,
-  },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.55,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
-
-const fadeRight = {
-  hidden: {
-    opacity: 0,
-    x: 30,
-  },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.65,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
-
-const staggerContainer = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
-const cardItem = {
-  hidden: {
-    opacity: 0,
-    y: 18,
-  },
-  visible: {
+  show: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.5,
-      ease: [0.22, 1, 0.36, 1],
+      ease: "easeOut",
     },
   },
 };
 
-const imageReveal = {
+const fadeIn = {
   hidden: {
     opacity: 0,
-    scale: 1.03,
   },
-  visible: {
+  show: {
     opacity: 1,
-    scale: 1,
     transition: {
-      duration: 0.8,
-      ease: [0.22, 1, 0.36, 1],
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
+
+const staggerParent = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const staggerChild = {
+  hidden: {
+    opacity: 0,
+    y: 18,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: "easeOut",
     },
   },
 };
 
 /* =========================================================
-   SIDEBAR ARTICLE
+   SKELETON
 ========================================================= */
 
-const SidebarArticle = ({ article, index }) => {
+function SkeletonBlock({ className = "" }) {
   return (
-    <motion.article
-      variants={cardItem}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
-      whileHover={{ x: 4 }}
-      transition={{ duration: 0.2 }}
-      className="group border-b border-[#e8e8e8] py-4 first:pt-3"
-    >
-      <div className="flex gap-4 items-start">
-        <div className="min-w-0 flex-1">
-          <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.08em] text-[#777] mb-2">
-            {article.category?.name || "Commentary"}
-          </span>
+    <div
+      className={`animate-pulse rounded bg-[#E9EDF2] ${className}`}
+    />
+  );
+}
 
-          <h4 className="text-[13px] sm:text-[14px] leading-[1.4] font-semibold text-[#1b1b1b] line-clamp-3">
-            {article.title}
-          </h4>
+function SkeletonArticleRow() {
+  return (
+    <div className="flex gap-4">
+      <SkeletonBlock className="h-[80px] w-[140px] shrink-0" />
 
-          <div className="mt-2 flex items-center gap-1.5 text-[10px] sm:text-[11px] text-[#999]">
-            <User size={12} strokeWidth={1.5} />
-            <span>{article.published_date_formatted}</span>
+      <div className="min-w-0 flex-1 space-y-3 pt-1">
+        <SkeletonBlock className="h-4 w-[85%]" />
+        <SkeletonBlock className="h-4 w-[65%]" />
+        <SkeletonBlock className="h-3 w-[40%]" />
+
+        <div className="flex items-center gap-3 pt-2">
+          <SkeletonBlock className="h-3 w-20" />
+          <SkeletonBlock className="h-4 w-24" />
+        </div>
+
+        <div className="flex items-center gap-2 pt-1">
+          <SkeletonBlock className="h-3 w-14" />
+          <SkeletonBlock className="h-3 w-14" />
+          <SkeletonBlock className="h-3 w-14" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonSideArticle() {
+  return (
+    <div className="flex gap-4">
+      <SkeletonBlock className="aspect-video h-auto w-[160px] shrink-0" />
+
+      <div className="min-w-0 flex-1 space-y-3 pt-1">
+        <SkeletonBlock className="h-4 w-[90%]" />
+        <SkeletonBlock className="h-4 w-[70%]" />
+        <SkeletonBlock className="h-3 w-[45%]" />
+
+        <div className="flex items-center gap-3 pt-2">
+          <SkeletonBlock className="h-3 w-20" />
+          <SkeletonBlock className="h-4 w-24" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonMembers() {
+  return (
+    <section className="mt-20">
+      <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
+        <SkeletonBlock className="h-6 w-28" />
+        <SkeletonBlock className="h-4 w-16" />
+      </div>
+
+      <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className={`
+              px-0 py-5 sm:px-6
+              ${
+                index > 0
+                  ? "lg:border-l lg:border-[#E5E7EB]"
+                  : "lg:pl-0"
+              }
+              ${index === 0 ? "sm:pl-0" : ""}
+            `}
+          >
+            <SkeletonBlock className="h-[50px] w-[140px]" />
+
+            <div className="mt-8 space-y-2">
+              <SkeletonBlock className="h-3 w-full" />
+              <SkeletonBlock className="h-3 w-[90%]" />
+              <SkeletonBlock className="h-3 w-[80%]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SkeletonNewsletter() {
+  return (
+    <aside className="self-start lg:sticky lg:top-6">
+      <div className="animate-pulse rounded-3xl bg-[#0B4D8C]/80 p-6">
+        <SkeletonBlock className="h-3 w-20 bg-white/30" />
+
+        <SkeletonBlock className="mt-4 h-7 w-[80%] bg-white/30" />
+
+        <SkeletonBlock className="mt-2 h-7 w-[60%] bg-white/30" />
+
+        <SkeletonBlock className="mt-4 h-3 w-full bg-white/20" />
+
+        <SkeletonBlock className="mt-2 h-3 w-[80%] bg-white/20" />
+
+        <SkeletonBlock className="mt-5 h-12 w-full rounded-full bg-white/40" />
+      </div>
+    </aside>
+  );
+}
+
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+          <div className="space-y-10">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <SkeletonArticleRow key={index} />
+            ))}
+          </div>
+
+          <div>
+            <SkeletonBlock className="h-9 w-[75%]" />
+            <SkeletonBlock className="mt-3 h-9 w-[55%]" />
+
+            <div className="mt-5 space-y-2">
+              <SkeletonBlock className="h-4 w-full" />
+              <SkeletonBlock className="h-4 w-[90%]" />
+            </div>
+
+            <div className="mt-4 flex items-center gap-3">
+              <SkeletonBlock className="h-3 w-20" />
+              <SkeletonBlock className="h-5 w-28" />
+            </div>
+
+            <SkeletonBlock className="mt-5 aspect-video w-full" />
+
+            <div className="mt-14 grid gap-10 md:grid-cols-2">
+              <div>
+                <SkeletonBlock className="h-7 w-[80%]" />
+                <SkeletonBlock className="mt-4 h-4 w-full" />
+                <SkeletonBlock className="mt-2 h-4 w-[80%]" />
+                <SkeletonBlock className="mt-6 aspect-video w-full" />
+              </div>
+
+              <div className="space-y-9">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <SkeletonSideArticle key={index} />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        <motion.img
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
-          src={article.image_url}
-          alt={article.title}
-          className="w-[72px] h-[58px] sm:w-[78px] sm:h-[64px] object-cover flex-shrink-0 rounded-[4px]"
-        />
-      </div>
-    </motion.article>
-  );
-};
+        <SkeletonMembers />
 
-/* =========================================================
-   COMMENTARY CARD
-========================================================= */
+        <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
+          <div className="hidden lg:block" />
 
-const CommentaryCard = ({ article }) => {
-  return (
-    <motion.article
-      variants={cardItem}
-      whileHover={{ x: 4 }}
-      transition={{ duration: 0.2 }}
-      className="flex gap-4 border-b border-[#e8e8e8] pb-4 last:border-0"
-    >
-      <div className="min-w-0 flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#777] mb-2">
-          {article.category?.name || "Commentary"}
-        </span>
+          <div className="space-y-10">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <SkeletonArticleRow key={index} />
+            ))}
+          </div>
 
-        <h4 className="text-[13px] sm:text-[14px] leading-[1.4] font-semibold text-[#222] line-clamp-3">
-          {article.title}
-        </h4>
-
-        <p className="mt-2 text-[10px] sm:text-[11px] text-[#999]">
-          {article.published_date_formatted}
-        </p>
-      </div>
-
-      <motion.img
-        whileHover={{ scale: 1.05 }}
-        transition={{ duration: 0.3 }}
-        src={article.image_url}
-        alt={article.title}
-        className="w-[82px] h-[64px] sm:w-[95px] sm:h-[72px] object-cover rounded-[4px] flex-shrink-0"
-      />
-    </motion.article>
-  );
-};
-
-/* =========================================================
-   MEMBER CARD
-========================================================= */
-
-const MemberCard = ({ member }) => {
-  return (
-    <motion.article
-      variants={cardItem}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.25 }}
-      className="min-w-0"
-    >
-      <div className="h-[55px] flex items-center mb-4">
-        <img
-          src={member.logo_url}
-          alt={member.name}
-          className="max-h-[42px] max-w-[145px] object-contain object-left"
-        />
-      </div>
-
-      <p className="text-[12px] sm:text-[13px] leading-[1.65] text-[#777] max-w-[420px]">
-        {member.description}
-      </p>
-
-      <a
-        href={member.website_url}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-2 inline-block text-[11px] font-semibold text-[#3764aa] hover:text-[#111] transition"
-      >
-        Visit Website →
-      </a>
-    </motion.article>
-  );
-};
-
-/* =========================================================
-   ARTICLE FEED CARD
-========================================================= */
-
-const ArticleFeedCard = ({ article }) => {
-  return (
-    <motion.article
-      variants={cardItem}
-      whileHover={{ x: 4 }}
-      transition={{ duration: 0.2 }}
-      className="flex items-center gap-4 py-4 border-b border-[#e8e8e8] last:border-0"
-    >
-      <div className="flex-1 min-w-0">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#777] mb-2">
-          {article.category?.name || "Commentary"}
-        </span>
-
-        <h4 className="text-[13px] sm:text-[14px] font-semibold leading-[1.45] text-[#222] line-clamp-2">
-          {article.title}
-        </h4>
-
-        <p className="text-[10px] sm:text-[11px] text-[#999] mt-2">
-          {article.published_date_formatted}
-        </p>
-      </div>
-
-      <motion.img
-        whileHover={{ scale: 1.05 }}
-        transition={{ duration: 0.3 }}
-        src={article.image_url}
-        alt={article.title}
-        className="w-[68px] h-[62px] sm:w-[76px] sm:h-[68px] object-cover rounded-[4px] flex-shrink-0"
-      />
-    </motion.article>
-  );
-};
-
-/* =========================================================
-   LOADING SKELETON
-========================================================= */
-
-const LoadingSkeleton = () => (
-  <div className="max-w-[1320px] mx-auto px-5 sm:px-8 lg:px-12 py-16 animate-pulse">
-    <div className="grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)] gap-10 lg:gap-[60px]">
-      <div className="space-y-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-[70px] bg-gray-100 rounded" />
-        ))}
-      </div>
-
-      <div className="space-y-6">
-        <div className="h-[40px] bg-gray-100 rounded w-3/4" />
-        <div className="h-[200px] bg-gray-100 rounded" />
-        <div className="h-[300px] bg-gray-100 rounded" />
+          <SkeletonNewsletter />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+}
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+function Thumb({ src, className = "", title = "" }) {
+  const image = normalizeUrl(src) || FALLBACK_IMAGE;
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded bg-[#F4F6F8] ${className}`}
+    >
+      <img
+        src={image}
+        alt={title || "Article"}
+        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+        onError={(event) => {
+          event.currentTarget.src = FALLBACK_IMAGE;
+        }}
+      />
+    </div>
+  );
+}
+
+/* =========================================================
+   SOURCE / LOGO
+========================================================= */
+
+function SourceInfo({ sourceLogo, sourceName, authorName }) {
+  const logo = normalizeUrl(sourceLogo);
+
+  if (logo) {
+    return (
+      <div className="flex h-8 max-w-[170px] items-center overflow-hidden">
+        <img
+          src={logo}
+          alt={sourceName || authorName || "Source"}
+          className="max-h-7 max-w-[145px] object-contain"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <span className="max-w-[190px] truncate text-[11px] font-semibold text-[#374151]">
+      {sourceName || authorName || "Source"}
+    </span>
+  );
+}
+
+/* =========================================================
+   TAGS
+========================================================= */
+
+function Tags({ post }) {
+  const tags = [
+    post?.category?.name,
+    getMediaLabel(post?.media_type),
+    "Commentary",
+  ].filter(Boolean);
+
+  return (
+    <p className="text-[12px] font-medium text-[#2A57C4]">
+      {tags.map((tag, index) => (
+        <React.Fragment key={`${tag}-${index}`}>
+          {index > 0 && (
+            <span className="mx-1 text-[#4B5563]">|</span>
+          )}
+
+          <span className="transition-colors hover:text-[#083B6B]">
+            {tag}
+          </span>
+        </React.Fragment>
+      ))}
+    </p>
+  );
+}
+
+/* =========================================================
+   MEDIA LABEL
+========================================================= */
+
+function getMediaLabel(mediaType) {
+  const labels = {
+    podcast: "Podcast",
+    weblink: "Weblink",
+    pdf: "PDF",
+    video: "Video",
+    article: "Article",
+  };
+
+  return labels[String(mediaType || "").toLowerCase()] || null;
+}
+
+/* =========================================================
+   DATE FORMAT
+========================================================= */
+
+function formatDate(date) {
+  if (!date) return "";
+
+  try {
+    const formatted = new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+
+    return formatted;
+  } catch {
+    return "";
+  }
+}
+
+/* =========================================================
+   META
+========================================================= */
+
+function Meta({ post }) {
+  return (
+    <>
+      <div className="mt-1 flex flex-wrap items-center gap-3">
+        <span className="text-[12px] text-[#9CA3AF]">
+          {post?.published_date_formatted ||
+            formatDate(post?.published_date)}
+        </span>
+
+        <SourceInfo
+          sourceLogo={post?.source_logo}
+          sourceName={post?.source_name}
+          authorName={post?.author_name}
+        />
+
+        {post?.read_time ? (
+          <span className="text-[11px] text-[#9CA3AF]">
+            {post.read_time} min read
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-1">
+        <Tags post={post} />
+      </div>
+    </>
+  );
+}
+
+/* =========================================================
+   LINK
+========================================================= */
+
+function getPostHref(post) {
+  if (!post?.slug) return "#";
+
+  return `/commentary/${post.slug}`;
+}
+
+/* =========================================================
+   ARTICLE ROW
+========================================================= */
+
+function ArticleRow({
+  post,
+  showContent = false,
+  rotateImage = false,
+}) {
+  if (!post) return null;
+
+  return (
+    <motion.article
+      variants={staggerChild}
+      className="group flex items-stretch gap-4"
+    >
+      {/* IMAGE */}
+      <a
+        href={getPostHref(post)}
+        className="block w-[140px] shrink-0 self-stretch"
+      >
+        <Thumb
+          src={post.image_url}
+          title={post.title}
+          className="h-full min-h-[80px] w-full"
+        />
+      </a>
+
+      {/* CONTENT */}
+      <div className="min-w-0 flex-1">
+        <a
+          href={getPostHref(post)}
+          className="
+            block
+            text-[14px]
+            leading-[22px]
+            text-[#111827]
+            underline
+            decoration-[#9CA3AF]
+            underline-offset-2
+            transition-colors
+            hover:text-[#0B4D8C]
+          "
+        >
+          {showContent
+            ? post.content || post.excerpt || post.title
+            : post.title}
+        </a>
+
+        {post.excerpt && !showContent ? (
+          <p className="mt-2 line-clamp-3 text-[12px] leading-5 text-[#6B7280]">
+            {post.excerpt}
+          </p>
+        ) : null}
+
+        <Meta post={post} />
+      </div>
+    </motion.article>
+  );
+}
+/* =========================================================
+   SMALL SIDE ARTICLE
+========================================================= */
+
+function SideArticle({ post }) {
+  if (!post) return null;
+
+  return (
+    <motion.article
+      variants={staggerChild}
+      className="group flex items-stretch gap-4"
+    >
+      {/* IMAGE */}
+      <a
+        href={getPostHref(post)}
+        className="block w-[160px] shrink-0 self-stretch"
+      >
+        <Thumb
+          src={post.image_url}
+          title={post.title}
+          className="h-full min-h-[100px] w-full"
+        />
+      </a>
+
+      {/* CONTENT */}
+      <div className="min-w-0 flex-1">
+        <a
+          href={getPostHref(post)}
+          className="
+            block
+            text-[13px]
+            leading-[22px]
+            text-[#111827]
+            transition-colors
+            hover:text-[#0B4D8C]
+          "
+        >
+          {post.title}
+        </a>
+
+        {post.excerpt ? (
+          <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-[#6B7280]">
+            {post.excerpt}
+          </p>
+        ) : null}
+
+        <Meta post={post} />
+      </div>
+    </motion.article>
+  );
+}
+/* =========================================================
+   MEMBER LOGO
+========================================================= */
+
+function MemberLogo({ member }) {
+  const logo = normalizeUrl(member?.logo_url);
+
+  if (logo) {
+    return (
+      <div className="flex h-[50px] items-center">
+        <img
+          src={logo}
+          alt={member?.name || "Member"}
+          className="
+            max-h-[45px]
+            max-w-[170px]
+            object-contain
+            object-left
+          "
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-[50px] items-center text-2xl font-bold text-[#111827]">
+      {member?.name}
+    </div>
+  );
+}
+
+/* =========================================================
+   MEMBERS
+========================================================= */
+
+function MembersSection({ members = [] }) {
+  if (!members.length) {
+    return null;
+  }
+
+  return (
+    <motion.section
+      className="mt-20"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={{
+        once: true,
+        amount: 0.15,
+      }}
+    >
+      <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
+        <h2 className="text-xl font-bold text-[#111827] md:text-2xl">
+          Members
+        </h2>
+
+        <a
+          href="/members"
+          className="
+            flex
+            items-center
+            gap-1.5
+            text-[12px]
+            font-semibold
+            tracking-wide
+            text-[#0B4D8C]
+            transition-colors
+            hover:text-[#083B6B]
+          "
+        >
+          View All
+
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </a>
+      </div>
+
+      <motion.div
+        className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4"
+        variants={staggerParent}
+        initial="hidden"
+        whileInView="show"
+        viewport={{
+          once: true,
+          amount: 0.15,
+        }}
+      >
+        {members.map((member, index) => (
+          <motion.div
+            key={member.id || member.name || index}
+            variants={staggerChild}
+            className={`
+              px-0
+              py-5
+              sm:px-6
+              ${
+                index > 0
+                  ? "lg:border-l lg:border-[#E5E7EB]"
+                  : "lg:pl-0"
+              }
+              ${index === 0 ? "sm:pl-0" : ""}
+            `}
+          >
+            <a
+              href={member.website_url || "#"}
+              target={
+                member.website_url ? "_blank" : undefined
+              }
+              rel={
+                member.website_url
+                  ? "noopener noreferrer"
+                  : undefined
+              }
+              className="block"
+            >
+              <MemberLogo member={member} />
+            </a>
+
+            <p className="mt-8 max-w-xs text-[14px] leading-6 text-[#4B5563]">
+              {member.description}
+            </p>
+          </motion.div>
+        ))}
+      </motion.div>
+    </motion.section>
+  );
+}
+
+/* =========================================================
+   NEWSLETTER
+========================================================= */
+
+function Newsletter() {
+  return (
+    <motion.aside
+      className="self-start lg:sticky lg:top-6"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={{
+        once: true,
+        amount: 0.2,
+      }}
+    >
+      <div
+        className="rounded-3xl p-6 text-white"
+        style={{
+          backgroundColor: COLORS.primary,
+        }}
+      >
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
+          Newsletter
+        </p>
+
+        <h3 className="mt-3 text-2xl font-medium leading-tight tracking-tight md:text-3xl">
+          Insights For
+          <br />
+          A Brighter Tomorrow
+        </h3>
+
+        <p className="mt-4 text-[14px] leading-6 text-blue-50">
+          Receive the latest perspectives on wealth, legacy and family
+          offices.
+        </p>
+
+        <div className="mt-5 flex items-center rounded-full bg-white p-1.5 pl-4">
+          <input
+            type="email"
+            placeholder="Enter your email address"
+            className="
+              min-w-0
+              flex-1
+              bg-transparent
+              text-[13px]
+              text-[#111827]
+              outline-none
+              placeholder:text-[#9CA3AF]
+            "
+          />
+
+          <button
+            type="button"
+            aria-label="Subscribe"
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-full
+              bg-[#E7EEF7]
+              text-[#0B4D8C]
+              transition-colors
+              hover:bg-[#D9E6F4]
+            "
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </motion.aside>
+  );
+}
+
+/* =========================================================
+   HERO CONTENT
+========================================================= */
+
+function HeroContent({ content }) {
+  if (!content) return null;
+
+  const paragraphs = String(content)
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (!paragraphs.length) return null;
+
+  return (
+    <motion.div
+      className="mt-6"
+      variants={staggerParent}
+      initial="hidden"
+      whileInView="show"
+      viewport={{
+        once: true,
+        amount: 0.2,
+      }}
+    >
+      {paragraphs.map((paragraph, index) => (
+        <motion.p
+          key={`${paragraph}-${index}`}
+          variants={staggerChild}
+          className="mb-3 text-[14px] leading-7 text-[#4B5563]"
+        >
+          {paragraph}
+        </motion.p>
+      ))}
+    </motion.div>
+  );
+}
 
 /* =========================================================
    MAIN PAGE
 ========================================================= */
 
-const ArticlePage = () => {
-  const { data, isLoading, isError, error, refetch } =
-    useGetCommentaryPageQuery();
+export default function ArticlePage() {
+  const {
+    data: apiResponse,
+    isLoading,
+    isError,
+  } = useGetCommentaryPageQuery();
 
-  /* =========================================================
-     SUBSCRIBE API
-  ========================================================= */
+  const pageData = apiResponse?.data;
 
-  const [sendSubscribe, { isLoading: isSubscribing }] =
-    useSendSubscribeMutation();
+  const hero = pageData?.hero || null;
 
-  const [email, setEmail] = useState("");
+  const leftPosts = Array.isArray(pageData?.left_posts)
+    ? pageData.left_posts
+    : [];
 
-  /* =========================================================
-     SUBSCRIBE HANDLER
-  ========================================================= */
+  const rightGrid = Array.isArray(pageData?.right_grid)
+    ? pageData.right_grid
+    : [];
 
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
+  const members = Array.isArray(pageData?.members)
+    ? pageData.members
+    : [];
 
-    const trimmedEmail = email.trim();
+  const morePosts = Array.isArray(pageData?.more_posts?.items)
+    ? pageData.more_posts.items
+    : [];
 
-    // Empty email
-    if (!trimmedEmail) {
-      await Swal.fire({
-        icon: "warning",
-        title: "Email Required",
-        text: "Please enter your email address.",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#2456b5",
-      });
+  /* =======================================================
+     LOADING
+  ======================================================= */
 
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(trimmedEmail)) {
-      await Swal.fire({
-        icon: "warning",
-        title: "Invalid Email",
-        text: "Please enter a valid email address.",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#2456b5",
-      });
-
-      return;
-    }
-
-    try {
-      const response = await sendSubscribe({
-        email: trimmedEmail,
-      }).unwrap();
-
-      setEmail("");
-
-      await Swal.fire({
-        icon: "success",
-        title: "Subscribed Successfully",
-        text:
-          response?.message ||
-          "You have successfully subscribed to our newsletter.",
-        confirmButtonText: "Done",
-        confirmButtonColor: "#2456b5",
-      });
-    } catch (err) {
-      console.error("Subscription Error:", err);
-
-      const errorMessage =
-        err?.data?.message ||
-        err?.data?.error ||
-        err?.message ||
-        "Something went wrong. Please try again.";
-
-      await Swal.fire({
-        icon: "error",
-        title: "Subscription Failed",
-        text: errorMessage,
-        confirmButtonText: "Try Again",
-        confirmButtonColor: "#2456b5",
-      });
-    }
-  };
-
-  /* ---------- Loading ---------- */
-
-  if (isLoading) return <LoadingSkeleton />;
-
-  /* ---------- Error ---------- */
-
-  if (isError) {
+  if (isLoading) {
     return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4"
-        style={{ fontFamily: "'Poppins', sans-serif" }}
-      >
-        <p className="text-[#555]">
-          {error?.data?.message || "Something went wrong while loading."}
-        </p>
+      <>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
 
-        <button
-          onClick={refetch}
-          className="px-5 py-2 rounded-full bg-[#3764aa] text-white text-[12px] font-semibold hover:bg-[#2456b5] transition"
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
+          rel="stylesheet"
+        />
+
+        <div
+          className="bg-white text-[#111827]"
+          style={{
+            fontFamily: "'Roboto', sans-serif",
+          }}
         >
-          Retry
-        </button>
+          <PageSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  /* =======================================================
+     ERROR
+  ======================================================= */
+
+  if (isError || !pageData) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-white">
+        <div className="text-sm text-red-500">
+          Unable to load commentary content.
+        </div>
       </div>
     );
   }
 
-  /* ---------- Data ---------- */
-
-  const hero = data?.data?.hero;
-  const posts = data?.data?.posts?.items || [];
-  const sidebar = data?.data?.sidebar || [];
-  const members = data?.data?.members || [];
-  const pagination = data?.data?.posts?.pagination;
+  /* =======================================================
+     PAGE
+  ======================================================= */
 
   return (
     <>
-      <style>
-        {`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');`}
-      </style>
+      {/* =====================================================
+          ROBOTO
+      ====================================================== */}
+
+      <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+      />
+
+      <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossOrigin="anonymous"
+      />
+
+      <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
+        rel="stylesheet"
+      />
 
       <div
-        className="min-h-screen bg-white text-[#222]"
-        style={{ fontFamily: "'Poppins', sans-serif" }}
+        className="min-h-screen bg-white text-[#111827]"
+        style={{
+          fontFamily: "'Roboto', sans-serif",
+        }}
       >
-        <div className="max-w-[1320px] mx-auto px-5 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
+
           {/* =================================================
-              MAIN CONTENT
+              MAIN GRID
           ================================================= */}
 
-          <section className="py-10 sm:py-14 lg:py-16">
-            <div className="grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)] gap-10 lg:gap-[60px] items-start">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+
+            {/* =================================================
+                LEFT POSTS
+            ================================================= */}
+
+            <motion.div
+              className="space-y-10"
+              variants={staggerParent}
+              initial="hidden"
+              animate="show"
+            >
+              {leftPosts.map((post, index) => (
+                <ArticleRow
+                  key={post.id || post.slug || index}
+                  post={post}
+                  showContent
+                  rotateImage
+                />
+              ))}
+            </motion.div>
+
+            {/* =================================================
+                FEATURED / HERO
+            ================================================= */}
+
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
+            >
+              {hero ? (
+                <>
+                  {/* HERO TITLE */}
+
+                  <motion.h1
+                    variants={fadeUp}
+                    className="
+                      text-3xl
+                      font-semibold
+                      leading-tight
+                      tracking-tight
+                      md:text-4xl
+                    "
+                    style={{
+                      color: COLORS.heading,
+                    }}
+                  >
+                    {hero.title}
+                  </motion.h1>
+
+                  {/* HERO EXCERPT */}
+
+                  {hero.excerpt ? (
+                    <motion.p
+                      variants={fadeIn}
+                      className="mt-5 max-w-3xl text-[14px] leading-7 text-[#4B5563]"
+                    >
+                      {hero.excerpt}
+                    </motion.p>
+                  ) : null}
+
+                  {/* HERO META */}
+
+                  <motion.div variants={fadeIn}>
+                    <Meta post={hero} />
+                  </motion.div>
+
+                  {/* HERO IMAGE */}
+
+                  <motion.a
+                    variants={fadeIn}
+                    href={getPostHref(hero)}
+                    className="group block"
+                  >
+                    <Thumb
+                      src={hero.image_url}
+                      title={hero.title}
+                      className="mt-5 aspect-video w-full"
+                    />
+                  </motion.a>
+
+                  {/* HERO CONTENT */}
+
+                  <HeroContent content={hero.content} />
+                </>
+              ) : null}
+
               {/* =================================================
-                  LEFT SIDEBAR — Related Articles
-                  STICKY ON DESKTOP
+                  SECONDARY GRID
               ================================================= */}
 
-              <aside className="order-2 lg:order-1 self-start lg:sticky lg:top-[90px] h-fit">
-                <motion.div
-                  variants={fadeLeft}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.2 }}
-                >
-                  <div className="flex items-center justify-between border-b border-[#d8d8d8] pb-3 mb-1">
-                    <h3 className="text-[16px] sm:text-[17px] font-bold text-[#1c1c1c]">
-                      Related Articles
-                    </h3>
+              {(rightGrid.length > 0 || leftPosts.length > 0) && (
+                <div className="mt-14 grid gap-10 md:grid-cols-2">
 
-                    <button className="flex items-center gap-1.5 text-[11px] font-semibold text-[#3764aa] hover:text-[#111] transition">
-                      View All
-                      <ArrowRight size={13} />
-                    </button>
-                  </div>
+                  {/* LEFT SECONDARY ARTICLE */}
+
+                  {rightGrid[0] ? (
+                    <motion.div
+                      variants={fadeUp}
+                      initial="hidden"
+                      whileInView="show"
+                      viewport={{
+                        once: true,
+                        amount: 0.2,
+                      }}
+                    >
+                      <a
+                        href={getPostHref(rightGrid[0])}
+                        className="block"
+                      >
+                        <h2
+                          className="
+                            text-2xl
+                            font-bold
+                            leading-tight
+                            tracking-tight
+                            text-[#111827]
+                            hover:text-[#0B4D8C]
+                            md:text-3xl
+                          "
+                        >
+                          {rightGrid[0].title}
+                        </h2>
+                      </a>
+
+                      {rightGrid[0].excerpt ? (
+                        <p className="mt-5 text-[14px] leading-7 text-[#4B5563]">
+                          {rightGrid[0].excerpt}
+                        </p>
+                      ) : null}
+
+                      <Meta post={rightGrid[0]} />
+
+                      <a
+                        href={getPostHref(rightGrid[0])}
+                        className="group block"
+                      >
+                        <Thumb
+                          src={rightGrid[0].image_url}
+                          title={rightGrid[0].title}
+                          className="mt-6 aspect-video w-full"
+                        />
+                      </a>
+                    </motion.div>
+                  ) : null}
+
+                  {/* RIGHT SIDE GRID */}
 
                   <motion.div
-                    variants={staggerContainer}
+                    className="space-y-9"
+                    variants={staggerParent}
                     initial="hidden"
-                    animate="visible"
+                    whileInView="show"
+                    viewport={{
+                      once: true,
+                      amount: 0.15,
+                    }}
                   >
-                    {sidebar.map((article, index) => (
-                      <SidebarArticle
-                        article={article}
-                        index={index}
-                        key={article.id}
+                    {rightGrid.slice(1, 4).map((post, index) => (
+                      <SideArticle
+                        key={post.id || post.slug || index}
+                        post={post}
                       />
                     ))}
                   </motion.div>
+                </div>
+              )}
+            </motion.div>
+          </div>
 
-                  <motion.button
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full mt-6 py-3 border border-[#d8d8d8] rounded-full text-[11px] sm:text-[12px] font-semibold text-[#555] flex items-center justify-center gap-2 hover:border-[#999] transition"
-                  >
-                    Load More
-                    <ChevronDown size={14} />
-                  </motion.button>
-                </motion.div>
-              </aside>
+          {/* =================================================
+              MEMBERS
+          ================================================= */}
 
-              {/* =================================================
-                  RIGHT MAIN ARTICLE
-              ================================================= */}
+          <MembersSection members={members} />
 
-              <main className="order-1 lg:order-2 min-w-0">
-                {/* =================================================
-                    ARTICLE HEADER
-                ================================================= */}
+          {/* =================================================
+              MORE POSTS + NEWSLETTER
+          ================================================= */}
 
-                {hero && (
-                  <motion.header
-                    variants={fadeRight}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.15 }}
-                    className="mb-8"
-                  >
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.14em] text-[#777]">
-                        {hero.category?.name || "Commentary"}
-                      </span>
+          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
 
-                      <span className="h-[1px] w-[45px] bg-[#d5d5d5]" />
-                    </div>
+            {/* EMPTY LEFT */}
 
-                    <h1 className="text-[22px] sm:text-[27px] lg:text-[31px] leading-[1.08] font-bold tracking-[-0.035em] text-[#151515] mb-5 max-w-[900px]">
-                      {hero.title}
-                    </h1>
+            <div className="hidden lg:block" />
 
-                    <p className="text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.65] text-[#777] max-w-[850px] mb-7">
-                      {hero.excerpt}
-                    </p>
+            {/* MORE POSTS */}
 
-                    {/* Author + Social */}
-                    <div className="flex items-center flex-wrap gap-y-3">
-                      {hero.author_avatar && (
-                        <motion.img
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.45 }}
-                          src={hero.author_avatar}
-                          alt={hero.author_name}
-                          className="w-[42px] h-[42px] sm:w-[46px] sm:h-[46px] rounded-full object-cover mr-3"
-                        />
-                      )}
-
-                      <div>
-                        <p className="text-[12px] sm:text-[13px] font-semibold text-[#222]">
-                          By {hero.author_name}
-                        </p>
-
-                        <p className="text-[10px] sm:text-[11px] text-[#999] mt-1">
-                          {hero.published_date_formatted}&nbsp; • &nbsp;
-                          {hero.read_time} min read
-                        </p>
-                      </div>
-
-                      <div className="ml-auto flex items-center gap-2">
-                        {(hero.source_url || hero.format_url) && (
-                          <motion.a
-                            whileHover={{ scale: 1.08, y: -2 }}
-                            whileTap={{ scale: 0.96 }}
-                            href={hero.source_url || hero.format_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-[34px] h-[34px] rounded-full border border-[#e3e3e3] flex items-center justify-center text-[#777] hover:text-[#111] hover:border-[#aaa] transition"
-                          >
-                            <Linkedin size={14} />
-                          </motion.a>
-                        )}
-
-                        <motion.button
-                          whileHover={{ scale: 1.08, y: -2 }}
-                          whileTap={{ scale: 0.96 }}
-                          type="button"
-                          onClick={() =>
-                            navigator.share?.({
-                              title: hero.title,
-                              url: window.location.href,
-                            })
-                          }
-                          className="w-[34px] h-[34px] rounded-full border border-[#e3e3e3] flex items-center justify-center text-[#777] hover:text-[#111] hover:border-[#aaa] transition"
-                        >
-                          <Share2 size={14} />
-                        </motion.button>
-
-                        <motion.button
-                          whileHover={{ scale: 1.08, y: -2 }}
-                          whileTap={{ scale: 0.96 }}
-                          type="button"
-                          onClick={() =>
-                            navigator.clipboard.writeText(
-                              window.location.href
-                            )
-                          }
-                          className="w-[34px] h-[34px] rounded-full border border-[#e3e3e3] flex items-center justify-center text-[#777] hover:text-[#111] hover:border-[#aaa] transition"
-                        >
-                          <Link2 size={14} />
-                        </motion.button>
-
-                        <motion.button
-                          whileHover={{ scale: 1.08, y: -2 }}
-                          whileTap={{ scale: 0.96 }}
-                          type="button"
-                          className="w-[34px] h-[34px] rounded-full border border-[#e3e3e3] flex items-center justify-center text-[#777] hover:text-[#111] hover:border-[#aaa] transition"
-                        >
-                          <Bookmark size={14} />
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.header>
-                )}
-
-                {/* =================================================
-                    FEATURED IMAGE
-                ================================================= */}
-
-                {hero?.image_url && (
-                  <motion.div
-                    variants={imageReveal}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="w-full h-[280px] sm:h-[390px] lg:h-[200px] overflow-hidden rounded-[5px] mb-8"
-                  >
-                    <motion.img
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ duration: 0.6 }}
-                      src={hero.image_url}
-                      alt={hero.title}
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </motion.div>
-                )}
-
-                {/* =================================================
-                    ARTICLE CONTENT
-                ================================================= */}
-
-                <motion.section
-                  variants={fadeUp}
+            <div>
+              {morePosts.length > 0 ? (
+                <motion.div
+                  className="space-y-10"
+                  variants={staggerParent}
                   initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.12 }}
-                  className="mb-12"
+                  whileInView="show"
+                  viewport={{
+                    once: true,
+                    amount: 0.1,
+                  }}
                 >
-                  <h2 className="text-[22px] sm:text-[27px] lg:text-[31px] font-bold leading-[1.2] text-[#171717] mb-4 max-w-[900px]">
-                    {hero?.title}
-                  </h2>
+                  {morePosts.map((post, index) => (
+                    <ArticleRow
+                      key={post.id || post.slug || index}
+                      post={post}
+                    />
+                  ))}
+                </motion.div>
+              ) : null}
 
-                  <p className="text-[14px] sm:text-[15px] lg:text-[16px] text-[#707070] leading-[1.75] max-w-[900px]">
-                    {hero?.excerpt}
-                  </p>
+              {/* LOAD MORE */}
 
-                  {hero?.content &&
-                    hero.content !== "Full content here..." && (
-                      <div
-                        className="mt-4 text-[14px] sm:text-[15px] lg:text-[16px] text-[#707070] leading-[1.75] max-w-[900px] prose"
-                        dangerouslySetInnerHTML={{
-                          __html: hero.content,
-                        }}
-                      />
-                    )}
-                </motion.section>
-
-                {/* =================================================
-                    COMMENTARY
-                ================================================= */}
-
-                {posts.length > 0 && (
-                  <motion.section
-                    variants={fadeUp}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.1 }}
-                    className="mb-12"
-                  >
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#3764aa]">
-                        {posts[0]?.category?.name || "Commentary"}
-                      </span>
-
-                      <span className="h-[1px] flex-1 bg-[#e3e3e3]" />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr] gap-6">
-                      {/* Big image */}
-                      <motion.a
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true, amount: 0.15 }}
-                        transition={{ duration: 0.65 }}
-                        whileHover={{ y: -4 }}
-                        href={
-                          posts[0]?.format_url ||
-                          `/blog/${posts[0]?.slug}`
-                        }
-                        target={
-                          posts[0]?.media_type === "weblink"
-                            ? "_blank"
-                            : "_self"
-                        }
-                        rel="noreferrer"
-                        className="block h-[260px] sm:h-[330px] lg:h-[380px] overflow-hidden rounded-[5px] group"
-                      >
-                        <motion.img
-                          whileHover={{ scale: 1.05 }}
-                          transition={{ duration: 0.6 }}
-                          src={posts[0]?.image_url}
-                          alt={posts[0]?.title}
-                          className="w-full h-full object-cover object-center"
-                        />
-                      </motion.a>
-
-                      {/* Small cards */}
-                      <motion.div
-                        variants={staggerContainer}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, amount: 0.1 }}
-                        className="flex flex-col gap-5"
-                      >
-                        {posts.slice(1, 4).map((article) => (
-                          <CommentaryCard
-                            article={article}
-                            key={article.id}
-                          />
-                        ))}
-                      </motion.div>
-                    </div>
-                  </motion.section>
-                )}
-
-                {/* =================================================
-                    MEMBERS
-                ================================================= */}
-
-                {members.length > 0 && (
-                  <motion.section
-                    variants={fadeUp}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.1 }}
-                    className="mb-12"
-                  >
-                    <div className="flex items-center justify-between border-b border-[#dedede] pb-3 mb-7">
-                      <h3 className="text-[18px] sm:text-[20px] font-bold text-[#181818]">
-                        Members
-                      </h3>
-
-                      <button className="flex items-center gap-1.5 text-[11px] font-semibold text-[#3764aa] hover:text-[#111] transition">
-                        View All
-                        <ArrowRight size={13} />
-                      </button>
-                    </div>
-
-                    <motion.div
-                      variants={staggerContainer}
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true, amount: 0.1 }}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10"
-                    >
-                      {members.map((member) => (
-                        <MemberCard member={member} key={member.id} />
-                      ))}
-                    </motion.div>
-                  </motion.section>
-                )}
-
-                {/* =================================================
-                    LOWER ARTICLE FEED
-                ================================================= */}
-
-                {posts.length > 4 && (
-                  <motion.section
-                    variants={fadeUp}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.08 }}
-                    className="mb-10"
-                  >
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#3764aa]">
-                        Daily ETF Flows
-                      </span>
-
-                      <span className="h-[1px] flex-1 bg-[#e3e3e3]" />
-                    </div>
-
-                    <motion.div
-                      variants={staggerContainer}
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true, amount: 0.08 }}
-                      className="grid grid-cols-1 md:grid-cols-2 gap-x-10"
-                    >
-                      {posts.slice(4).map((article) => (
-                        <ArticleFeedCard
-                          article={article}
-                          key={`feed-${article.id}`}
-                        />
-                      ))}
-                    </motion.div>
-                  </motion.section>
-                )}
-
-                {/* =================================================
-                    PAGINATION INFO
-                ================================================= */}
-
-                {pagination && pagination.last_page > 1 && (
-                  <motion.div
-                    variants={fadeUp}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    className="flex items-center justify-between text-[11px] text-[#999] mb-6"
-                  >
-                    <span>
-                      Page {pagination.current_page} of{" "}
-                      {pagination.last_page}
-                    </span>
-
-                    <span>Total: {pagination.total} posts</span>
-                  </motion.div>
-                )}
-              </main>
-            </div>
-          </section>
-
-          {/* =====================================================
-              BOTTOM CTA
-          ===================================================== */}
-
-          <motion.section
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            className="pb-12 sm:pb-16"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.15fr] gap-[3px] rounded-[8px] overflow-hidden">
-              {/* Image 1 */}
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.4 }}
-                className="h-[220px] sm:h-[250px] lg:h-[280px] overflow-hidden"
-              >
-                <img
-                  src={CtaBanner}
-                  alt=""
-                  className="w-full h-full object-cover object-center"
-                />
-              </motion.div>
-
-              {/* Image 2 */}
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.4 }}
-                className="h-[220px] sm:h-[250px] lg:h-[280px] overflow-hidden"
-              >
-                <img
-                  src={FeaturedMain}
-                  alt=""
-                  className="w-full h-full object-cover object-center"
-                />
-              </motion.div>
-
-              {/* =================================================
-                  SUBSCRIPTION
-              ================================================= */}
-
-              <div className="bg-[#2456b5] h-[220px] sm:h-[250px] lg:h-[280px] px-7 sm:px-9 flex flex-col justify-center">
-                <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] font-bold text-white/70 mb-3">
-                  Newsletter
-                </span>
-
-                <h2 className="text-[20px] sm:text-[22px] lg:text-[22px] leading-[1.1] font-bold text-white mb-3">
-                  Insights For
-                  <br />
-                  A Brighter Tomorrow
-                </h2>
-
-                <p className="text-[11px] sm:text-[12px] text-white/75 leading-[1.55] mb-5 max-w-[280px]">
-                  Receive the latest perspectives, insights and family
-                  office news directly in your inbox.
-                </p>
-
-                <form
-                  onSubmit={handleSubscribe}
-                  className="relative max-w-[300px]"
+              {pageData?.more_posts?.pagination?.has_more ? (
+                <motion.div
+                  className="mt-12 flex justify-center"
+                  variants={fadeIn}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{
+                    once: true,
+                  }}
                 >
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    disabled={isSubscribing}
-                    autoComplete="email"
-                    className="w-full h-[40px] rounded-full bg-white px-4 pr-12 text-[11px] sm:text-[12px] text-[#333] outline-none placeholder:text-[#aaa] disabled:opacity-70"
-                  />
-
-                  <motion.button
-                    whileHover={!isSubscribing ? { scale: 1.05 } : {}}
-                    whileTap={!isSubscribing ? { scale: 0.95 } : {}}
-                    type="submit"
-                    disabled={isSubscribing}
-                    className="absolute right-[3px] top-[3px] w-[34px] h-[34px] rounded-full bg-[#d9d9d9] text-[#2456b5] flex items-center justify-center hover:bg-white transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  <button
+                    type="button"
+                    className="
+                      rounded-full
+                      border
+                      border-[#D1D5DB]
+                      px-8
+                      py-2.5
+                      text-[13px]
+                      font-semibold
+                      tracking-wide
+                      text-[#0B4D8C]
+                      transition-all
+                      duration-300
+                      hover:border-[#0B4D8C]
+                      hover:bg-[#F5F8FC]
+                    "
                   >
-                    {isSubscribing ? (
-                      <span className="w-[14px] h-[14px] border-2 border-[#2456b5]/30 border-t-[#2456b5] rounded-full animate-spin" />
-                    ) : (
-                      <MoveRightIcon size={15} />
-                    )}
-                  </motion.button>
-                </form>
-              </div>
+                    LOAD MORE
+                  </button>
+                </motion.div>
+              ) : null}
             </div>
-          </motion.section>
+
+            {/* NEWSLETTER */}
+
+            <Newsletter />
+          </div>
         </div>
       </div>
     </>
   );
-};
-
-export default ArticlePage;
+}
