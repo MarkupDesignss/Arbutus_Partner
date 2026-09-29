@@ -29,65 +29,24 @@ const FALLBACK_IMAGE =
 
 function normalizeUrl(value) {
   if (!value) return "";
-
   const url = String(value).trim();
-
   const markdownMatch = url.match(/\((https?:\/\/[^)]+)\)/);
-
-  if (markdownMatch?.[1]) {
-    return markdownMatch[1];
-  }
-
+  if (markdownMatch?.[1]) return markdownMatch[1];
   return url;
 }
 
-/*
-  Link behavior:
-
-  LEFT POSTS
-  -> format_url
-
-  HERO / MAIN POST
-  -> source_url
-
-  RIGHT GRID
-  -> format_url
-
-  MORE POSTS
-  -> format_url
-
-  MEMBERS
-  -> website_url
-*/
-
 function getPostExternalUrl(post, type = "format") {
   if (!post) return "";
-
   if (type === "source") {
-    return (
-      normalizeUrl(post.source_url) ||
-      normalizeUrl(post.format_url) ||
-      ""
-    );
+    return normalizeUrl(post.source_url) || normalizeUrl(post.format_url) || "";
   }
-
-  return (
-    normalizeUrl(post.format_url) ||
-    normalizeUrl(post.source_url) ||
-    ""
-  );
+  return normalizeUrl(post.format_url) || normalizeUrl(post.source_url) || "";
 }
 
 function openExternalUrl(url) {
   const normalizedUrl = normalizeUrl(url);
-
   if (!normalizedUrl) return;
-
-  window.open(
-    normalizedUrl,
-    "_blank",
-    "noopener,noreferrer"
-  );
+  window.open(normalizedUrl, "_blank", "noopener,noreferrer");
 }
 
 /* =========================================================
@@ -95,60 +54,23 @@ function openExternalUrl(url) {
 ========================================================= */
 
 const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 24,
-  },
-
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
 const fadeIn = {
-  hidden: {
-    opacity: 0,
-  },
-
-  show: {
-    opacity: 1,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
 const staggerParent = {
   hidden: {},
-
-  show: {
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05,
-    },
-  },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
 const staggerChild = {
-  hidden: {
-    opacity: 0,
-    y: 18,
-  },
-
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.45,
-      ease: "easeOut",
-    },
-  },
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
 
 /* =========================================================
@@ -156,28 +78,21 @@ const staggerChild = {
 ========================================================= */
 
 function SkeletonBlock({ className = "" }) {
-  return (
-    <div
-      className={`animate-pulse rounded bg-[#E9EDF2] ${className}`}
-    />
-  );
+  return <div className={`animate-pulse rounded bg-[#E9EDF2] ${className}`} />;
 }
 
 function SkeletonArticleRow() {
   return (
     <div className="flex gap-4">
       <SkeletonBlock className="h-[80px] w-[140px] shrink-0" />
-
       <div className="min-w-0 flex-1 space-y-3 pt-1">
         <SkeletonBlock className="h-4 w-[85%]" />
         <SkeletonBlock className="h-4 w-[65%]" />
         <SkeletonBlock className="h-3 w-[40%]" />
-
         <div className="flex items-center gap-3 pt-2">
           <SkeletonBlock className="h-3 w-20" />
           <SkeletonBlock className="h-4 w-24" />
         </div>
-
         <div className="flex items-center gap-2 pt-1">
           <SkeletonBlock className="h-3 w-14" />
           <SkeletonBlock className="h-3 w-14" />
@@ -192,12 +107,10 @@ function SkeletonSideArticle() {
   return (
     <div className="flex gap-4">
       <SkeletonBlock className="aspect-video h-auto w-[160px] shrink-0" />
-
       <div className="min-w-0 flex-1 space-y-3 pt-1">
         <SkeletonBlock className="h-4 w-[90%]" />
         <SkeletonBlock className="h-4 w-[70%]" />
         <SkeletonBlock className="h-3 w-[45%]" />
-
         <div className="flex items-center gap-3 pt-2">
           <SkeletonBlock className="h-3 w-20" />
           <SkeletonBlock className="h-4 w-24" />
@@ -214,7 +127,6 @@ function SkeletonMembers() {
         <SkeletonBlock className="h-6 w-28" />
         <SkeletonBlock className="h-4 w-16" />
       </div>
-
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
@@ -226,7 +138,6 @@ function SkeletonMembers() {
             `}
           >
             <SkeletonBlock className="h-[50px] w-[140px]" />
-
             <div className="mt-8 space-y-2">
               <SkeletonBlock className="h-3 w-full" />
               <SkeletonBlock className="h-3 w-[90%]" />
@@ -244,15 +155,10 @@ function SkeletonNewsletter() {
     <aside className="self-start lg:sticky lg:top-6">
       <div className="animate-pulse rounded-3xl bg-[#0B4D8C]/80 p-6">
         <SkeletonBlock className="h-3 w-20 bg-white/30" />
-
         <SkeletonBlock className="mt-4 h-7 w-[80%] bg-white/30" />
-
         <SkeletonBlock className="mt-2 h-7 w-[60%] bg-white/30" />
-
         <SkeletonBlock className="mt-4 h-3 w-full bg-white/20" />
-
         <SkeletonBlock className="mt-2 h-3 w-[80%] bg-white/20" />
-
         <SkeletonBlock className="mt-5 h-12 w-full rounded-full bg-white/40" />
       </div>
     </aside>
@@ -269,23 +175,18 @@ function PageSkeleton() {
               <SkeletonArticleRow key={index} />
             ))}
           </div>
-
           <div>
             <SkeletonBlock className="h-9 w-[75%]" />
             <SkeletonBlock className="mt-3 h-9 w-[55%]" />
-
             <div className="mt-5 space-y-2">
               <SkeletonBlock className="h-4 w-full" />
               <SkeletonBlock className="h-4 w-[90%]" />
             </div>
-
             <div className="mt-4 flex items-center gap-3">
               <SkeletonBlock className="h-3 w-20" />
               <SkeletonBlock className="h-5 w-28" />
             </div>
-
             <SkeletonBlock className="mt-5 aspect-video w-full" />
-
             <div className="mt-14 grid gap-10 md:grid-cols-2">
               <div>
                 <SkeletonBlock className="h-7 w-[80%]" />
@@ -293,7 +194,6 @@ function PageSkeleton() {
                 <SkeletonBlock className="mt-2 h-4 w-[80%]" />
                 <SkeletonBlock className="mt-6 aspect-video w-full" />
               </div>
-
               <div className="space-y-9">
                 {Array.from({ length: 3 }).map((_, index) => (
                   <SkeletonSideArticle key={index} />
@@ -302,18 +202,14 @@ function PageSkeleton() {
             </div>
           </div>
         </div>
-
         <SkeletonMembers />
-
         <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
           <div className="hidden lg:block" />
-
           <div className="space-y-10">
             {Array.from({ length: 3 }).map((_, index) => (
               <SkeletonArticleRow key={index} />
             ))}
           </div>
-
           <SkeletonNewsletter />
         </div>
       </div>
@@ -327,11 +223,8 @@ function PageSkeleton() {
 
 function Thumb({ src, className = "", title = "" }) {
   const image = normalizeUrl(src) || FALLBACK_IMAGE;
-
   return (
-    <div
-      className={`relative overflow-hidden rounded bg-[#F4F6F8] ${className}`}
-    >
+    <div className={`relative overflow-hidden rounded bg-[#F4F6F8] ${className}`}>
       <img
         src={image}
         alt={title || "Article"}
@@ -351,7 +244,6 @@ function Thumb({ src, className = "", title = "" }) {
 
 function SourceInfo({ sourceLogo, sourceName, authorName }) {
   const logo = normalizeUrl(sourceLogo);
-
   if (logo) {
     return (
       <div className="flex h-8 max-w-[170px] items-center overflow-hidden">
@@ -366,7 +258,6 @@ function SourceInfo({ sourceLogo, sourceName, authorName }) {
       </div>
     );
   }
-
   return (
     <span className="max-w-[190px] truncate text-[11px] font-semibold text-[#374151]">
       {sourceName || authorName || "Source"}
@@ -389,13 +280,8 @@ function Tags({ post }) {
     <p className="text-[12px] font-medium text-[#2A57C4]">
       {tags.map((tag, index) => (
         <React.Fragment key={`${tag}-${index}`}>
-          {index > 0 && (
-            <span className="mx-1 text-[#4B5563]">|</span>
-          )}
-
-          <span className="transition-colors hover:text-[#083B6B]">
-            {tag}
-          </span>
+          {index > 0 && <span className="mx-1 text-[#4B5563]">|</span>}
+          <span className="transition-colors hover:text-[#083B6B]">{tag}</span>
         </React.Fragment>
       ))}
     </p>
@@ -410,21 +296,17 @@ function getMediaLabel(mediaType) {
     video: "Video",
     article: "Article",
   };
-
   return labels[String(mediaType || "").toLowerCase()] || null;
 }
 
 function formatDate(date) {
   if (!date) return "";
-
   try {
-    const formatted = new Date(date).toLocaleDateString("en-US", {
+    return new Date(date).toLocaleDateString("en-US", {
       month: "short",
       day: "2-digit",
       year: "numeric",
     });
-
-    return formatted;
   } catch {
     return "";
   }
@@ -439,23 +321,19 @@ function Meta({ post }) {
     <>
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <span className="text-[12px] text-[#9CA3AF]">
-          {post?.published_date_formatted ||
-            formatDate(post?.published_date)}
+          {post?.published_date_formatted || formatDate(post?.published_date)}
         </span>
-
         <SourceInfo
           sourceLogo={post?.source_logo}
           sourceName={post?.source_name}
           authorName={post?.author_name}
         />
-
         {post?.read_time ? (
           <span className="text-[11px] text-[#9CA3AF]">
             {post.read_time} min read
           </span>
         ) : null}
       </div>
-
       <div className="mt-1">
         <Tags post={post} />
       </div>
@@ -465,7 +343,6 @@ function Meta({ post }) {
 
 /* =========================================================
    ARTICLE ROW
-   LEFT POSTS + MORE POSTS
 ========================================================= */
 
 function ArticleRow({
@@ -475,7 +352,6 @@ function ArticleRow({
   linkType = "format",
 }) {
   if (!post) return null;
-
   const externalUrl = getPostExternalUrl(post, linkType);
 
   return (
@@ -483,8 +359,6 @@ function ArticleRow({
       variants={staggerChild}
       className="group flex items-stretch gap-4"
     >
-      {/* IMAGE */}
-
       {externalUrl ? (
         <a
           href={externalUrl}
@@ -508,8 +382,6 @@ function ArticleRow({
         </div>
       )}
 
-      {/* CONTENT */}
-
       <div className="min-w-0 flex-1">
         {externalUrl ? (
           <a
@@ -517,33 +389,16 @@ function ArticleRow({
             target="_blank"
             rel="noopener noreferrer"
             className="
-              block
-              text-[14px]
-              leading-[22px]
-              text-[#111827]
-              underline
-              decoration-[#9CA3AF]
-              underline-offset-2
-              transition-colors
-              hover:text-[#0B4D8C]
+              block text-[14px] leading-[22px] text-[#111827]
+              underline decoration-[#9CA3AF] underline-offset-2
+              transition-colors hover:text-[#0B4D8C]
             "
           >
-            {showContent
-              ? post.content || post.excerpt || post.title
-              : post.title}
+            {showContent ? post.content || post.excerpt || post.title : post.title}
           </a>
         ) : (
-          <div
-            className="
-              block
-              text-[14px]
-              leading-[22px]
-              text-[#111827]
-            "
-          >
-            {showContent
-              ? post.content || post.excerpt || post.title
-              : post.title}
+          <div className="block text-[14px] leading-[22px] text-[#111827]">
+            {showContent ? post.content || post.excerpt || post.title : post.title}
           </div>
         )}
 
@@ -565,7 +420,6 @@ function ArticleRow({
 
 function SideArticle({ post }) {
   if (!post) return null;
-
   const externalUrl = getPostExternalUrl(post, "format");
 
   return (
@@ -573,8 +427,6 @@ function SideArticle({ post }) {
       variants={staggerChild}
       className="group flex items-stretch gap-4"
     >
-      {/* IMAGE */}
-
       {externalUrl ? (
         <a
           href={externalUrl}
@@ -598,8 +450,6 @@ function SideArticle({ post }) {
         </div>
       )}
 
-      {/* CONTENT */}
-
       <div className="min-w-0 flex-1">
         {externalUrl ? (
           <a
@@ -607,25 +457,14 @@ function SideArticle({ post }) {
             target="_blank"
             rel="noopener noreferrer"
             className="
-              block
-              text-[13px]
-              leading-[22px]
-              text-[#111827]
-              transition-colors
-              hover:text-[#0B4D8C]
+              block text-[13px] leading-[22px] text-[#111827]
+              transition-colors hover:text-[#0B4D8C]
             "
           >
             {post.title}
           </a>
         ) : (
-          <div
-            className="
-              block
-              text-[13px]
-              leading-[22px]
-              text-[#111827]
-            "
-          >
+          <div className="block text-[13px] leading-[22px] text-[#111827]">
             {post.title}
           </div>
         )}
@@ -648,19 +487,13 @@ function SideArticle({ post }) {
 
 function MemberLogo({ member }) {
   const logo = normalizeUrl(member?.logo_url);
-
   if (logo) {
     return (
       <div className="flex h-[50px] items-center">
         <img
           src={logo}
           alt={member?.name || "Member"}
-          className="
-            max-h-[45px]
-            max-w-[170px]
-            object-contain
-            object-left
-          "
+          className="max-h-[45px] max-w-[170px] object-contain object-left"
           onError={(event) => {
             event.currentTarget.style.display = "none";
           }}
@@ -668,7 +501,6 @@ function MemberLogo({ member }) {
       </div>
     );
   }
-
   return (
     <div className="flex h-[50px] items-center text-2xl font-bold text-[#111827]">
       {member?.name}
@@ -681,9 +513,7 @@ function MemberLogo({ member }) {
 ========================================================= */
 
 function MembersSection({ members = [] }) {
-  if (!members.length) {
-    return null;
-  }
+  if (!members.length) return null;
 
   return (
     <motion.section
@@ -691,32 +521,18 @@ function MembersSection({ members = [] }) {
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
-      viewport={{
-        once: true,
-        amount: 0.15,
-      }}
+      viewport={{ once: true, amount: 0.15 }}
     >
       <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
-        <h2 className="text-xl font-bold text-[#111827] md:text-2xl">
-          Members
-        </h2>
-
+        <h2 className="text-xl font-bold text-[#111827] md:text-2xl">Members</h2>
         <Link
           to="/PartnerDirectory"
           className="
-            flex
-            items-center
-            gap-1.5
-            text-[12px]
-            font-semibold
-            tracking-wide
-            text-[#0B4D8C]
-            transition-colors
-            hover:text-[#083B6B]
+            flex items-center gap-1.5 text-[12px] font-semibold tracking-wide
+            text-[#0B4D8C] transition-colors hover:text-[#083B6B]
           "
         >
           View All
-
           <svg
             viewBox="0 0 24 24"
             className="h-4 w-4"
@@ -736,32 +552,20 @@ function MembersSection({ members = [] }) {
         variants={staggerParent}
         initial="hidden"
         whileInView="show"
-        viewport={{
-          once: true,
-          amount: 0.15,
-        }}
+        viewport={{ once: true, amount: 0.15 }}
       >
         {members.map((member, index) => {
           const websiteUrl = normalizeUrl(member?.website_url);
-
           return (
             <motion.div
               key={member.id || member.name || index}
               variants={staggerChild}
               className={`
-                px-0
-                py-5
-                sm:px-6
-                ${
-                  index > 0
-                    ? "lg:border-l lg:border-[#E5E7EB]"
-                    : "lg:pl-0"
-                }
+                px-0 py-5 sm:px-6
+                ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"}
                 ${index === 0 ? "sm:pl-0" : ""}
               `}
             >
-              {/* MEMBER WEBSITE URL */}
-
               {websiteUrl ? (
                 <a
                   href={websiteUrl}
@@ -776,7 +580,6 @@ function MembersSection({ members = [] }) {
                   <MemberLogo member={member} />
                 </div>
               )}
-
               <p className="mt-8 max-w-xs text-[14px] leading-6 text-[#4B5563]">
                 {member.description}
               </p>
@@ -794,12 +597,11 @@ function MembersSection({ members = [] }) {
 
 function Newsletter() {
   const [email, setEmail] = useState("");
-
   const [sendSubscribe, { isLoading }] = useSendSubscribeMutation();
 
   const handleSubscribe = async () => {
     const trimmedEmail = email.trim();
-
+  
     if (!trimmedEmail) {
       Swal.fire({
         icon: "error",
@@ -807,12 +609,11 @@ function Newsletter() {
         text: "Please enter your email address.",
         confirmButtonColor: COLORS.primary,
       });
-
       return;
     }
-
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+  
     if (!emailRegex.test(trimmedEmail)) {
       Swal.fire({
         icon: "warning",
@@ -820,15 +621,12 @@ function Newsletter() {
         text: "Please enter a valid email address.",
         confirmButtonColor: COLORS.primary,
       });
-
       return;
     }
-
+  
     try {
-      const res = await sendSubscribe({
-        email: trimmedEmail,
-      }).unwrap();
-
+      const res = await sendSubscribe({ email: trimmedEmail }).unwrap();
+  
       Swal.fire({
         icon: "success",
         title: "Subscribed Successfully",
@@ -837,21 +635,23 @@ function Newsletter() {
           "Your email address has been subscribed successfully!",
         confirmButtonColor: COLORS.primary,
       });
-
+  
       setEmail("");
     } catch (error) {
+      const apiMessage =
+        error?.data?.errors?.email?.[0] ||
+        error?.data?.message ||
+        error?.message ||
+        "Something went wrong. Please try again.";
+    
       Swal.fire({
         icon: "error",
         title: "Subscription Failed",
-        text:
-          error?.data?.message ||
-          error?.message ||
-          "Something went wrong. Please try again.",
+        text: apiMessage,
         confirmButtonColor: COLORS.primary,
       });
     }
   };
-
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && !isLoading) {
       event.preventDefault();
@@ -865,33 +665,23 @@ function Newsletter() {
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
-      viewport={{
-        once: true,
-        amount: 0.2,
-      }}
+      viewport={{ once: true, amount: 0.2 }}
     >
       <div
         className="rounded-3xl p-6 text-white"
-        style={{
-          backgroundColor: COLORS.primary,
-        }}
+        style={{ backgroundColor: COLORS.primary }}
       >
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
           Newsletter
         </p>
-
         <h3 className="mt-3 text-2xl font-medium leading-tight tracking-tight md:text-3xl">
           Insights For
           <br />
           A Brighter Tomorrow
         </h3>
-
         <p className="mt-4 text-[14px] leading-6 text-blue-50">
-          Receive the latest perspectives on wealth, legacy and family
-          offices.
+          Receive the latest perspectives on wealth, legacy and family offices.
         </p>
-
-        {/* SUBSCRIBE INPUT */}
 
         <div className="mt-5 flex items-center rounded-full bg-white p-1.5 pl-4">
           <input
@@ -902,50 +692,28 @@ function Newsletter() {
             placeholder="Enter your email address"
             disabled={isLoading}
             className="
-              min-w-0
-              flex-1
-              bg-transparent
-              text-[13px]
-              text-[#111827]
-              outline-none
-              placeholder:text-[#9CA3AF]
-              disabled:cursor-not-allowed
-              disabled:opacity-60
+              min-w-0 flex-1 bg-transparent text-[13px] text-[#111827]
+              outline-none placeholder:text-[#9CA3AF]
+              disabled:cursor-not-allowed disabled:opacity-60
             "
           />
-
           <button
             type="button"
             aria-label="Subscribe"
             onClick={handleSubscribe}
             disabled={isLoading}
             className="
-              flex
-              h-10
-              w-10
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              bg-[#E7EEF7]
-              text-[#0B4D8C]
-              transition-all
-              duration-300
-              hover:bg-[#D9E6F4]
-              disabled:cursor-not-allowed
-              disabled:opacity-70
+              flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center
+              rounded-full bg-[#E7EEF7] text-[#0B4D8C]
+              transition-all duration-300 hover:bg-[#D9E6F4]
+              disabled:cursor-not-allowed disabled:opacity-70
             "
           >
             {isLoading ? (
               <span
                 className="
-                  h-4
-                  w-4
-                  animate-spin
-                  rounded-full
-                  border-2
-                  border-[#0B4D8C]
-                  border-t-transparent
+                  h-4 w-4 animate-spin rounded-full
+                  border-2 border-[#0B4D8C] border-t-transparent
                 "
               />
             ) : (
@@ -989,10 +757,7 @@ function HeroContent({ content }) {
       variants={staggerParent}
       initial="hidden"
       whileInView="show"
-      viewport={{
-        once: true,
-        amount: 0.2,
-      }}
+      viewport={{ once: true, amount: 0.2 }}
     >
       {paragraphs.map((paragraph, index) => (
         <motion.p
@@ -1012,11 +777,16 @@ function HeroContent({ content }) {
 ========================================================= */
 
 export default function ArticlePage() {
-  const {
-    data: apiResponse,
-    isLoading,
-    isError,
-  } = useGetCommentaryPageQuery();
+  const { data: apiResponse, isLoading, isError } = useGetCommentaryPageQuery();
+
+  /* =======================================================
+     LOAD MORE CONFIG
+     - Initially 5 dikhao
+     - Load More par +5
+  ======================================================= */
+
+  const POSTS_PER_LOAD = 5;
+  const [visibleMoreCount, setVisibleMoreCount] = useState(POSTS_PER_LOAD);
 
   const pageData = apiResponse?.data;
 
@@ -1039,33 +809,40 @@ export default function ArticlePage() {
     : [];
 
   /* =======================================================
+     VISIBLE MORE POSTS
+     Initially 5, Load More par +5
+  ======================================================= */
+
+  const visibleMorePosts = morePosts.slice(0, visibleMoreCount);
+
+  const handleLoadMore = () => {
+    setVisibleMoreCount((prev) =>
+      Math.min(prev + POSTS_PER_LOAD, morePosts.length)
+    );
+  };
+
+  const hasMorePosts = visibleMoreCount < morePosts.length;
+
+  /* =======================================================
      LOADING
   ======================================================= */
 
   if (isLoading) {
     return (
       <>
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-
         <link
           href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
           rel="stylesheet"
         />
-
         <div
           className="bg-white text-[#111827]"
-          style={{
-            fontFamily: "'Roboto', sans-serif",
-          }}
+          style={{ fontFamily: "'Roboto', sans-serif" }}
         >
           <PageSkeleton />
         </div>
@@ -1093,17 +870,12 @@ export default function ArticlePage() {
 
   return (
     <>
-      <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-      />
-
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
         rel="preconnect"
         href="https://fonts.gstatic.com"
         crossOrigin="anonymous"
       />
-
       <link
         href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
         rel="stylesheet"
@@ -1111,19 +883,17 @@ export default function ArticlePage() {
 
       <div
         className="min-h-screen bg-white text-[#111827]"
-        style={{
-          fontFamily: "'Roboto', sans-serif",
-        }}
+        style={{ fontFamily: "'Roboto', sans-serif" }}
       >
         <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
+
           {/* =================================================
               MAIN GRID
           ================================================= */}
 
           <div className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-            {/* =================================================
-                LEFT POSTS
-            ================================================= */}
+
+            {/* LEFT POSTS */}
 
             <motion.div
               className="space-y-10"
@@ -1142,36 +912,20 @@ export default function ArticlePage() {
               ))}
             </motion.div>
 
-            {/* =================================================
-                FEATURED / HERO
-            ================================================= */}
+            {/* FEATURED / HERO */}
 
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="show"
-            >
+            <motion.div variants={fadeUp} initial="hidden" animate="show">
               {hero ? (
                 <>
-                  {/* HERO TITLE */}
-
                   <motion.h1
                     variants={fadeUp}
                     className="
-                      text-3xl
-                      font-semibold
-                      leading-tight
-                      tracking-tight
-                      md:text-4xl
+                      text-3xl font-semibold leading-tight tracking-tight md:text-4xl
                     "
-                    style={{
-                      color: COLORS.heading,
-                    }}
+                    style={{ color: COLORS.heading }}
                   >
                     {hero.title}
                   </motion.h1>
-
-                  {/* HERO EXCERPT */}
 
                   {hero.excerpt ? (
                     <motion.p
@@ -1182,15 +936,9 @@ export default function ArticlePage() {
                     </motion.p>
                   ) : null}
 
-                  {/* HERO META */}
-
                   <motion.div variants={fadeIn}>
                     <Meta post={hero} />
                   </motion.div>
-
-                  {/* HERO IMAGE
-                      MAIN CLICK -> source_url
-                  */}
 
                   {getPostExternalUrl(hero, "source") ? (
                     <motion.a
@@ -1207,10 +955,7 @@ export default function ArticlePage() {
                       />
                     </motion.a>
                   ) : (
-                    <motion.div
-                      variants={fadeIn}
-                      className="group block"
-                    >
+                    <motion.div variants={fadeIn} className="group block">
                       <Thumb
                         src={hero.image_url}
                         title={hero.title}
@@ -1219,54 +964,33 @@ export default function ArticlePage() {
                     </motion.div>
                   )}
 
-                  {/* HERO CONTENT */}
-
                   <HeroContent content={hero.content} />
                 </>
               ) : null}
 
-              {/* =================================================
-                  SECONDARY GRID
-              ================================================= */}
+              {/* SECONDARY GRID */}
 
               {(rightGrid.length > 0 || leftPosts.length > 0) && (
                 <div className="mt-14 grid gap-10 md:grid-cols-2">
-                  {/* LEFT SECONDARY ARTICLE */}
 
                   {rightGrid[0] ? (
                     <motion.div
                       variants={fadeUp}
                       initial="hidden"
                       whileInView="show"
-                      viewport={{
-                        once: true,
-                        amount: 0.2,
-                      }}
+                      viewport={{ once: true, amount: 0.2 }}
                     >
-                      {/* RIGHT GRID -> format_url */}
-
-                      {getPostExternalUrl(
-                        rightGrid[0],
-                        "format"
-                      ) ? (
+                      {getPostExternalUrl(rightGrid[0], "format") ? (
                         <a
-                          href={getPostExternalUrl(
-                            rightGrid[0],
-                            "format"
-                          )}
+                          href={getPostExternalUrl(rightGrid[0], "format")}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block"
                         >
                           <h2
                             className="
-                              text-2xl
-                              font-bold
-                              leading-tight
-                              tracking-tight
-                              text-[#111827]
-                              hover:text-[#0B4D8C]
-                              md:text-3xl
+                              text-2xl font-bold leading-tight tracking-tight
+                              text-[#111827] hover:text-[#0B4D8C] md:text-3xl
                             "
                           >
                             {rightGrid[0].title}
@@ -1275,12 +999,8 @@ export default function ArticlePage() {
                       ) : (
                         <h2
                           className="
-                            text-2xl
-                            font-bold
-                            leading-tight
-                            tracking-tight
-                            text-[#111827]
-                            md:text-3xl
+                            text-2xl font-bold leading-tight tracking-tight
+                            text-[#111827] md:text-3xl
                           "
                         >
                           {rightGrid[0].title}
@@ -1295,15 +1015,9 @@ export default function ArticlePage() {
 
                       <Meta post={rightGrid[0]} />
 
-                      {getPostExternalUrl(
-                        rightGrid[0],
-                        "format"
-                      ) ? (
+                      {getPostExternalUrl(rightGrid[0], "format") ? (
                         <a
-                          href={getPostExternalUrl(
-                            rightGrid[0],
-                            "format"
-                          )}
+                          href={getPostExternalUrl(rightGrid[0], "format")}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group block"
@@ -1326,17 +1040,12 @@ export default function ArticlePage() {
                     </motion.div>
                   ) : null}
 
-                  {/* RIGHT SIDE GRID */}
-
                   <motion.div
                     className="space-y-9"
                     variants={staggerParent}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{
-                      once: true,
-                      amount: 0.15,
-                    }}
+                    viewport={{ once: true, amount: 0.15 }}
                   >
                     {rightGrid.slice(1, 4).map((post, index) => (
                       <SideArticle
@@ -1350,73 +1059,52 @@ export default function ArticlePage() {
             </motion.div>
           </div>
 
-          {/* =================================================
-              MEMBERS
-          ================================================= */}
+          {/* MEMBERS */}
 
           <MembersSection members={members} />
 
-          {/* =================================================
-              MORE POSTS + NEWSLETTER
-          ================================================= */}
+          {/* MORE POSTS + NEWSLETTER */}
 
           <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
-            {/* EMPTY LEFT */}
 
             <div className="hidden lg:block" />
 
             {/* MORE POSTS */}
 
             <div>
-              {morePosts.length > 0 ? (
-                <motion.div
-                  className="space-y-10"
-                  variants={staggerParent}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{
-                    once: true,
-                    amount: 0.1,
-                  }}
-                >
-                  {morePosts.map((post, index) => (
-                    <ArticleRow
-                      key={post.id || post.slug || index}
-                      post={post}
-                      linkType="format"
-                    />
+              {visibleMorePosts.length > 0 ? (
+                <div className="space-y-10">
+                  {visibleMorePosts.map((post, index) => (
+                    <motion.div
+                      key={post.id ?? `${post.slug}-${index}`}
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
+                    >
+                      <ArticleRow post={post} linkType="format" />
+                    </motion.div>
                   ))}
-                </motion.div>
+                </div>
               ) : null}
 
-              {/* LOAD MORE */}
+              {/* LOAD MORE BUTTON */}
 
-              {pageData?.more_posts?.pagination?.has_more ? (
+              {hasMorePosts ? (
                 <motion.div
                   className="mt-12 flex justify-center"
                   variants={fadeIn}
                   initial="hidden"
-                  whileInView="show"
-                  viewport={{
-                    once: true,
-                  }}
+                  animate="show"
                 >
                   <button
                     type="button"
+                    onClick={handleLoadMore}
                     className="
-                      rounded-full
-                      border
-                      border-[#D1D5DB]
-                      px-8
-                      py-2.5
-                      text-[13px]
-                      font-semibold
-                      tracking-wide
-                      text-[#0B4D8C]
-                      transition-all
-                      duration-300
-                      hover:border-[#0B4D8C]
-                      hover:bg-[#F5F8FC]
+                      cursor-pointer rounded-full border border-[#D1D5DB]
+                      px-8 py-2.5 text-[13px] font-semibold tracking-wide
+                      text-[#0B4D8C] transition-all duration-300
+                      hover:border-[#0B4D8C] hover:bg-[#F5F8FC]
+                      active:scale-[0.98]
                     "
                   >
                     LOAD MORE

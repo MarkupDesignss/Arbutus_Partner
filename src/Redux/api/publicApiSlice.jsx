@@ -181,9 +181,15 @@ export const publicApiSlice = createApi({
       query: () => "/commentary-page",
     }),
 
-    // GET MEMBER PAGE
+    // GET MEMBER PAGE - PAGINATION
     getMemberPage: builder.query({
-      query: () => "/member-directory",
+      query: ({ page = 1, per_page = 9 } = {}) => ({
+        url: "/member-directory",
+        params: {
+          page,
+          per_page,
+        },
+      }),
     }),
 
     // GET MEMBER DIRECTORY BY ID

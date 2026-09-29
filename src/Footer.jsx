@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -84,13 +85,31 @@ function Newsletter() {
 
       setEmail("");
     } catch (error) {
+      // =====================================================
+      // API VALIDATION ERROR MESSAGE
+      // Example:
+      // {
+      //   status: false,
+      //   message: "Validation failed",
+      //   errors: {
+      //     email: [
+      //       "This email is already subscribed to our newsletter."
+      //     ]
+      //   }
+      // }
+      // =====================================================
+      const apiEmailError = error?.data?.errors?.email?.[0];
+
+      const apiMessage =
+        apiEmailError ||
+        error?.data?.message ||
+        error?.message ||
+        "Something went wrong. Please try again.";
+
       Swal.fire({
         icon: "error",
         title: "Subscription Failed",
-        text:
-          error?.data?.message ||
-          error?.message ||
-          "Something went wrong. Please try again.",
+        text: apiMessage,
         confirmButtonColor: COLORS.primary,
       });
     }

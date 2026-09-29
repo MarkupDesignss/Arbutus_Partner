@@ -6,13 +6,29 @@ import {
   Settings,
   MapPin,
   ArrowRight,
-  Twitter,
   Linkedin,
   Link2,
   Mail,
 } from "lucide-react";
 
 import { useGetMemberDirectoryByIdQuery } from "../../Redux/api/publicApiSlice";
+
+/* =========================================================
+   X (TWITTER) ICON
+========================================================= */
+
+const XIcon = ({ size = 12, strokeWidth = 1.8, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 
 /* =========================================================
    ICON MAP
@@ -449,14 +465,15 @@ const HeroSection = ({
   const websiteLink =
     getWebsiteLink(socialLinks);
 
-  const contactLink =
-    getContactLink(socialLinks);
-
   const twitterLink =
     getTwitterLink(socialLinks);
 
   const linkedinLink =
     getLinkedinLink(socialLinks);
+
+  /* Contact Member always goes to Peartree contact page */
+  const contactLink =
+    "https://peartreecanada.com/contact-us/";
 
   return (
     <header
@@ -524,20 +541,22 @@ const HeroSection = ({
               </div>
             )}
 
-            {/* MEMBER */}
-            <span
-              className="
-                text-[10px]
-                sm:text-[11px]
-                font-semibold
-                tracking-[0.04em]
-                uppercase
-                text-[#4c5b64]
-                mb-1.5
-              "
-            >
-              {tagline || "Member"}
-            </span>
+            {/* MEMBER TAGLINE — only if exists */}
+            {tagline && (
+              <span
+                className="
+                  text-[10px]
+                  sm:text-[11px]
+                  font-semibold
+                  tracking-[0.04em]
+                  uppercase
+                  text-[#4c5b64]
+                  mb-1.5
+                "
+              >
+                {tagline}
+              </span>
+            )}
 
             {/* TITLE */}
             <h1
@@ -642,7 +661,7 @@ const HeroSection = ({
                 Website Link
               </ActionButton>
 
-              {/* CONTACT */}
+              {/* CONTACT — always Peartree contact page */}
               <ActionButton
                 icon={Mail}
                 href={contactLink}
@@ -650,9 +669,9 @@ const HeroSection = ({
                 Contact Member
               </ActionButton>
 
-              {/* TWITTER */}
+              {/* X (TWITTER) */}
               <ActionButton
-                icon={Twitter}
+                icon={XIcon}
                 href={twitterLink}
               >
                 Twitter
@@ -742,6 +761,10 @@ const PerspectiveSection = ({
   }
 
   const images = perspective.images || [];
+
+  /* CTA URL — hardcoded to Peartree Canada contact page */
+  const ctaUrl =
+    "https://peartreecanada.com/contact-us/";
 
   return (
     <section
@@ -866,44 +889,40 @@ const PerspectiveSection = ({
             </div>
           )}
 
-          {/* CTA */}
-          {perspective?.cta_url && (
-            <div className="mt-5">
-              <a
-                href={normalizeUrl(
-                  perspective.cta_url
-                )}
-                target="_blank"
-                rel="noreferrer"
-                className="
-                  inline-flex
-                  items-center
-                  gap-2.5
-                  h-[29px]
-                  px-3
-                  border
-                  border-[#dfe5ea]
-                  rounded-[3px]
-                  bg-white
-                  text-[10px]
-                  sm:text-[11px]
-                  font-medium
-                  text-[#2c65a5]
-                  hover:bg-[#f8fafc]
-                  hover:border-[#cdd7df]
-                  transition-all
-                "
-              >
-                {perspective?.cta_text ||
-                  "Learn More About Our Approach"}
+          {/* CTA — always links to Peartree contact page */}
+          <div className="mt-5">
+            <a
+              href={ctaUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="
+                inline-flex
+                items-center
+                gap-2.5
+                h-[29px]
+                px-3
+                border
+                border-[#dfe5ea]
+                rounded-[3px]
+                bg-white
+                text-[10px]
+                sm:text-[11px]
+                font-medium
+                text-[#2c65a5]
+                hover:bg-[#f8fafc]
+                hover:border-[#cdd7df]
+                transition-all
+              "
+            >
+              {perspective?.cta_text ||
+                "Learn More About Our Approach"}
 
-                <ArrowRight
-                  size={12}
-                  strokeWidth={1.8}
-                />
-              </a>
-            </div>
-          )}
+              <ArrowRight
+                size={12}
+                strokeWidth={1.8}
+              />
+            </a>
+          </div>
         </div>
       </div>
     </section>
