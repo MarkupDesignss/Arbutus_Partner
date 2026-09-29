@@ -1,6 +1,14 @@
+
 import React, { useState, useRef, useEffect } from "react";
 
-import { User, Menu, X, LogOut, LogIn, ChevronDown } from "lucide-react";
+import {
+  User,
+  Menu,
+  X,
+  LogOut,
+  LogIn,
+  ChevronDown,
+} from "lucide-react";
 
 import { NavLink, Link, useNavigate } from "react-router-dom";
 
@@ -24,7 +32,7 @@ const FONT_FAMILY =
   "'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif";
 
 /* =========================================================
-   PRIMARY TEXT COLOR
+   COLORS
 ========================================================= */
 
 const PRIMARY_COLOR = "#2A57C4";
@@ -53,7 +61,10 @@ const getRoutePath = (title) => {
     "Alternative Investments": "/AlternativeInvestmentsPage",
   };
 
-  return routeMap[title] || `/${title.toLowerCase().replace(/\s+/g, "")}`;
+  return (
+    routeMap[title] ||
+    `/${title.toLowerCase().replace(/\s+/g, "")}`
+  );
 };
 
 /* =========================================================
@@ -89,14 +100,16 @@ export default function Header({ onUserClick }) {
   const menus = headerData?.data?.menus || [];
 
   const filteredMenus = menus.filter(
-    (menu) => menu.title?.toLowerCase() !== "partner page",
+    (menu) => menu.title?.toLowerCase() !== "partner page"
   );
 
   /* =========================================================
      LOGO
   ========================================================= */
 
-  const logoUrl = headerData?.data?.logo || getImagePath("Header/Logo.png");
+  const logoUrl =
+    headerData?.data?.logo ||
+    getImagePath("Header/Logo.png");
 
   /* =========================================================
      HOME MENU
@@ -109,7 +122,7 @@ export default function Header({ onUserClick }) {
   };
 
   const menusWithHome = filteredMenus.some(
-    (menu) => menu.title?.toLowerCase() === "home",
+    (menu) => menu.title?.toLowerCase() === "home"
   )
     ? filteredMenus
     : [homeMenu, ...filteredMenus];
@@ -159,7 +172,10 @@ export default function Header({ onUserClick }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
+      ) {
         setShowProfileMenu(false);
       }
     };
@@ -167,7 +183,10 @@ export default function Header({ onUserClick }) {
     document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
     };
   }, []);
 
@@ -216,6 +235,7 @@ export default function Header({ onUserClick }) {
 
   /* =========================================================
      NAVIGATION CLASS
+     FONT WEIGHT = 400
   ========================================================= */
 
   const navClass = ({ isActive }) =>
@@ -223,7 +243,7 @@ export default function Header({ onUserClick }) {
       ? [
           "relative",
           "text-[#2A57C4]",
-          "font-medium",
+          "font-[400]",
           "after:content-['']",
           "after:absolute",
           "after:left-0",
@@ -235,7 +255,7 @@ export default function Header({ onUserClick }) {
       : [
           "relative",
           "text-[#35445C]",
-          "font-normal",
+          "font-[400]",
           "transition-colors",
           "duration-200",
           "hover:text-[#2A57C4]",
@@ -263,6 +283,7 @@ export default function Header({ onUserClick }) {
         ref={headerRef}
         style={{
           fontFamily: FONT_FAMILY,
+          fontWeight: 400,
         }}
         className={[
           "sticky",
@@ -316,7 +337,8 @@ export default function Header({ onUserClick }) {
                 "
                 onError={(event) => {
                   event.currentTarget.onerror = null;
-                  event.currentTarget.src = "/placeholder-logo.png";
+                  event.currentTarget.src =
+                    "/placeholder-logo.png";
                 }}
               />
             </Link>
@@ -359,6 +381,7 @@ export default function Header({ onUserClick }) {
                         "py-2",
                         "text-[14px]",
                         "xl:text-[15px]",
+                        "font-[400]",
                         "leading-none",
                         "whitespace-nowrap",
                         "transition-colors",
@@ -367,7 +390,9 @@ export default function Header({ onUserClick }) {
                       ].join(" ")
                     }
                   >
-                    <span>{menu.title}</span>
+                    <span className="font-[400]">
+                      {menu.title}
+                    </span>
                   </NavLink>
                 );
               })}
@@ -410,7 +435,7 @@ export default function Header({ onUserClick }) {
                   bg-white
                   text-[#2A57C4]
                   text-[13px]
-                  font-normal
+                  font-[400]
                   leading-none
                   transition-colors
                   duration-200
@@ -430,13 +455,15 @@ export default function Header({ onUserClick }) {
                         justify-center
                         text-white
                         text-[10px]
-                        font-semibold
+                        font-[400]
                       "
                     >
                       {userInitials}
                     </div>
 
-                    <span className="max-w-[100px] truncate">{userName}</span>
+                    <span className="max-w-[100px] truncate font-[400]">
+                      {userName}
+                    </span>
 
                     <ChevronDown
                       size={13}
@@ -445,7 +472,9 @@ export default function Header({ onUserClick }) {
                         "text-[#2A57C4]",
                         "transition-transform",
                         "duration-200",
-                        showProfileMenu ? "rotate-180" : "",
+                        showProfileMenu
+                          ? "rotate-180"
+                          : "",
                       ].join(" ")}
                     />
                   </>
@@ -457,7 +486,9 @@ export default function Header({ onUserClick }) {
                       className="text-[#2A57C4]"
                     />
 
-                    <span>Log In</span>
+                    <span className="font-[400]">
+                      Log In
+                    </span>
                   </>
                 )}
               </button>
@@ -470,6 +501,7 @@ export default function Header({ onUserClick }) {
                 <div
                   style={{
                     fontFamily: FONT_FAMILY,
+                    fontWeight: 400,
                   }}
                   className="
                     absolute
@@ -505,7 +537,7 @@ export default function Header({ onUserClick }) {
                           justify-center
                           text-white
                           text-xs
-                          font-semibold
+                          font-[400]
                           flex-shrink-0
                         "
                       >
@@ -516,7 +548,7 @@ export default function Header({ onUserClick }) {
                         <p
                           className="
                             text-[13px]
-                            font-medium
+                            font-[400]
                             text-[#2A57C4]
                             truncate
                           "
@@ -527,7 +559,7 @@ export default function Header({ onUserClick }) {
                         <p
                           className="
                             text-[11px]
-                            font-normal
+                            font-[400]
                             text-[#6B7280]
                             truncate
                             mt-0.5
@@ -552,7 +584,7 @@ export default function Header({ onUserClick }) {
                       py-3
                       text-[12px]
                       text-red-600
-                      font-normal
+                      font-[400]
                       transition-colors
                       duration-200
                       hover:bg-red-50
@@ -582,13 +614,21 @@ export default function Header({ onUserClick }) {
                             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                           />
                         </svg>
-                        Logging out...
+
+                        <span className="font-[400]">
+                          Logging out...
+                        </span>
                       </>
                     ) : (
                       <>
-                        <LogOut size={14} strokeWidth={1.7} />
+                        <LogOut
+                          size={14}
+                          strokeWidth={1.7}
+                        />
 
-                        <span>Sign Out</span>
+                        <span className="font-[400]">
+                          Sign Out
+                        </span>
                       </>
                     )}
                   </button>
@@ -610,6 +650,7 @@ export default function Header({ onUserClick }) {
                   h-9
                   rounded-md
                   text-[#2A57C4]
+                  font-[400]
                   hover:bg-[#F5F6F8]
                   transition-colors
                   duration-200
@@ -619,9 +660,15 @@ export default function Header({ onUserClick }) {
                 aria-expanded={isOpen}
               >
                 {isOpen ? (
-                  <X size={19} strokeWidth={1.7} />
+                  <X
+                    size={19}
+                    strokeWidth={1.7}
+                  />
                 ) : (
-                  <Menu size={19} strokeWidth={1.7} />
+                  <Menu
+                    size={19}
+                    strokeWidth={1.7}
+                  />
                 )}
               </button>
             </div>
@@ -636,6 +683,7 @@ export default function Header({ onUserClick }) {
       <div
         style={{
           fontFamily: FONT_FAMILY,
+          fontWeight: 400,
         }}
         className={[
           "fixed",
@@ -687,7 +735,7 @@ export default function Header({ onUserClick }) {
                   justify-center
                   text-white
                   text-sm
-                  font-semibold
+                  font-[400]
                   flex-shrink-0
                 "
               >
@@ -698,7 +746,7 @@ export default function Header({ onUserClick }) {
                 <p
                   className="
                     text-[14px]
-                    font-medium
+                    font-[400]
                     text-[#2A57C4]
                   "
                 >
@@ -709,6 +757,7 @@ export default function Header({ onUserClick }) {
                   <p
                     className="
                       text-[12px]
+                      font-[400]
                       text-[#6B7280]
                       truncate
                       mt-0.5
@@ -722,6 +771,7 @@ export default function Header({ onUserClick }) {
                   <p
                     className="
                       text-[12px]
+                      font-[400]
                       text-[#6B7280]
                       mt-0.5
                     "
@@ -747,7 +797,7 @@ export default function Header({ onUserClick }) {
                     bg-white
                     text-[#2A57C4]
                     text-[12px]
-                    font-normal
+                    font-[400]
                   "
                 >
                   Sign In
@@ -782,19 +832,22 @@ export default function Header({ onUserClick }) {
                         "transition-colors",
                         "duration-200",
                         isActive
-                          ? "text-[#2A57C4] font-medium"
-                          : "text-[#35445C] font-normal hover:text-[#2A57C4]",
+                          ? "text-[#2A57C4] font-[400]"
+                          : "text-[#35445C] font-[400] hover:text-[#2A57C4]",
                       ].join(" ")
                     }
                   >
                     {({ isActive }) => (
                       <>
-                        <span className="text-[14px]">{menu.title}</span>
+                        <span className="text-[14px] font-[400]">
+                          {menu.title}
+                        </span>
 
                         <span
                           className="
                             ml-auto
                             text-[14px]
+                            font-[400]
                             text-[#2A57C4]
                           "
                         >
@@ -811,7 +864,9 @@ export default function Header({ onUserClick }) {
                             "bg-[#2A57C4]",
                             "transition-transform",
                             "duration-200",
-                            isActive ? "scale-x-100" : "scale-x-0",
+                            isActive
+                              ? "scale-x-100"
+                              : "scale-x-0",
                           ].join(" ")}
                         />
                       </>
@@ -848,7 +903,7 @@ export default function Header({ onUserClick }) {
                     bg-white
                     text-red-600
                     text-[13px]
-                    font-normal
+                    font-[400]
                     hover:bg-red-50
                     transition-colors
                     duration-200
@@ -877,12 +932,21 @@ export default function Header({ onUserClick }) {
                           d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                         />
                       </svg>
-                      Logging out...
+
+                      <span className="font-[400]">
+                        Logging out...
+                      </span>
                     </>
                   ) : (
                     <>
-                      <LogOut size={14} strokeWidth={1.7} />
-                      Sign Out
+                      <LogOut
+                        size={14}
+                        strokeWidth={1.7}
+                      />
+
+                      <span className="font-[400]">
+                        Sign Out
+                      </span>
                     </>
                   )}
                 </button>
@@ -907,14 +971,20 @@ export default function Header({ onUserClick }) {
                     bg-white
                     text-[#2A57C4]
                     text-[13px]
-                    font-normal
+                    font-[400]
                     hover:bg-[#F6F8FD]
                     transition-colors
                     duration-200
                   "
                 >
-                  <LogIn size={14} strokeWidth={1.7} />
-                  Sign In / Register
+                  <LogIn
+                    size={14}
+                    strokeWidth={1.7}
+                  />
+
+                  <span className="font-[400]">
+                    Sign In / Register
+                  </span>
                 </button>
               )}
             </div>
@@ -927,6 +997,7 @@ export default function Header({ onUserClick }) {
               <p
                 className="
                   text-[10px]
+                  font-[400]
                   text-[#9CA3AF]
                 "
               >
@@ -939,3 +1010,4 @@ export default function Header({ onUserClick }) {
     </>
   );
 }
+
