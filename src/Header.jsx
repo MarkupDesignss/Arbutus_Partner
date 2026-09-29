@@ -20,7 +20,7 @@ import { getImagePath } from "./utils/assetHelper";
 const getRoutePath = (title) => {
   const routeMap = {
     Home: "/",
-    "Alt Database": "/AltDatabaseMain",
+    "Alt Database": "/Altdbmain", // ✅ Alt Database click -> Altdbmain
     Altdb: "/Altdbmain",
     AltDB: "/Altdbmain",
     Research: "/Researchpage",
@@ -33,6 +33,7 @@ const getRoutePath = (title) => {
     "Insight Investment": "/AlternativeInvestmentsPage",
     "Insights Investment": "/AlternativeInvestmentsPage",
     "Insight Investments": "/AlternativeInvestmentsPage",
+    "Insight Reports": "/insightreports", // ✅ add kiya (API me "Insight Reports" hai)
     "Alternative Investments": "/AlternativeInvestmentsPage",
   };
   return routeMap[title] || `/${title.toLowerCase().replace(/\s+/g, "")}`;
@@ -58,14 +59,14 @@ export default function Header({ onUserClick }) {
   // Get menus from API and filter out "Partner Page"
   const menus = headerData?.data?.menus || [];
   const filteredMenus = menus.filter(
-    (menu) => menu.title?.toLowerCase() !== "partner page"
+    (menu) => menu.title?.toLowerCase() !== "partner page",
   );
   const logoUrl = headerData?.data?.logo || getImagePath("Header/Logo.png");
 
   // ✅ Home menu ko sabse pehle add karo (agar API me nahi hai)
   const homeMenu = { id: "home", title: "Home", sort_order: "-1" };
   const menusWithHome = filteredMenus.some(
-    (m) => m.title?.toLowerCase() === "home"
+    (m) => m.title?.toLowerCase() === "home",
   )
     ? filteredMenus
     : [homeMenu, ...filteredMenus];
@@ -73,18 +74,18 @@ export default function Header({ onUserClick }) {
   // User name formatting
   const userName = email
     ? email.split("@")[0].split(".")[0].charAt(0).toUpperCase() +
-    email.split("@")[0].split(".")[0].slice(1)
+      email.split("@")[0].split(".")[0].slice(1)
     : "Guest";
 
   // User initials
   const userInitials = email
     ? email
-      .split("@")[0]
-      .split(".")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
+        .split("@")[0]
+        .split(".")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "G";
 
   // Nav class with hover underline animation
@@ -135,7 +136,6 @@ export default function Header({ onUserClick }) {
     }
   };
 
-
   // Sort menus by sort_order (Home sabse pehle rahega)
   const sortedMenus = [...menusWithHome].sort((a, b) => {
     const orderA = parseInt(a.sort_order) || 0;
@@ -148,9 +148,10 @@ export default function Header({ onUserClick }) {
       <header
         ref={headerRef}
         className={`w-full sticky top-0 z-50 font-ubuntu transition-all duration-500
-          ${isScrolled
-            ? "bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20"
-            : "bg-white/70 backdrop-blur-sm shadow-sm"
+          ${
+            isScrolled
+              ? "bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20"
+              : "bg-white/70 backdrop-blur-sm shadow-sm"
           }`}
       >
         <div className="max-w-[1300px] mx-auto px-3 sm:px-5">
@@ -183,9 +184,10 @@ export default function Header({ onUserClick }) {
                     to={route}
                     end={isHome}
                     className={({ isActive }) => `
-                      ${isActive
-                        ? "text-[#0760F0] bg-blue-50/80 backdrop-blur-sm"
-                        : "text-gray-700 hover:bg-white/50 hover:backdrop-blur-sm"
+                      ${
+                        isActive
+                          ? "text-[#0760F0] bg-blue-50/80 backdrop-blur-sm"
+                          : "text-gray-700 hover:bg-white/50 hover:backdrop-blur-sm"
                       }
                       px-2 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-medium
                       transition-all duration-300 relative whitespace-nowrap flex-shrink-0
@@ -207,9 +209,10 @@ export default function Header({ onUserClick }) {
                 onClick={handleProfileClick}
                 className={`hidden sm:flex items-center gap-2 cursor-pointer px-3 sm:px-4 py-2 rounded-full 
                   backdrop-blur-sm transition-all duration-300 group
-                  ${email
-                    ? "border border-blue-200/50 bg-blue-50/60 hover:bg-blue-100/80 hover:backdrop-blur-md"
-                    : "border border-gray-200/50 bg-white/60 hover:bg-white/90 hover:backdrop-blur-md"
+                  ${
+                    email
+                      ? "border border-blue-200/50 bg-blue-50/60 hover:bg-blue-100/80 hover:backdrop-blur-md"
+                      : "border border-gray-200/50 bg-white/60 hover:bg-white/90 hover:backdrop-blur-md"
                   }
                   ${isScrolled ? "shadow-md" : "shadow-sm"}`}
               >
@@ -261,9 +264,10 @@ export default function Header({ onUserClick }) {
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                     className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-all duration-300
-                      ${isLoggingOut
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-red-600 hover:bg-red-50/80 hover:backdrop-blur-sm hover:gap-4"
+                      ${
+                        isLoggingOut
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-red-600 hover:bg-red-50/80 hover:backdrop-blur-sm hover:gap-4"
                       }`}
                   >
                     {isLoggingOut ? (
@@ -302,9 +306,10 @@ export default function Header({ onUserClick }) {
               {/* Mobile Toggle */}
               <button
                 className={`lg:hidden p-2 rounded-lg transition-all duration-300 relative
-                  ${isScrolled
-                    ? "bg-white/50 backdrop-blur-sm hover:bg-white/80"
-                    : "hover:bg-gray-100/50"
+                  ${
+                    isScrolled
+                      ? "bg-white/50 backdrop-blur-sm hover:bg-white/80"
+                      : "hover:bg-gray-100/50"
                   }`}
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="Toggle menu"
@@ -327,7 +332,11 @@ export default function Header({ onUserClick }) {
       <div
         className={`fixed top-16 lg:top-20 left-0 w-full h-[calc(100vh-4rem)] bg-white/80 backdrop-blur-xl z-40 
           transform transition-all duration-500 ease-in-out
-          ${isOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"}`}
+          ${
+            isOpen
+              ? "translate-x-0 opacity-100"
+              : "translate-x-full opacity-0 pointer-events-none"
+          }`}
       >
         <div className="h-full overflow-y-auto">
           <div className="px-6 py-4">
@@ -375,19 +384,21 @@ export default function Header({ onUserClick }) {
                     end={isHome}
                     onClick={() => setIsOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-xl backdrop-blur-sm transition-all duration-300 group relative ${isActive
-                        ? "bg-white/60 text-[#0760F0]"
-                        : "hover:bg-white/50 text-gray-700"
+                      `flex items-center gap-3 px-4 py-3 rounded-xl backdrop-blur-sm transition-all duration-300 group relative ${
+                        isActive
+                          ? "bg-white/60 text-[#0760F0]"
+                          : "hover:bg-white/50 text-gray-700"
                       }`
                     }
                   >
                     {({ isActive }) => (
                       <>
                         <span
-                          className={`text-sm font-medium transition-colors ${isActive
+                          className={`text-sm font-medium transition-colors ${
+                            isActive
                               ? "text-[#0760F0]"
                               : "text-gray-700 group-hover:text-[#0760F0]"
-                            }`}
+                          }`}
                         >
                           {menu.title}
                         </span>
@@ -395,10 +406,11 @@ export default function Header({ onUserClick }) {
                           →
                         </span>
                         <span
-                          className={`absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-[#0760F0] to-purple-500 transition-transform duration-300 origin-left ${isActive
+                          className={`absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-[#0760F0] to-purple-500 transition-transform duration-300 origin-left ${
+                            isActive
                               ? "scale-x-100"
                               : "scale-x-0 group-hover:scale-x-100"
-                            }`}
+                          }`}
                         ></span>
                       </>
                     )}
@@ -417,9 +429,10 @@ export default function Header({ onUserClick }) {
                   }}
                   disabled={isLoggingOut}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl backdrop-blur-sm
-                    ${isLoggingOut
-                      ? "bg-gray-100/50 text-gray-400"
-                      : "bg-red-50/80 text-red-600 hover:bg-red-100/80"
+                    ${
+                      isLoggingOut
+                        ? "bg-gray-100/50 text-gray-400"
+                        : "bg-red-50/80 text-red-600 hover:bg-red-100/80"
                     } 
                     transition-all duration-300 font-medium text-sm border border-red-200/30`}
                 >
