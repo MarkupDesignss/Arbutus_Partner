@@ -1,26 +1,42 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  User,
-  Menu,
-  X,
-  LogOut,
-  LogIn,
-  ChevronDown,
-  Sparkles,
-} from "lucide-react";
+
+import { User, Menu, X, LogOut, LogIn, ChevronDown } from "lucide-react";
+
 import { NavLink, Link, useNavigate } from "react-router-dom";
+
 import { useSelector, useDispatch } from "react-redux";
+
 import { logout } from "./Redux/authSlice";
+
 import { useSendPaymentLogoutMutation } from "./Redux/api/privateApiSlice";
+
 import { purgePersistedState } from "./Redux/store";
+
 import { useGetHeaderQuery } from "./Redux/api/publicApiSlice";
+
 import { getImagePath } from "./utils/assetHelper";
 
-// ✅ Route mapping — API titles ke exact match
+/* =========================================================
+   FONT FAMILY
+========================================================= */
+
+const FONT_FAMILY =
+  "'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif";
+
+/* =========================================================
+   PRIMARY TEXT COLOR
+========================================================= */
+
+const PRIMARY_COLOR = "#2A57C4";
+
+/* =========================================================
+   ROUTE MAPPING
+========================================================= */
+
 const getRoutePath = (title) => {
   const routeMap = {
     Home: "/",
-    "Alt Database": "/Altdbmain", // ✅ Alt Database click -> Altdbmain
+    "Alt Database": "/Altdbmain",
     Altdb: "/Altdbmain",
     AltDB: "/Altdbmain",
     Research: "/Researchpage",
@@ -32,20 +48,29 @@ const getRoutePath = (title) => {
     "Partner Page": "/FieraRealEstate",
     "Insight Investment": "/AlternativeInvestmentsPage",
     "Insights Investment": "/AlternativeInvestmentsPage",
-    "Insight Investments": "/AlternativeInvestmentsPage",
-    "Insight Reports": "/insightreports", // ✅ add kiya (API me "Insight Reports" hai)
+    "Insights Investments": "/AlternativeInvestmentsPage",
+    "Insight Reports": "/insightreports",
     "Alternative Investments": "/AlternativeInvestmentsPage",
   };
+
   return routeMap[title] || `/${title.toLowerCase().replace(/\s+/g, "")}`;
 };
+
+/* =========================================================
+   HEADER COMPONENT
+========================================================= */
 
 export default function Header({ onUserClick }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [sendLogout, { isLoading: isLoggingOut }] =
     useSendPaymentLogoutMutation();
 
-  // Fetch header data from API
+  /* =========================================================
+     FETCH HEADER DATA
+  ========================================================= */
+
   const { data: headerData } = useGetHeaderQuery();
 
   const { email } = useSelector((state) => state.auth);
@@ -53,80 +78,122 @@ export default function Header({ onUserClick }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
   const profileRef = useRef(null);
   const headerRef = useRef(null);
 
-  // Get menus from API and filter out "Partner Page"
+  /* =========================================================
+     GET HEADER MENUS
+  ========================================================= */
+
   const menus = headerData?.data?.menus || [];
+
   const filteredMenus = menus.filter(
     (menu) => menu.title?.toLowerCase() !== "partner page",
   );
+
+  /* =========================================================
+     LOGO
+  ========================================================= */
+
   const logoUrl = headerData?.data?.logo || getImagePath("Header/Logo.png");
 
-  // ✅ Home menu ko sabse pehle add karo (agar API me nahi hai)
-  const homeMenu = { id: "home", title: "Home", sort_order: "-1" };
+  /* =========================================================
+     HOME MENU
+  ========================================================= */
+
+  const homeMenu = {
+    id: "home",
+    title: "Home",
+    sort_order: "-1",
+  };
+
   const menusWithHome = filteredMenus.some(
-    (m) => m.title?.toLowerCase() === "home",
+    (menu) => menu.title?.toLowerCase() === "home",
   )
     ? filteredMenus
     : [homeMenu, ...filteredMenus];
 
-  // User name formatting
+  /* =========================================================
+     USER NAME
+  ========================================================= */
+
   const userName = email
     ? email.split("@")[0].split(".")[0].charAt(0).toUpperCase() +
       email.split("@")[0].split(".")[0].slice(1)
     : "Guest";
 
-  // User initials
+  /* =========================================================
+     USER INITIALS
+  ========================================================= */
+
   const userInitials = email
     ? email
         .split("@")[0]
         .split(".")
-        .map((n) => n[0])
+        .map((name) => name[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
     : "G";
 
-  // Nav class with hover underline animation
-  const navClass = ({ isActive }) =>
-    isActive
-      ? "text-[#0760F0] font-semibold relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#0760F0] after:transition-all after:duration-300"
-      : "text-gray-700 hover:text-[#0760F0] transition-colors duration-300 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#0760F0] after:transition-all after:duration-300 hover:after:w-full";
+  /* =========================================================
+     SCROLL EFFECT
+  ========================================================= */
 
-  // Scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
-  // Click outside handler
+  /* =========================================================
+     CLICK OUTSIDE PROFILE MENU
+  ========================================================= */
+
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfileMenu(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  // Handle logout
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
+
   const handleLogout = async () => {
     try {
       await sendLogout().unwrap();
     } catch (error) {
-      console.log("Logout API failed, clearing locally");
+      // API failure should not prevent local logout.
     } finally {
       dispatch(logout());
       purgePersistedState();
+
       setShowProfileMenu(false);
+      setIsOpen(false);
+
       navigate("/");
     }
   };
+
+  /* =========================================================
+     PROFILE CLICK
+  ========================================================= */
 
   const handleProfileClick = () => {
     if (email) {
@@ -136,44 +203,143 @@ export default function Header({ onUserClick }) {
     }
   };
 
-  // Sort menus by sort_order (Home sabse pehle rahega)
+  /* =========================================================
+     SORT MENUS
+  ========================================================= */
+
   const sortedMenus = [...menusWithHome].sort((a, b) => {
     const orderA = parseInt(a.sort_order) || 0;
     const orderB = parseInt(b.sort_order) || 0;
+
     return orderA - orderB;
   });
 
+  /* =========================================================
+     NAVIGATION CLASS
+  ========================================================= */
+
+  const navClass = ({ isActive }) =>
+    isActive
+      ? [
+          "relative",
+          "text-[#2A57C4]",
+          "font-medium",
+          "after:content-['']",
+          "after:absolute",
+          "after:left-0",
+          "after:right-0",
+          "after:-bottom-[3px]",
+          "after:h-[1px]",
+          "after:bg-[#2A57C4]",
+        ].join(" ")
+      : [
+          "relative",
+          "text-[#35445C]",
+          "font-normal",
+          "transition-colors",
+          "duration-200",
+          "hover:text-[#2A57C4]",
+          "after:content-['']",
+          "after:absolute",
+          "after:left-0",
+          "after:right-0",
+          "after:-bottom-[3px]",
+          "after:h-[1px]",
+          "after:bg-[#2A57C4]",
+          "after:scale-x-0",
+          "after:origin-left",
+          "after:transition-transform",
+          "after:duration-200",
+          "hover:after:scale-x-100",
+        ].join(" ");
+
   return (
     <>
+      {/* =====================================================
+          DESKTOP HEADER
+      ===================================================== */}
+
       <header
         ref={headerRef}
-        className={`w-full sticky top-0 z-50 font-ubuntu transition-all duration-500
-          ${
-            isScrolled
-              ? "bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20"
-              : "bg-white/70 backdrop-blur-sm shadow-sm"
-          }`}
+        style={{
+          fontFamily: FONT_FAMILY,
+        }}
+        className={[
+          "sticky",
+          "top-0",
+          "z-50",
+          "w-full",
+          "bg-white",
+          "border-b",
+          "border-[#E7E7E7]",
+          "transition-all",
+          "duration-300",
+          isScrolled ? "shadow-sm" : "",
+        ].join(" ")}
       >
-        <div className="max-w-[1300px] mx-auto px-3 sm:px-5">
-          <div className="flex items-center justify-between h-16 lg:h-20 gap-2">
-            {/* Logo */}
+        <div className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+              gap-4
+              h-[64px]
+              lg:h-[68px]
+            "
+          >
+            {/* =================================================
+                LOGO
+            ================================================= */}
+
             <Link
               to="/"
-              className="flex items-center gap-2 flex-shrink-0 group"
+              className="
+                flex
+                items-center
+                flex-shrink-0
+                group
+              "
             >
               <img
                 src={logoUrl}
                 alt="AltDB"
-                className="h-9 sm:h-12 lg:h-14 object-contain transition-all duration-500 group-hover:scale-105 group-hover:rotate-[-2deg]"
-                onError={(e) => {
-                  e.target.src = "/placeholder-logo.png";
-                  console.warn("Logo not found, using fallback");
+                className="
+                  h-8
+                  sm:h-9
+                  lg:h-10
+                  w-auto
+                  object-contain
+                  transition-transform
+                  duration-200
+                  group-hover:scale-[1.02]
+                "
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = "/placeholder-logo.png";
                 }}
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 flex-nowrap whitespace-nowrap mx-2 xl:mx-4 font-roboto">
+            {/* =================================================
+                DESKTOP NAVIGATION
+            ================================================= */}
+
+            <nav
+              className="
+                hidden
+                lg:flex
+                items-center
+                justify-center
+                flex-1
+                min-w-0
+                gap-1
+                xl:gap-2
+                whitespace-nowrap
+                mx-4
+              "
+              aria-label="Main Navigation"
+            >
               {sortedMenus.map((menu, index) => {
                 const route = getRoutePath(menu.title);
                 const isHome = route === "/";
@@ -183,16 +349,23 @@ export default function Header({ onUserClick }) {
                     key={menu.id || index}
                     to={route}
                     end={isHome}
-                    className={({ isActive }) => `
-                      ${
-                        isActive
-                          ? "text-[#0760F0] bg-blue-50/80 backdrop-blur-sm"
-                          : "text-gray-700 hover:bg-white/50 hover:backdrop-blur-sm"
-                      }
-                      px-2 xl:px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-medium
-                      transition-all duration-300 relative whitespace-nowrap flex-shrink-0
-                      ${navClass({ isActive })}
-                    `}
+                    className={({ isActive }) =>
+                      [
+                        "flex",
+                        "items-center",
+                        "relative",
+                        "px-2",
+                        "xl:px-3",
+                        "py-2",
+                        "text-[14px]",
+                        "xl:text-[15px]",
+                        "leading-none",
+                        "whitespace-nowrap",
+                        "transition-colors",
+                        "duration-200",
+                        navClass({ isActive }),
+                      ].join(" ")
+                    }
                   >
                     <span>{menu.title}</span>
                   </NavLink>
@@ -200,60 +373,166 @@ export default function Header({ onUserClick }) {
               })}
             </nav>
 
-            {/* Right Section */}
+            {/* =================================================
+                RIGHT SECTION
+            ================================================= */}
+
             <div
-              className="flex items-center gap-2 sm:gap-3 relative cursor-pointer flex-shrink-0"
               ref={profileRef}
+              className="
+                flex
+                items-center
+                gap-2
+                sm:gap-3
+                relative
+                flex-shrink-0
+              "
             >
+              {/* =================================================
+                  DESKTOP LOGIN / PROFILE
+              ================================================= */}
+
               <button
+                type="button"
                 onClick={handleProfileClick}
-                className={`hidden sm:flex items-center gap-2 cursor-pointer px-3 sm:px-4 py-2 rounded-full 
-                  backdrop-blur-sm transition-all duration-300 group
-                  ${
-                    email
-                      ? "border border-blue-200/50 bg-blue-50/60 hover:bg-blue-100/80 hover:backdrop-blur-md"
-                      : "border border-gray-200/50 bg-white/60 hover:bg-white/90 hover:backdrop-blur-md"
-                  }
-                  ${isScrolled ? "shadow-md" : "shadow-sm"}`}
+                className="
+                  hidden
+                  sm:flex
+                  items-center
+                  justify-center
+                  gap-1.5
+                  cursor-pointer
+                  h-[34px]
+                  px-4
+                  rounded-full
+                  border
+                  border-[#7FA2F1]
+                  bg-white
+                  text-[#2A57C4]
+                  text-[13px]
+                  font-normal
+                  leading-none
+                  transition-colors
+                  duration-200
+                  hover:bg-[#F6F8FD]
+                "
               >
                 {email ? (
                   <>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center cursor-pointer justify-center text-white text-xs font-bold shadow-md">
+                    <div
+                      className="
+                        w-6
+                        h-6
+                        rounded-full
+                        bg-[#2A57C4]
+                        flex
+                        items-center
+                        justify-center
+                        text-white
+                        text-[10px]
+                        font-semibold
+                      "
+                    >
                       {userInitials}
                     </div>
-                    <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
-                      {userName}
-                    </span>
+
+                    <span className="max-w-[100px] truncate">{userName}</span>
+
                     <ChevronDown
-                      className={`w-4 h-4 text-gray-500 transition-all duration-300 
-                      ${showProfileMenu ? "rotate-180" : ""}`}
+                      size={13}
+                      strokeWidth={1.6}
+                      className={[
+                        "text-[#2A57C4]",
+                        "transition-transform",
+                        "duration-200",
+                        showProfileMenu ? "rotate-180" : "",
+                      ].join(" ")}
                     />
                   </>
                 ) : (
                   <>
-                    <div className="w-7 h-7 rounded-full cursor-pointer bg-gradient-to-r from-gray-400 to-gray-500 flex items-center justify-center text-white shadow-md">
-                      <User className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Guest
-                    </span>
+                    <User
+                      size={14}
+                      strokeWidth={1.7}
+                      className="text-[#2A57C4]"
+                    />
+
+                    <span>Log In</span>
                   </>
                 )}
               </button>
 
-              {/* Profile Dropdown */}
+              {/* =================================================
+                  PROFILE DROPDOWN
+              ================================================= */}
+
               {showProfileMenu && email && (
-                <div className="absolute right-0 top-12 w-72 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 py-2 z-50 animate-slideDown">
-                  <div className="px-5 py-4 border-b border-gray-100/50">
+                <div
+                  style={{
+                    fontFamily: FONT_FAMILY,
+                  }}
+                  className="
+                    absolute
+                    right-0
+                    top-11
+                    w-64
+                    bg-white
+                    border
+                    border-[#E5E7EB]
+                    rounded-lg
+                    shadow-lg
+                    z-[60]
+                    overflow-hidden
+                  "
+                >
+                  <div
+                    className="
+                      px-4
+                      py-3
+                      border-b
+                      border-[#EEEEEE]
+                    "
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                      <div
+                        className="
+                          w-9
+                          h-9
+                          rounded-full
+                          bg-[#2A57C4]
+                          flex
+                          items-center
+                          justify-center
+                          text-white
+                          text-xs
+                          font-semibold
+                          flex-shrink-0
+                        "
+                      >
                         {userInitials}
                       </div>
+
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
+                        <p
+                          className="
+                            text-[13px]
+                            font-medium
+                            text-[#2A57C4]
+                            truncate
+                          "
+                        >
                           {userName}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">
+
+                        <p
+                          className="
+                            text-[11px]
+                            font-normal
+                            text-[#6B7280]
+                            truncate
+                            mt-0.5
+                          "
+                        >
                           {email}
                         </p>
                       </div>
@@ -261,19 +540,30 @@ export default function Header({ onUserClick }) {
                   </div>
 
                   <button
+                    type="button"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-all duration-300
-                      ${
-                        isLoggingOut
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "text-red-600 hover:bg-red-50/80 hover:backdrop-blur-sm hover:gap-4"
-                      }`}
+                    className="
+                      w-full
+                      flex
+                      items-center
+                      gap-2
+                      px-4
+                      py-3
+                      text-[12px]
+                      text-red-600
+                      font-normal
+                      transition-colors
+                      duration-200
+                      hover:bg-red-50
+                      disabled:text-gray-400
+                      disabled:cursor-not-allowed
+                    "
                   >
                     {isLoggingOut ? (
-                      <span className="flex items-center gap-2">
+                      <>
                         <svg
-                          className="animate-spin h-4 w-4 text-gray-500"
+                          className="animate-spin h-3.5 w-3.5"
                           viewBox="0 0 24 24"
                         >
                           <circle
@@ -285,6 +575,7 @@ export default function Header({ onUserClick }) {
                             strokeWidth="4"
                             fill="none"
                           />
+
                           <path
                             className="opacity-75"
                             fill="currentColor"
@@ -292,10 +583,11 @@ export default function Header({ onUserClick }) {
                           />
                         </svg>
                         Logging out...
-                      </span>
+                      </>
                     ) : (
                       <>
-                        <LogOut className="w-4 h-4" />
+                        <LogOut size={14} strokeWidth={1.7} />
+
                         <span>Sign Out</span>
                       </>
                     )}
@@ -303,24 +595,33 @@ export default function Header({ onUserClick }) {
                 </div>
               )}
 
-              {/* Mobile Toggle */}
+              {/* =================================================
+                  MOBILE TOGGLE
+              ================================================= */}
+
               <button
-                className={`lg:hidden p-2 rounded-lg transition-all duration-300 relative
-                  ${
-                    isScrolled
-                      ? "bg-white/50 backdrop-blur-sm hover:bg-white/80"
-                      : "hover:bg-gray-100/50"
-                  }`}
+                type="button"
+                className="
+                  lg:hidden
+                  flex
+                  items-center
+                  justify-center
+                  w-9
+                  h-9
+                  rounded-md
+                  text-[#2A57C4]
+                  hover:bg-[#F5F6F8]
+                  transition-colors
+                  duration-200
+                "
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="Toggle menu"
+                aria-expanded={isOpen}
               >
                 {isOpen ? (
-                  <X className="w-6 h-6 text-gray-600" />
+                  <X size={19} strokeWidth={1.7} />
                 ) : (
-                  <Menu className="w-6 h-6 text-gray-600" />
-                )}
-                {!isOpen && !email && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50" />
+                  <Menu size={19} strokeWidth={1.7} />
                 )}
               </button>
             </div>
@@ -328,51 +629,137 @@ export default function Header({ onUserClick }) {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* =========================================================
+          MOBILE MENU
+      ========================================================= */}
+
       <div
-        className={`fixed top-16 lg:top-20 left-0 w-full h-[calc(100vh-4rem)] bg-white/80 backdrop-blur-xl z-40 
-          transform transition-all duration-500 ease-in-out
-          ${
-            isOpen
-              ? "translate-x-0 opacity-100"
-              : "translate-x-full opacity-0 pointer-events-none"
-          }`}
+        style={{
+          fontFamily: FONT_FAMILY,
+        }}
+        className={[
+          "fixed",
+          "top-[64px]",
+          "left-0",
+          "w-full",
+          "h-[calc(100vh-64px)]",
+          "bg-white",
+          "border-b",
+          "border-[#E7E7E7]",
+          "shadow-md",
+          "z-40",
+          "lg:hidden",
+          "transition-all",
+          "duration-300",
+          "ease-in-out",
+          isOpen
+            ? "translate-x-0 opacity-100"
+            : "translate-x-full opacity-0 pointer-events-none",
+        ].join(" ")}
       >
         <div className="h-full overflow-y-auto">
-          <div className="px-6 py-4">
-            {/* User Section */}
-            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50/80 to-purple-50/80 backdrop-blur-sm rounded-xl mb-4 border border-white/50">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+          <div className="px-5 py-4">
+            {/* =================================================
+                USER SECTION
+            ================================================= */}
+
+            <div
+              className="
+                flex
+                items-center
+                gap-3
+                p-3
+                bg-[#F7F9FC]
+                rounded-lg
+                mb-4
+                border
+                border-[#E8EDF5]
+              "
+            >
+              <div
+                className="
+                  w-10
+                  h-10
+                  rounded-full
+                  bg-[#2A57C4]
+                  flex
+                  items-center
+                  justify-center
+                  text-white
+                  text-sm
+                  font-semibold
+                  flex-shrink-0
+                "
+              >
                 {email ? userInitials : "G"}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-gray-900">
+
+              <div className="flex-1 min-w-0">
+                <p
+                  className="
+                    text-[14px]
+                    font-medium
+                    text-[#2A57C4]
+                  "
+                >
                   {email ? userName : "Guest User"}
                 </p>
+
                 {email && (
-                  <p className="text-xs text-gray-500 truncate">{email}</p>
+                  <p
+                    className="
+                      text-[12px]
+                      text-[#6B7280]
+                      truncate
+                      mt-0.5
+                    "
+                  >
+                    {email}
+                  </p>
                 )}
+
                 {!email && (
-                  <p className="text-xs text-gray-500">
+                  <p
+                    className="
+                      text-[12px]
+                      text-[#6B7280]
+                      mt-0.5
+                    "
+                  >
                     Sign in for more features
                   </p>
                 )}
               </div>
+
               {!email && (
                 <button
+                  type="button"
                   onClick={() => {
                     setIsOpen(false);
                     onUserClick?.();
                   }}
-                  className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
+                  className="
+                    px-3
+                    py-1.5
+                    rounded-full
+                    border
+                    border-[#7FA2F1]
+                    bg-white
+                    text-[#2A57C4]
+                    text-[12px]
+                    font-normal
+                  "
                 >
                   Sign In
                 </button>
               )}
             </div>
 
-            {/* Mobile Nav Links */}
-            <nav className="flex flex-col gap-1">
+            {/* =================================================
+                MOBILE NAV LINKS
+            ================================================= */}
+
+            <nav className="flex flex-col">
               {sortedMenus.map((menu, index) => {
                 const route = getRoutePath(menu.title);
                 const isHome = route === "/";
@@ -384,34 +771,49 @@ export default function Header({ onUserClick }) {
                     end={isHome}
                     onClick={() => setIsOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-xl backdrop-blur-sm transition-all duration-300 group relative ${
+                      [
+                        "relative",
+                        "flex",
+                        "items-center",
+                        "px-3",
+                        "py-3.5",
+                        "border-b",
+                        "border-[#EEF0F3]",
+                        "transition-colors",
+                        "duration-200",
                         isActive
-                          ? "bg-white/60 text-[#0760F0]"
-                          : "hover:bg-white/50 text-gray-700"
-                      }`
+                          ? "text-[#2A57C4] font-medium"
+                          : "text-[#35445C] font-normal hover:text-[#2A57C4]",
+                      ].join(" ")
                     }
                   >
                     {({ isActive }) => (
                       <>
+                        <span className="text-[14px]">{menu.title}</span>
+
                         <span
-                          className={`text-sm font-medium transition-colors ${
-                            isActive
-                              ? "text-[#0760F0]"
-                              : "text-gray-700 group-hover:text-[#0760F0]"
-                          }`}
+                          className="
+                            ml-auto
+                            text-[14px]
+                            text-[#2A57C4]
+                          "
                         >
-                          {menu.title}
-                        </span>
-                        <span className="ml-auto text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
                           →
                         </span>
+
                         <span
-                          className={`absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-[#0760F0] to-purple-500 transition-transform duration-300 origin-left ${
-                            isActive
-                              ? "scale-x-100"
-                              : "scale-x-0 group-hover:scale-x-100"
-                          }`}
-                        ></span>
+                          className={[
+                            "absolute",
+                            "bottom-0",
+                            "left-3",
+                            "w-10",
+                            "h-[1px]",
+                            "bg-[#2A57C4]",
+                            "transition-transform",
+                            "duration-200",
+                            isActive ? "scale-x-100" : "scale-x-0",
+                          ].join(" ")}
+                        />
                       </>
                     )}
                   </NavLink>
@@ -419,86 +821,121 @@ export default function Header({ onUserClick }) {
               })}
             </nav>
 
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-gray-100/50">
+            {/* =================================================
+                BOTTOM ACTIONS
+            ================================================= */}
+
+            <div className="mt-5 pt-4 border-t border-[#E9ECEF]">
               {email ? (
                 <button
+                  type="button"
                   onClick={() => {
                     setIsOpen(false);
                     handleLogout();
                   }}
                   disabled={isLoggingOut}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl backdrop-blur-sm
-                    ${
-                      isLoggingOut
-                        ? "bg-gray-100/50 text-gray-400"
-                        : "bg-red-50/80 text-red-600 hover:bg-red-100/80"
-                    } 
-                    transition-all duration-300 font-medium text-sm border border-red-200/30`}
+                  className="
+                    w-full
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                    px-4
+                    py-2.5
+                    rounded-full
+                    border
+                    border-red-200
+                    bg-white
+                    text-red-600
+                    text-[13px]
+                    font-normal
+                    hover:bg-red-50
+                    transition-colors
+                    duration-200
+                    disabled:text-gray-400
+                  "
                 >
                   {isLoggingOut ? (
                     <>
-                      <span className="animate-spin">⏳</span>
+                      <svg
+                        className="animate-spin h-3.5 w-3.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        />
+                      </svg>
                       Logging out...
                     </>
                   ) : (
                     <>
-                      <LogOut className="w-4 h-4" />
+                      <LogOut size={14} strokeWidth={1.7} />
                       Sign Out
                     </>
                   )}
                 </button>
               ) : (
                 <button
+                  type="button"
                   onClick={() => {
                     setIsOpen(false);
                     onUserClick?.();
                   }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-2xl transition-all duration-300 text-sm font-medium hover:scale-[1.02]"
+                  className="
+                    w-full
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                    px-4
+                    py-2.5
+                    rounded-full
+                    border
+                    border-[#7FA2F1]
+                    bg-white
+                    text-[#2A57C4]
+                    text-[13px]
+                    font-normal
+                    hover:bg-[#F6F8FD]
+                    transition-colors
+                    duration-200
+                  "
                 >
-                  <LogIn className="w-4 h-4" />
+                  <LogIn size={14} strokeWidth={1.7} />
                   Sign In / Register
                 </button>
               )}
             </div>
 
+            {/* =================================================
+                VERSION
+            ================================================= */}
+
             <div className="mt-4 text-center">
-              <p className="text-[10px] text-gray-400/80 backdrop-blur-sm px-3 py-1 rounded-full bg-white/30 inline-block">
+              <p
+                className="
+                  text-[10px]
+                  text-[#9CA3AF]
+                "
+              >
                 v2.0.1 • © 2026 AltDB
               </p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Animations */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-        .backdrop-blur-sm {
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-        }
-        .backdrop-blur-md {
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-        }
-        .backdrop-blur-xl {
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-      `}</style>
     </>
   );
 }
