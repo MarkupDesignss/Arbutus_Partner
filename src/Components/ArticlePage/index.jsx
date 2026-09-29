@@ -1,9 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useGetCommentaryPageQuery } from "../../Redux/api/publicApiSlice";
+import {
+  useGetCommentaryPageQuery,
+  useSendSubscribeMutation,
+} from "../../Redux/api/publicApiSlice";
+import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 /* =========================================================
-   HELPERS
+   COLORS
 ========================================================= */
 
 const COLORS = {
@@ -17,6 +22,10 @@ const COLORS = {
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200";
+
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function normalizeUrl(value) {
   if (!value) return "";
@@ -32,8 +41,57 @@ function normalizeUrl(value) {
   return url;
 }
 
+/*
+  Link behavior:
+
+  LEFT POSTS
+  -> format_url
+
+  HERO / MAIN POST
+  -> source_url
+
+  RIGHT GRID
+  -> format_url
+
+  MORE POSTS
+  -> format_url
+
+  MEMBERS
+  -> website_url
+*/
+
+function getPostExternalUrl(post, type = "format") {
+  if (!post) return "";
+
+  if (type === "source") {
+    return (
+      normalizeUrl(post.source_url) ||
+      normalizeUrl(post.format_url) ||
+      ""
+    );
+  }
+
+  return (
+    normalizeUrl(post.format_url) ||
+    normalizeUrl(post.source_url) ||
+    ""
+  );
+}
+
+function openExternalUrl(url) {
+  const normalizedUrl = normalizeUrl(url);
+
+  if (!normalizedUrl) return;
+
+  window.open(
+    normalizedUrl,
+    "_blank",
+    "noopener,noreferrer"
+  );
+}
+
 /* =========================================================
-   ANIMATION VARIANTS
+   ANIMATIONS
 ========================================================= */
 
 const fadeUp = {
@@ -41,6 +99,7 @@ const fadeUp = {
     opacity: 0,
     y: 24,
   },
+
   show: {
     opacity: 1,
     y: 0,
@@ -55,6 +114,7 @@ const fadeIn = {
   hidden: {
     opacity: 0,
   },
+
   show: {
     opacity: 1,
     transition: {
@@ -66,6 +126,7 @@ const fadeIn = {
 
 const staggerParent = {
   hidden: {},
+
   show: {
     transition: {
       staggerChildren: 0.08,
@@ -79,6 +140,7 @@ const staggerChild = {
     opacity: 0,
     y: 18,
   },
+
   show: {
     opacity: 1,
     y: 0,
@@ -90,7 +152,7 @@ const staggerChild = {
 };
 
 /* =========================================================
-   SKELETON
+   SKELETONS
 ========================================================= */
 
 function SkeletonBlock({ className = "" }) {
@@ -159,11 +221,7 @@ function SkeletonMembers() {
             key={index}
             className={`
               px-0 py-5 sm:px-6
-              ${
-                index > 0
-                  ? "lg:border-l lg:border-[#E5E7EB]"
-                  : "lg:pl-0"
-              }
+              ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"}
               ${index === 0 ? "sm:pl-0" : ""}
             `}
           >
@@ -288,7 +346,7 @@ function Thumb({ src, className = "", title = "" }) {
 }
 
 /* =========================================================
-   SOURCE / LOGO
+   SOURCE INFO
 ========================================================= */
 
 function SourceInfo({ sourceLogo, sourceName, authorName }) {
@@ -344,10 +402,6 @@ function Tags({ post }) {
   );
 }
 
-/* =========================================================
-   MEDIA LABEL
-========================================================= */
-
 function getMediaLabel(mediaType) {
   const labels = {
     podcast: "Podcast",
@@ -359,10 +413,6 @@ function getMediaLabel(mediaType) {
 
   return labels[String(mediaType || "").toLowerCase()] || null;
 }
-
-/* =========================================================
-   DATE FORMAT
-========================================================= */
 
 function formatDate(date) {
   if (!date) return "";
@@ -414,25 +464,19 @@ function Meta({ post }) {
 }
 
 /* =========================================================
-   LINK
-========================================================= */
-
-function getPostHref(post) {
-  if (!post?.slug) return "#";
-
-  return `/commentary/${post.slug}`;
-}
-
-/* =========================================================
    ARTICLE ROW
+   LEFT POSTS + MORE POSTS
 ========================================================= */
 
 function ArticleRow({
   post,
   showContent = false,
   rotateImage = false,
+  linkType = "format",
 }) {
   if (!post) return null;
+
+  const externalUrl = getPostExternalUrl(post, linkType);
 
   return (
     <motion.article
@@ -440,37 +484,68 @@ function ArticleRow({
       className="group flex items-stretch gap-4"
     >
       {/* IMAGE */}
-      <a
-        href={getPostHref(post)}
-        className="block w-[140px] shrink-0 self-stretch"
-      >
-        <Thumb
-          src={post.image_url}
-          title={post.title}
-          className="h-full min-h-[80px] w-full"
-        />
-      </a>
+
+      {externalUrl ? (
+        <a
+          href={externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-[140px] shrink-0 self-stretch"
+        >
+          <Thumb
+            src={post.image_url}
+            title={post.title}
+            className="h-full min-h-[80px] w-full"
+          />
+        </a>
+      ) : (
+        <div className="block w-[140px] shrink-0 self-stretch">
+          <Thumb
+            src={post.image_url}
+            title={post.title}
+            className="h-full min-h-[80px] w-full"
+          />
+        </div>
+      )}
 
       {/* CONTENT */}
+
       <div className="min-w-0 flex-1">
-        <a
-          href={getPostHref(post)}
-          className="
-            block
-            text-[14px]
-            leading-[22px]
-            text-[#111827]
-            underline
-            decoration-[#9CA3AF]
-            underline-offset-2
-            transition-colors
-            hover:text-[#0B4D8C]
-          "
-        >
-          {showContent
-            ? post.content || post.excerpt || post.title
-            : post.title}
-        </a>
+        {externalUrl ? (
+          <a
+            href={externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              block
+              text-[14px]
+              leading-[22px]
+              text-[#111827]
+              underline
+              decoration-[#9CA3AF]
+              underline-offset-2
+              transition-colors
+              hover:text-[#0B4D8C]
+            "
+          >
+            {showContent
+              ? post.content || post.excerpt || post.title
+              : post.title}
+          </a>
+        ) : (
+          <div
+            className="
+              block
+              text-[14px]
+              leading-[22px]
+              text-[#111827]
+            "
+          >
+            {showContent
+              ? post.content || post.excerpt || post.title
+              : post.title}
+          </div>
+        )}
 
         {post.excerpt && !showContent ? (
           <p className="mt-2 line-clamp-3 text-[12px] leading-5 text-[#6B7280]">
@@ -483,6 +558,7 @@ function ArticleRow({
     </motion.article>
   );
 }
+
 /* =========================================================
    SMALL SIDE ARTICLE
 ========================================================= */
@@ -490,38 +566,69 @@ function ArticleRow({
 function SideArticle({ post }) {
   if (!post) return null;
 
+  const externalUrl = getPostExternalUrl(post, "format");
+
   return (
     <motion.article
       variants={staggerChild}
       className="group flex items-stretch gap-4"
     >
       {/* IMAGE */}
-      <a
-        href={getPostHref(post)}
-        className="block w-[160px] shrink-0 self-stretch"
-      >
-        <Thumb
-          src={post.image_url}
-          title={post.title}
-          className="h-full min-h-[100px] w-full"
-        />
-      </a>
+
+      {externalUrl ? (
+        <a
+          href={externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-[160px] shrink-0 self-stretch"
+        >
+          <Thumb
+            src={post.image_url}
+            title={post.title}
+            className="h-full min-h-[100px] w-full"
+          />
+        </a>
+      ) : (
+        <div className="block w-[160px] shrink-0 self-stretch">
+          <Thumb
+            src={post.image_url}
+            title={post.title}
+            className="h-full min-h-[100px] w-full"
+          />
+        </div>
+      )}
 
       {/* CONTENT */}
+
       <div className="min-w-0 flex-1">
-        <a
-          href={getPostHref(post)}
-          className="
-            block
-            text-[13px]
-            leading-[22px]
-            text-[#111827]
-            transition-colors
-            hover:text-[#0B4D8C]
-          "
-        >
-          {post.title}
-        </a>
+        {externalUrl ? (
+          <a
+            href={externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              block
+              text-[13px]
+              leading-[22px]
+              text-[#111827]
+              transition-colors
+              hover:text-[#0B4D8C]
+            "
+          >
+            {post.title}
+          </a>
+        ) : (
+          <div
+            className="
+              block
+              text-[13px]
+              leading-[22px]
+              text-[#111827]
+            "
+          >
+            {post.title}
+          </div>
+        )}
 
         {post.excerpt ? (
           <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-[#6B7280]">
@@ -534,6 +641,7 @@ function SideArticle({ post }) {
     </motion.article>
   );
 }
+
 /* =========================================================
    MEMBER LOGO
 ========================================================= */
@@ -593,8 +701,8 @@ function MembersSection({ members = [] }) {
           Members
         </h2>
 
-        <a
-          href="/members"
+        <Link
+          to="/PartnerDirectory"
           className="
             flex
             items-center
@@ -620,7 +728,7 @@ function MembersSection({ members = [] }) {
           >
             <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>
-        </a>
+        </Link>
       </div>
 
       <motion.div
@@ -633,42 +741,48 @@ function MembersSection({ members = [] }) {
           amount: 0.15,
         }}
       >
-        {members.map((member, index) => (
-          <motion.div
-            key={member.id || member.name || index}
-            variants={staggerChild}
-            className={`
-              px-0
-              py-5
-              sm:px-6
-              ${
-                index > 0
-                  ? "lg:border-l lg:border-[#E5E7EB]"
-                  : "lg:pl-0"
-              }
-              ${index === 0 ? "sm:pl-0" : ""}
-            `}
-          >
-            <a
-              href={member.website_url || "#"}
-              target={
-                member.website_url ? "_blank" : undefined
-              }
-              rel={
-                member.website_url
-                  ? "noopener noreferrer"
-                  : undefined
-              }
-              className="block"
-            >
-              <MemberLogo member={member} />
-            </a>
+        {members.map((member, index) => {
+          const websiteUrl = normalizeUrl(member?.website_url);
 
-            <p className="mt-8 max-w-xs text-[14px] leading-6 text-[#4B5563]">
-              {member.description}
-            </p>
-          </motion.div>
-        ))}
+          return (
+            <motion.div
+              key={member.id || member.name || index}
+              variants={staggerChild}
+              className={`
+                px-0
+                py-5
+                sm:px-6
+                ${
+                  index > 0
+                    ? "lg:border-l lg:border-[#E5E7EB]"
+                    : "lg:pl-0"
+                }
+                ${index === 0 ? "sm:pl-0" : ""}
+              `}
+            >
+              {/* MEMBER WEBSITE URL */}
+
+              {websiteUrl ? (
+                <a
+                  href={websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <MemberLogo member={member} />
+                </a>
+              ) : (
+                <div className="block">
+                  <MemberLogo member={member} />
+                </div>
+              )}
+
+              <p className="mt-8 max-w-xs text-[14px] leading-6 text-[#4B5563]">
+                {member.description}
+              </p>
+            </motion.div>
+          );
+        })}
       </motion.div>
     </motion.section>
   );
@@ -679,6 +793,72 @@ function MembersSection({ members = [] }) {
 ========================================================= */
 
 function Newsletter() {
+  const [email, setEmail] = useState("");
+
+  const [sendSubscribe, { isLoading }] = useSendSubscribeMutation();
+
+  const handleSubscribe = async () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      Swal.fire({
+        icon: "error",
+        title: "Email Required",
+        text: "Please enter your email address.",
+        confirmButtonColor: COLORS.primary,
+      });
+
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(trimmedEmail)) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Email",
+        text: "Please enter a valid email address.",
+        confirmButtonColor: COLORS.primary,
+      });
+
+      return;
+    }
+
+    try {
+      const res = await sendSubscribe({
+        email: trimmedEmail,
+      }).unwrap();
+
+      Swal.fire({
+        icon: "success",
+        title: "Subscribed Successfully",
+        text:
+          res?.message ||
+          "Your email address has been subscribed successfully!",
+        confirmButtonColor: COLORS.primary,
+      });
+
+      setEmail("");
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Subscription Failed",
+        text:
+          error?.data?.message ||
+          error?.message ||
+          "Something went wrong. Please try again.",
+        confirmButtonColor: COLORS.primary,
+      });
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" && !isLoading) {
+      event.preventDefault();
+      handleSubscribe();
+    }
+  };
+
   return (
     <motion.aside
       className="self-start lg:sticky lg:top-6"
@@ -711,10 +891,16 @@ function Newsletter() {
           offices.
         </p>
 
+        {/* SUBSCRIBE INPUT */}
+
         <div className="mt-5 flex items-center rounded-full bg-white p-1.5 pl-4">
           <input
             type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Enter your email address"
+            disabled={isLoading}
             className="
               min-w-0
               flex-1
@@ -723,36 +909,58 @@ function Newsletter() {
               text-[#111827]
               outline-none
               placeholder:text-[#9CA3AF]
+              disabled:cursor-not-allowed
+              disabled:opacity-60
             "
           />
 
           <button
             type="button"
             aria-label="Subscribe"
+            onClick={handleSubscribe}
+            disabled={isLoading}
             className="
               flex
               h-10
               w-10
+              shrink-0
               items-center
               justify-center
               rounded-full
               bg-[#E7EEF7]
               text-[#0B4D8C]
-              transition-colors
+              transition-all
+              duration-300
               hover:bg-[#D9E6F4]
+              disabled:cursor-not-allowed
+              disabled:opacity-70
             "
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            {isLoading ? (
+              <span
+                className="
+                  h-4
+                  w-4
+                  animate-spin
+                  rounded-full
+                  border-2
+                  border-[#0B4D8C]
+                  border-t-transparent
+                "
+              />
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
@@ -885,10 +1093,6 @@ export default function ArticlePage() {
 
   return (
     <>
-      {/* =====================================================
-          ROBOTO
-      ====================================================== */}
-
       <link
         rel="preconnect"
         href="https://fonts.googleapis.com"
@@ -912,13 +1116,11 @@ export default function ArticlePage() {
         }}
       >
         <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
-
           {/* =================================================
               MAIN GRID
           ================================================= */}
 
           <div className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-
             {/* =================================================
                 LEFT POSTS
             ================================================= */}
@@ -935,6 +1137,7 @@ export default function ArticlePage() {
                   post={post}
                   showContent
                   rotateImage
+                  linkType="format"
                 />
               ))}
             </motion.div>
@@ -985,19 +1188,36 @@ export default function ArticlePage() {
                     <Meta post={hero} />
                   </motion.div>
 
-                  {/* HERO IMAGE */}
+                  {/* HERO IMAGE
+                      MAIN CLICK -> source_url
+                  */}
 
-                  <motion.a
-                    variants={fadeIn}
-                    href={getPostHref(hero)}
-                    className="group block"
-                  >
-                    <Thumb
-                      src={hero.image_url}
-                      title={hero.title}
-                      className="mt-5 aspect-video w-full"
-                    />
-                  </motion.a>
+                  {getPostExternalUrl(hero, "source") ? (
+                    <motion.a
+                      variants={fadeIn}
+                      href={getPostExternalUrl(hero, "source")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block"
+                    >
+                      <Thumb
+                        src={hero.image_url}
+                        title={hero.title}
+                        className="mt-5 aspect-video w-full"
+                      />
+                    </motion.a>
+                  ) : (
+                    <motion.div
+                      variants={fadeIn}
+                      className="group block"
+                    >
+                      <Thumb
+                        src={hero.image_url}
+                        title={hero.title}
+                        className="mt-5 aspect-video w-full"
+                      />
+                    </motion.div>
+                  )}
 
                   {/* HERO CONTENT */}
 
@@ -1011,7 +1231,6 @@ export default function ArticlePage() {
 
               {(rightGrid.length > 0 || leftPosts.length > 0) && (
                 <div className="mt-14 grid gap-10 md:grid-cols-2">
-
                   {/* LEFT SECONDARY ARTICLE */}
 
                   {rightGrid[0] ? (
@@ -1024,10 +1243,36 @@ export default function ArticlePage() {
                         amount: 0.2,
                       }}
                     >
-                      <a
-                        href={getPostHref(rightGrid[0])}
-                        className="block"
-                      >
+                      {/* RIGHT GRID -> format_url */}
+
+                      {getPostExternalUrl(
+                        rightGrid[0],
+                        "format"
+                      ) ? (
+                        <a
+                          href={getPostExternalUrl(
+                            rightGrid[0],
+                            "format"
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <h2
+                            className="
+                              text-2xl
+                              font-bold
+                              leading-tight
+                              tracking-tight
+                              text-[#111827]
+                              hover:text-[#0B4D8C]
+                              md:text-3xl
+                            "
+                          >
+                            {rightGrid[0].title}
+                          </h2>
+                        </a>
+                      ) : (
                         <h2
                           className="
                             text-2xl
@@ -1035,13 +1280,12 @@ export default function ArticlePage() {
                             leading-tight
                             tracking-tight
                             text-[#111827]
-                            hover:text-[#0B4D8C]
                             md:text-3xl
                           "
                         >
                           {rightGrid[0].title}
                         </h2>
-                      </a>
+                      )}
 
                       {rightGrid[0].excerpt ? (
                         <p className="mt-5 text-[14px] leading-7 text-[#4B5563]">
@@ -1051,16 +1295,34 @@ export default function ArticlePage() {
 
                       <Meta post={rightGrid[0]} />
 
-                      <a
-                        href={getPostHref(rightGrid[0])}
-                        className="group block"
-                      >
-                        <Thumb
-                          src={rightGrid[0].image_url}
-                          title={rightGrid[0].title}
-                          className="mt-6 aspect-video w-full"
-                        />
-                      </a>
+                      {getPostExternalUrl(
+                        rightGrid[0],
+                        "format"
+                      ) ? (
+                        <a
+                          href={getPostExternalUrl(
+                            rightGrid[0],
+                            "format"
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group block"
+                        >
+                          <Thumb
+                            src={rightGrid[0].image_url}
+                            title={rightGrid[0].title}
+                            className="mt-6 aspect-video w-full"
+                          />
+                        </a>
+                      ) : (
+                        <div className="group block">
+                          <Thumb
+                            src={rightGrid[0].image_url}
+                            title={rightGrid[0].title}
+                            className="mt-6 aspect-video w-full"
+                          />
+                        </div>
+                      )}
                     </motion.div>
                   ) : null}
 
@@ -1099,7 +1361,6 @@ export default function ArticlePage() {
           ================================================= */}
 
           <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
-
             {/* EMPTY LEFT */}
 
             <div className="hidden lg:block" />
@@ -1122,6 +1383,7 @@ export default function ArticlePage() {
                     <ArticleRow
                       key={post.id || post.slug || index}
                       post={post}
+                      linkType="format"
                     />
                   ))}
                 </motion.div>

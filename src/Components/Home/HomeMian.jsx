@@ -28,7 +28,7 @@ const HomeMian = () => {
         <TopFiveResults />
         <AlternativeInvesting />
         <FourCard />
-        <SubscribeNewsletter />
+        {/* <SubscribeNewsletter /> */}
       </div>
     </>
   );

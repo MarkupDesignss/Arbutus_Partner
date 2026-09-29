@@ -483,9 +483,6 @@ const HeroSection = ({
           object-center
         "
       />
-
-
-
      
       {/* CONTENT */}
       <div className="relative z-10 h-full">

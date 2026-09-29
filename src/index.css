@@ -9,13 +9,40 @@ body {
   padding: 0;
   overflow-x: hidden;
   max-width: 100vw;
-
-  /* ✅ Default font */
   font-family: "Roboto", sans-serif;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* ================================
+   Thin Scrollbar
+================================ */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #bdbdbd transparent;
 }
 
 /* Optional viewport rule */
@@ -32,7 +59,7 @@ body {
   }
 }
 
-/* ✅ Custom font utility classes */
+/* Custom font utility classes */
 .font-roboto {
   font-family: "Roboto", sans-serif;
 }

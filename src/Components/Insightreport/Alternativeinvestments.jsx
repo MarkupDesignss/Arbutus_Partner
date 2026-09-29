@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { useGetInsightReportsQuery } from "../../Redux/api/publicApiSlice";
+import {
+  useGetInsightReportsQuery,
+  useSendSubscribeMutation,
+} from "../../Redux/api/publicApiSlice";
+import Swal from "sweetalert2";
 
 /* =========================================================
    HELPERS
@@ -31,8 +35,6 @@ function normalizeUrl(value) {
 
   const url = String(value).trim();
 
-  // Markdown URL:
-  // [https://example.com](https://example.com)
   const markdownMatch = url.match(/\((https?:\/\/[^)]+)\)/);
 
   if (markdownMatch?.[1]) {
@@ -315,7 +317,6 @@ function PageSkeleton() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
-
         <SkeletonTopics />
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
@@ -372,8 +373,7 @@ function Thumb({
         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
         onError={(event) => {
-          event.currentTarget.src =
-            FALLBACK_IMAGE;
+          event.currentTarget.src = FALLBACK_IMAGE;
         }}
       />
     </div>
@@ -540,13 +540,23 @@ function Meta({ post }) {
    LINK
 ========================================================= */
 
-function getPostHref(post) {
-  if (post?.format_url) {
-    return normalizeUrl(post.format_url);
-  }
+function getPostHref(post, type = "format") {
+  if (type === "source") {
+    if (post?.source_url) {
+      return normalizeUrl(post.source_url);
+    }
 
-  if (post?.source_url) {
-    return normalizeUrl(post.source_url);
+    if (post?.format_url) {
+      return normalizeUrl(post.format_url);
+    }
+  } else {
+    if (post?.format_url) {
+      return normalizeUrl(post.format_url);
+    }
+
+    if (post?.source_url) {
+      return normalizeUrl(post.source_url);
+    }
   }
 
   if (post?.slug) {
@@ -570,10 +580,11 @@ function isExternalUrl(url) {
 function ArticleRow({
   post,
   showContent = false,
+  linkType = "format",
 }) {
   if (!post) return null;
 
-  const href = getPostHref(post);
+  const href = getPostHref(post, linkType);
   const external = isExternalUrl(href);
 
   return (
@@ -640,7 +651,7 @@ function ArticleRow({
 function SideArticle({ post }) {
   if (!post) return null;
 
-  const href = getPostHref(post);
+  const href = getPostHref(post, "format");
   const external = isExternalUrl(href);
 
   return (
@@ -905,8 +916,8 @@ function MembersSection({
           Members
         </h2>
 
-        <a
-          href="/members"
+        <Link
+          to="/PartnerDirectory"
           className="flex items-center gap-1.5 text-[12px] font-semibold tracking-wide text-[#0B4D8C] transition-colors hover:text-[#083B6B]"
         >
           View All
@@ -922,7 +933,7 @@ function MembersSection({
           >
             <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>
-        </a>
+        </Link>
       </div>
 
       <motion.div
@@ -999,6 +1010,80 @@ function MembersSection({
 ========================================================= */
 
 function Newsletter() {
+  const [email, setEmail] = useState("");
+
+  const [
+    sendSubscribe,
+    { isLoading },
+  ] = useSendSubscribeMutation();
+
+  const handleSubscribe = async () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      Swal.fire({
+        icon: "error",
+        title: "Email Required",
+        text: "Please enter your email address.",
+        confirmButtonColor: COLORS.primary,
+      });
+
+      return;
+    }
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(trimmedEmail)) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Email",
+        text: "Please enter a valid email address.",
+        confirmButtonColor: COLORS.primary,
+      });
+
+      return;
+    }
+
+    try {
+      const res =
+        await sendSubscribe({
+          email: trimmedEmail,
+        }).unwrap();
+
+      Swal.fire({
+        icon: "success",
+        title: "Subscribed Successfully",
+        text:
+          res?.message ||
+          "Your email address has been subscribed successfully!",
+        confirmButtonColor: COLORS.primary,
+      });
+
+      setEmail("");
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Subscription Failed",
+        text:
+          error?.data?.message ||
+          error?.message ||
+          "Something went wrong. Please try again.",
+        confirmButtonColor: COLORS.primary,
+      });
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (
+      event.key === "Enter" &&
+      !isLoading
+    ) {
+      event.preventDefault();
+      handleSubscribe();
+    }
+  };
+
   return (
     <motion.aside
       className="self-start lg:sticky lg:top-6"
@@ -1033,29 +1118,86 @@ function Newsletter() {
           offices.
         </p>
 
+        {/* =================================================
+            SUBSCRIBE
+        ================================================= */}
+
         <div className="mt-5 flex items-center rounded-full bg-white p-1.5 pl-4">
           <input
             type="email"
+            value={email}
+            onChange={(event) =>
+              setEmail(
+                event.target.value
+              )
+            }
+            onKeyDown={
+              handleKeyDown
+            }
             placeholder="Enter your email address"
-            className="min-w-0 flex-1 bg-transparent text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+            disabled={isLoading}
+            className="
+              min-w-0
+              flex-1
+              bg-transparent
+              text-[13px]
+              text-[#111827]
+              outline-none
+              placeholder:text-[#9CA3AF]
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+            "
           />
 
           <button
             type="button"
             aria-label="Subscribe"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E7EEF7] text-[#0B4D8C] transition-colors hover:bg-[#D9E6F4]"
+            onClick={
+              handleSubscribe
+            }
+            disabled={isLoading}
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+              bg-[#E7EEF7]
+              text-[#0B4D8C]
+              transition-all
+              duration-300
+              hover:bg-[#D9E6F4]
+              disabled:cursor-not-allowed
+              disabled:opacity-70
+            "
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            {isLoading ? (
+              <span
+                className="
+                  h-4
+                  w-4
+                  animate-spin
+                  rounded-full
+                  border-2
+                  border-[#0B4D8C]
+                  border-t-transparent
+                "
+              />
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
@@ -1118,21 +1260,9 @@ export default function Alternativeinvestments() {
   const [searchParams] =
     useSearchParams();
 
-  /*
-    Topic from URL:
-
-    /insight-reports?topic=industry-education
-  */
-
   const selectedTopic =
     searchParams.get("topic") ||
     undefined;
-
-  /*
-    IMPORTANT:
-    This page now uses Insight Reports API.
-    No commentary API is used here.
-  */
 
   const {
     data: apiResponse,
@@ -1186,13 +1316,6 @@ export default function Alternativeinvestments() {
   /* =======================================================
      BUILD SAME PAGE STRUCTURE
   ======================================================= */
-
-  /*
-    If API directly gives hero/left_posts/right_grid,
-    use those.
-
-    Otherwise build the same layout from reports.
-  */
 
   const rootData =
     apiResponse?.data || {};
@@ -1261,7 +1384,7 @@ export default function Alternativeinvestments() {
     return (
       <>
         <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;wght@0,400;wght@0,500;wght@0,700;wght@0,900;1,400&display=swap"
           rel="stylesheet"
         />
 
@@ -1347,6 +1470,7 @@ export default function Alternativeinvestments() {
                       }
                       post={post}
                       showContent
+                      linkType="format"
                     />
                   )
                 )
@@ -1404,18 +1528,25 @@ export default function Alternativeinvestments() {
                   <motion.a
                     variants={fadeIn}
                     href={getPostHref(
-                      hero
+                      hero,
+                      "source"
                     )}
                     target={
                       isExternalUrl(
-                        getPostHref(hero)
+                        getPostHref(
+                          hero,
+                          "source"
+                        )
                       )
                         ? "_blank"
                         : undefined
                     }
                     rel={
                       isExternalUrl(
-                        getPostHref(hero)
+                        getPostHref(
+                          hero,
+                          "source"
+                        )
                       )
                         ? "noopener noreferrer"
                         : undefined
@@ -1464,12 +1595,14 @@ export default function Alternativeinvestments() {
                     >
                       <a
                         href={getPostHref(
-                          rightGrid[0]
+                          rightGrid[0],
+                          "format"
                         )}
                         target={
                           isExternalUrl(
                             getPostHref(
-                              rightGrid[0]
+                              rightGrid[0],
+                              "format"
                             )
                           )
                             ? "_blank"
@@ -1478,7 +1611,8 @@ export default function Alternativeinvestments() {
                         rel={
                           isExternalUrl(
                             getPostHref(
-                              rightGrid[0]
+                              rightGrid[0],
+                              "format"
                             )
                           )
                             ? "noopener noreferrer"
@@ -1520,12 +1654,14 @@ export default function Alternativeinvestments() {
 
                       <a
                         href={getPostHref(
-                          rightGrid[0]
+                          rightGrid[0],
+                          "format"
                         )}
                         target={
                           isExternalUrl(
                             getPostHref(
-                              rightGrid[0]
+                              rightGrid[0],
+                              "format"
                             )
                           )
                             ? "_blank"
@@ -1534,7 +1670,8 @@ export default function Alternativeinvestments() {
                         rel={
                           isExternalUrl(
                             getPostHref(
-                              rightGrid[0]
+                              rightGrid[0],
+                              "format"
                             )
                           )
                             ? "noopener noreferrer"
@@ -1637,6 +1774,7 @@ export default function Alternativeinvestments() {
                           index
                         }
                         post={post}
+                        linkType="format"
                       />
                     )
                   )}

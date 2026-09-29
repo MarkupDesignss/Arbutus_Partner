@@ -214,7 +214,7 @@ const FourCardSection = () => {
                            group-hover:text-[#1E3F8A] transition-colors duration-300"
                 >
                   <span className="relative">
-                    Learn More
+                  About Us
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#2A57C4] 
                                   group-hover:w-full transition-all duration-300" />
                   </span>
@@ -252,7 +252,7 @@ const FourCardSection = () => {
                      font-semibold shadow-lg hover:shadow-2xl hover:bg-[#1E3F8A] 
                      transition-all duration-300 transform hover:scale-105 group"
           >
-            <span>View All Values</span>
+            <span>View All About Us</span>
             <motion.span
               animate={{ x: [0, 4, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}

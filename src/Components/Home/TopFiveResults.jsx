@@ -156,7 +156,7 @@ export default function TopFiveResults() {
               </motion.p>
 
               {/* Learn More */}
-              <Link 
+              {/* <Link 
                 to="/Levelmain" 
                 className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-[#2A57C4] 
                   hover:text-[#1E3F8A] transition-colors duration-300 group/link"
@@ -172,7 +172,7 @@ export default function TopFiveResults() {
                 >
                   →
                 </motion.span>
-              </Link>
+              </Link> */}
 
               {/* Decorative Dot Pattern */}
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -185,7 +185,7 @@ export default function TopFiveResults() {
         </div>
 
         {/* Bottom CTA */}
-        <motion.div 
+        {/* <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
@@ -205,7 +205,7 @@ export default function TopFiveResults() {
               →
             </motion.span>
           </Link>
-        </motion.div>
+        </motion.div> */}
       </div>
     </div>
   );

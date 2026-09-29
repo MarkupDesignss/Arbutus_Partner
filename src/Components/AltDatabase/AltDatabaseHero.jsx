@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useGetWebBannersQuery } from "../../Redux/api/publicApiSlice";
 import { Link } from "react-router-dom";
@@ -6,9 +7,13 @@ import BannerSkeleton from "../../Skeleton/Home/BannerSkeleton";
 const AltDatabaseHero = () => {
   const { data, isLoading, isError } = useGetWebBannersQuery();
 
+  // Same height classes for both skeleton and actual banner
+  const bannerHeight =
+    "h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh]";
+
   if (isLoading) {
     return (
-      <section className="relative w-full h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh]">
+      <section className={`relative w-full ${bannerHeight}`}>
         <BannerSkeleton />
       </section>
     );
@@ -16,26 +21,31 @@ const AltDatabaseHero = () => {
 
   if (isError || !data?.data) {
     return (
-      <section className="relative w-full h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh] flex items-center justify-center">
+      <section
+        className={`relative w-full ${bannerHeight} flex items-center justify-center`}
+      >
         <p className="text-red-500">Banner not found</p>
       </section>
     );
   }
 
-  const altDbPage = data.data.find((page) => page.slug === "alt-database");
+  const altDbPage = data.data.find(
+    (page) => page.slug === "alt-database"
+  );
 
   const bannerImage = altDbPage?.banner_image;
   const pageTitle = altDbPage?.title || "Alt Database";
 
   return (
     <section
-      className="
-        relative w-full 
-        h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh]
-        bg-cover bg-center 
+      className={`
+        relative w-full ${bannerHeight}
+        bg-cover bg-center
         flex items-center justify-center
-      "
-      style={{ backgroundImage: `url(${bannerImage})` }}
+      `}
+      style={{
+        backgroundImage: `url(${bannerImage})`,
+      }}
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-[#111431]/40"></div>
@@ -44,8 +54,8 @@ const AltDatabaseHero = () => {
       <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
         <h1
           className="
-            text-center text-white 
-            text-xl sm:text-2xl md:text-4xl lg:text-5xl 
+            text-center text-white
+            text-xl sm:text-2xl md:text-4xl lg:text-5xl
             font-bold font-roboto
           "
         >
@@ -54,9 +64,9 @@ const AltDatabaseHero = () => {
 
         <p
           className="
-            text-center text-white 
-            mt-1 sm:mt-2 
-            text-xs sm:text-sm md:text-base 
+            text-center text-white
+            mt-1 sm:mt-2
+            text-xs sm:text-sm md:text-base
             font-roboto
           "
         >
