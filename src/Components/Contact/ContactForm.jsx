@@ -237,7 +237,7 @@ export default function ContactForm() {
                 className={inputStyle("subject")}
                 style={selectBgStyle}
               >
-                <option value="">Choose subject</option>
+                <option value="">Choose</option>
                 <option value="product">Product Question</option>
                 <option value="technical">Technical Issue</option>
                 <option value="billing">Billing</option>
@@ -253,7 +253,7 @@ export default function ContactForm() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Your Email ID <span className="text-red-500">*</span>
+                Your Email <span className="text-red-500">*</span>
               </label>
               <input
                 name="email"
@@ -274,7 +274,7 @@ export default function ContactForm() {
           {/* Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Please tell us about your brand{" "}
+              Write Your Message Here{" "}
               <span className="text-red-500">*</span>
             </label>
 
@@ -284,7 +284,7 @@ export default function ContactForm() {
                 rows="6"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Write your message here..."
+                placeholder="Type your message here..."
                 maxLength={900}
                 className={`${inputStyle("message")} resize-none`}
               />

@@ -1,11 +1,25 @@
 @import "tailwindcss";
 
-/* Global Segoe UI font */
+/* =========================================================
+   FONTS
+   Headings / Titles -> Roboto 700
+   Normal Text      -> Poppins
+========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@700&display=swap");
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
 :root {
-  --font-primary:
-    "Segoe UI", "Segoe UI Web (West European)", -apple-system,
-    BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+  --font-body: "Poppins", sans-serif;
+  --font-heading: "Roboto", sans-serif;
 }
+
+/* =========================================================
+   GLOBAL RESET
+========================================================= */
 
 * {
   box-sizing: border-box;
@@ -18,28 +32,95 @@ body,
   min-height: 100%;
   margin: 0;
   padding: 0;
-  font-family: var(--font-primary);
+}
+
+html {
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   overflow-x: hidden;
+  background: #ffffff;
+  font-family: var(--font-body);
 }
+
+/* =========================================================
+   ALL HTML HEADINGS
+========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+/* =========================================================
+   FORM ELEMENTS
+========================================================= */
 
 button,
 input,
 select,
 textarea {
-  font: inherit;
+  font-family: var(--font-body);
 }
+
+/* =========================================================
+   FONT UTILITY CLASSES
+========================================================= */
+
+.font-poppins {
+  font-family: var(--font-body) !important;
+}
+
+.font-roboto {
+  font-family: var(--font-heading) !important;
+  font-weight: 700 !important;
+}
+
+.roboto-heading {
+  font-family: var(--font-heading) !important;
+  font-weight: 700 !important;
+}
+
+.poppins-regular {
+  font-family: var(--font-body) !important;
+  font-weight: 400 !important;
+}
+
+.poppins-medium {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+}
+
+.poppins-semibold {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+}
+
+.poppins-bold {
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+}
+
+/* =========================================================
+   OLD SEGoe CLASSES
+   Backward compatibility
+========================================================= */
 
 .font-segoe,
 .segoe-regular,
 .segoe-medium,
 .segoe-semibold,
 .segoe-bold {
-  font-family: var(--font-primary);
+  font-family: var(--font-body) !important;
 }
 
 .segoe-regular {
@@ -58,7 +139,10 @@ textarea {
   font-weight: 700;
 }
 
-/* Thin scrollbar */
+/* =========================================================
+   THIN SCROLLBAR
+========================================================= */
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -81,6 +165,10 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #bdbdbd transparent;
 }
+
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 640px) {
   html {

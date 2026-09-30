@@ -240,7 +240,7 @@ const FourCardSection = () => {
         </motion.div>
 
         {/* Bottom CTA */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
@@ -261,7 +261,7 @@ const FourCardSection = () => {
               →
             </motion.span>
           </Link>
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   );

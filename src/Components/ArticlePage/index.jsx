@@ -10,7 +10,6 @@ import { Link } from "react-router-dom";
 /* =========================================================
    COLORS
 ========================================================= */
-
 const COLORS = {
   primary: "#0B4D8C",
   primaryDark: "#083B6B",
@@ -26,12 +25,13 @@ const FALLBACK_IMAGE =
 /* =========================================================
    HELPERS
 ========================================================= */
-
 function normalizeUrl(value) {
   if (!value) return "";
   const url = String(value).trim();
   const markdownMatch = url.match(/\((https?:\/\/[^)]+)\)/);
-  if (markdownMatch?.[1]) return markdownMatch[1];
+  if (markdownMatch?.[1]) {
+    return markdownMatch[1];
+  }
   return url;
 }
 
@@ -43,61 +43,63 @@ function getPostExternalUrl(post, type = "format") {
   return normalizeUrl(post.format_url) || normalizeUrl(post.source_url) || "";
 }
 
-function openExternalUrl(url) {
-  const normalizedUrl = normalizeUrl(url);
-  if (!normalizedUrl) return;
-  window.open(normalizedUrl, "_blank", "noopener,noreferrer");
-}
-
 /* =========================================================
    ANIMATIONS
 ========================================================= */
-
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
 };
 
 const fadeIn = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
+  show: {
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
 };
 
 const staggerParent = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+  show: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+  },
 };
 
 const staggerChild = {
   hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: "easeOut" },
+  },
 };
 
 /* =========================================================
-   SKELETONS
+   SKELETON LOADERS
 ========================================================= */
-
 function SkeletonBlock({ className = "" }) {
   return <div className={`animate-pulse rounded bg-[#E9EDF2] ${className}`} />;
 }
 
 function SkeletonArticleRow() {
   return (
-    <div className="flex gap-4">
-      <SkeletonBlock className="h-[80px] w-[140px] shrink-0" />
+    <div className="flex items-stretch gap-[17px]">
+      <SkeletonBlock className="h-[163px] w-[203px] shrink-0" />
       <div className="min-w-0 flex-1 space-y-3 pt-1">
-        <SkeletonBlock className="h-4 w-[85%]" />
-        <SkeletonBlock className="h-4 w-[65%]" />
-        <SkeletonBlock className="h-3 w-[40%]" />
-        <div className="flex items-center gap-3 pt-2">
+        <SkeletonBlock className="h-4 w-[97%]" />
+        <SkeletonBlock className="h-4 w-[92%]" />
+        <SkeletonBlock className="h-4 w-[88%]" />
+        <SkeletonBlock className="h-4 w-[62%]" />
+        <div className="flex items-center gap-3 pt-3">
           <SkeletonBlock className="h-3 w-20" />
-          <SkeletonBlock className="h-4 w-24" />
+          <SkeletonBlock className="h-5 w-24" />
         </div>
-        <div className="flex items-center gap-2 pt-1">
-          <SkeletonBlock className="h-3 w-14" />
-          <SkeletonBlock className="h-3 w-14" />
-          <SkeletonBlock className="h-3 w-14" />
-        </div>
+        <SkeletonBlock className="h-3 w-[58%]" />
       </div>
     </div>
   );
@@ -105,15 +107,15 @@ function SkeletonArticleRow() {
 
 function SkeletonSideArticle() {
   return (
-    <div className="flex gap-4">
-      <SkeletonBlock className="aspect-video h-auto w-[160px] shrink-0" />
+    <div className="flex gap-[17px]">
+      <SkeletonBlock className="h-[139px] w-[203px] shrink-0" />
       <div className="min-w-0 flex-1 space-y-3 pt-1">
-        <SkeletonBlock className="h-4 w-[90%]" />
-        <SkeletonBlock className="h-4 w-[70%]" />
+        <SkeletonBlock className="h-4 w-[95%]" />
+        <SkeletonBlock className="h-4 w-[80%]" />
         <SkeletonBlock className="h-3 w-[45%]" />
         <div className="flex items-center gap-3 pt-2">
           <SkeletonBlock className="h-3 w-20" />
-          <SkeletonBlock className="h-4 w-24" />
+          <SkeletonBlock className="h-5 w-24" />
         </div>
       </div>
     </div>
@@ -122,20 +124,16 @@ function SkeletonSideArticle() {
 
 function SkeletonMembers() {
   return (
-    <section className="mt-20">
+    <section className="mt-[80px]">
       <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
-        <SkeletonBlock className="h-6 w-28" />
+        <SkeletonBlock className="h-7 w-28" />
         <SkeletonBlock className="h-4 w-16" />
       </div>
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className={`
-              px-0 py-5 sm:px-6
-              ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"}
-              ${index === 0 ? "sm:pl-0" : ""}
-            `}
+            className={`px-0 py-5 sm:px-6 ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"} ${index === 0 ? "sm:pl-0" : ""}`}
           >
             <SkeletonBlock className="h-[50px] w-[140px]" />
             <div className="mt-8 space-y-2">
@@ -167,34 +165,31 @@ function SkeletonNewsletter() {
 
 function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-          <div className="space-y-10">
+    <div className="min-h-screen bg-white font-poppins">
+      <div className="mx-auto max-w-[1608px] px-5 pt-[42px] pb-10 lg:px-0">
+        <div className="grid gap-12 lg:grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-[112px]">
+          <div className="space-y-[35px]">
             {Array.from({ length: 4 }).map((_, index) => (
               <SkeletonArticleRow key={index} />
             ))}
           </div>
           <div>
-            <SkeletonBlock className="h-9 w-[75%]" />
-            <SkeletonBlock className="mt-3 h-9 w-[55%]" />
-            <div className="mt-5 space-y-2">
-              <SkeletonBlock className="h-4 w-full" />
-              <SkeletonBlock className="h-4 w-[90%]" />
-            </div>
+            <SkeletonBlock className="h-[43px] w-[72%]" />
+            <SkeletonBlock className="mt-6 h-5 w-full" />
+            <SkeletonBlock className="mt-2 h-5 w-[92%]" />
             <div className="mt-4 flex items-center gap-3">
-              <SkeletonBlock className="h-3 w-20" />
-              <SkeletonBlock className="h-5 w-28" />
+              <SkeletonBlock className="h-4 w-20" />
+              <SkeletonBlock className="h-6 w-28" />
             </div>
-            <SkeletonBlock className="mt-5 aspect-video w-full" />
-            <div className="mt-14 grid gap-10 md:grid-cols-2">
+            <SkeletonBlock className="mt-5 aspect-[2.28/1] w-full" />
+            <div className="mt-[46px] grid gap-[17px] md:grid-cols-2">
               <div>
-                <SkeletonBlock className="h-7 w-[80%]" />
+                <SkeletonBlock className="h-9 w-[78%]" />
                 <SkeletonBlock className="mt-4 h-4 w-full" />
-                <SkeletonBlock className="mt-2 h-4 w-[80%]" />
-                <SkeletonBlock className="mt-6 aspect-video w-full" />
+                <SkeletonBlock className="mt-2 h-4 w-[90%]" />
+                <SkeletonBlock className="mt-6 h-[210px] w-full" />
               </div>
-              <div className="space-y-9">
+              <div className="space-y-[35px]">
                 {Array.from({ length: 3 }).map((_, index) => (
                   <SkeletonSideArticle key={index} />
                 ))}
@@ -205,7 +200,7 @@ function PageSkeleton() {
         <SkeletonMembers />
         <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
           <div className="hidden lg:block" />
-          <div className="space-y-10">
+          <div className="space-y-[35px]">
             {Array.from({ length: 3 }).map((_, index) => (
               <SkeletonArticleRow key={index} />
             ))}
@@ -218,13 +213,12 @@ function PageSkeleton() {
 }
 
 /* =========================================================
-   IMAGE
+   IMAGE COMPONENT
 ========================================================= */
-
 function Thumb({ src, className = "", title = "" }) {
   const image = normalizeUrl(src) || FALLBACK_IMAGE;
   return (
-    <div className={`relative overflow-hidden rounded bg-[#F4F6F8] ${className}`}>
+    <div className={`relative overflow-hidden bg-[#F4F6F8] ${className}`}>
       <img
         src={image}
         alt={title || "Article"}
@@ -241,16 +235,15 @@ function Thumb({ src, className = "", title = "" }) {
 /* =========================================================
    SOURCE INFO
 ========================================================= */
-
 function SourceInfo({ sourceLogo, sourceName, authorName }) {
   const logo = normalizeUrl(sourceLogo);
   if (logo) {
     return (
-      <div className="flex h-8 max-w-[170px] items-center overflow-hidden">
+      <div className="flex h-[24px] max-w-[170px] items-center overflow-hidden">
         <img
           src={logo}
           alt={sourceName || authorName || "Source"}
-          className="max-h-7 max-w-[145px] object-contain"
+          className="max-h-[24px] max-w-[145px] object-contain"
           onError={(event) => {
             event.currentTarget.style.display = "none";
           }}
@@ -259,35 +252,15 @@ function SourceInfo({ sourceLogo, sourceName, authorName }) {
     );
   }
   return (
-    <span className="max-w-[190px] truncate text-[11px] font-semibold text-[#374151]">
+    <span className="max-w-[190px] truncate font-poppins text-[11px] font-semibold text-[#374151]">
       {sourceName || authorName || "Source"}
     </span>
   );
 }
 
 /* =========================================================
-   TAGS
+   TAGS & DATE
 ========================================================= */
-
-function Tags({ post }) {
-  const tags = [
-    post?.category?.name,
-    getMediaLabel(post?.media_type),
-    "Commentary",
-  ].filter(Boolean);
-
-  return (
-    <p className="text-[12px] font-medium text-[#2A57C4]">
-      {tags.map((tag, index) => (
-        <React.Fragment key={`${tag}-${index}`}>
-          {index > 0 && <span className="mx-1 text-[#4B5563]">|</span>}
-          <span className="transition-colors hover:text-[#083B6B]">{tag}</span>
-        </React.Fragment>
-      ))}
-    </p>
-  );
-}
-
 function getMediaLabel(mediaType) {
   const labels = {
     podcast: "Podcast",
@@ -297,6 +270,25 @@ function getMediaLabel(mediaType) {
     article: "Article",
   };
   return labels[String(mediaType || "").toLowerCase()] || null;
+}
+
+function Tags({ post }) {
+  const tags = [
+    post?.category?.name,
+    getMediaLabel(post?.media_type),
+    "Commentary",
+  ].filter(Boolean);
+
+  return (
+    <p className="font-poppins text-[12px] font-medium leading-[18px] text-[#2A57C4]">
+      {tags.map((tag, index) => (
+        <React.Fragment key={`${tag}-${index}`}>
+          {index > 0 && <span className="mx-1 text-[#4B5563]">|</span>}
+          <span className="transition-colors hover:text-[#083B6B]">{tag}</span>
+        </React.Fragment>
+      ))}
+    </p>
+  );
 }
 
 function formatDate(date) {
@@ -312,15 +304,11 @@ function formatDate(date) {
   }
 }
 
-/* =========================================================
-   META
-========================================================= */
-
 function Meta({ post }) {
   return (
-    <>
-      <div className="mt-1 flex flex-wrap items-center gap-3">
-        <span className="text-[12px] text-[#9CA3AF]">
+    <div className="font-poppins">
+      <div className="mt-[9px] flex flex-wrap items-center gap-[12px]">
+        <span className="font-poppins text-[12px] leading-[18px] text-[#9CA3AF]">
           {post?.published_date_formatted || formatDate(post?.published_date)}
         </span>
         <SourceInfo
@@ -329,81 +317,73 @@ function Meta({ post }) {
           authorName={post?.author_name}
         />
         {post?.read_time ? (
-          <span className="text-[11px] text-[#9CA3AF]">
+          <span className="font-poppins text-[11px] leading-[18px] text-[#9CA3AF]">
             {post.read_time} min read
           </span>
         ) : null}
       </div>
-      <div className="mt-1">
+      <div className="mt-[5px]">
         <Tags post={post} />
       </div>
-    </>
+    </div>
   );
 }
 
 /* =========================================================
-   ARTICLE ROW
+   ARTICLE ROW (Left side & bottom lists) - POPPINS
 ========================================================= */
-
-function ArticleRow({
-  post,
-  showContent = false,
-  rotateImage = false,
-  linkType = "format",
-}) {
+function ArticleRow({ post, linkType = "format" }) {
   if (!post) return null;
   const externalUrl = getPostExternalUrl(post, linkType);
 
   return (
     <motion.article
       variants={staggerChild}
-      className="group flex items-stretch gap-4"
+      className="group flex items-stretch gap-[17px]"
     >
+      {/* IMAGE */}
       {externalUrl ? (
         <a
           href={externalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-[140px] shrink-0 self-stretch"
+          className="block w-[203px] min-w-[203px] shrink-0 self-stretch"
         >
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-full min-h-[80px] w-full"
+            className="h-[163px] min-h-[163px] w-[203px]"
           />
         </a>
       ) : (
-        <div className="block w-[140px] shrink-0 self-stretch">
+        <div className="block w-[203px] min-w-[203px] shrink-0 self-stretch">
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-full min-h-[80px] w-full"
+            className="h-[163px] min-h-[163px] w-[203px]"
           />
         </div>
       )}
 
-      <div className="min-w-0 flex-1">
+      {/* CONTENT */}
+      <div className="min-w-0 flex-1 font-poppins">
         {externalUrl ? (
           <a
             href={externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="
-              block text-[14px] leading-[22px] text-[#111827]
-              underline decoration-[#9CA3AF] underline-offset-2
-              transition-colors hover:text-[#0B4D8C]
-            "
+            className="font-poppins block text-[13px] leading-[20px] tracking-[-0.003em] text-[#111111] underline decoration-[#777777] underline-offset-[2px] transition-colors hover:text-[#0B4D8C]"
           >
-            {showContent ? post.content || post.excerpt || post.title : post.title}
+            {post.title}
           </a>
         ) : (
-          <div className="block text-[14px] leading-[22px] text-[#111827]">
-            {showContent ? post.content || post.excerpt || post.title : post.title}
+          <div className="font-poppins block text-[13px] leading-[20px] tracking-[-0.003em] text-[#111111]">
+            {post.title}
           </div>
         )}
 
-        {post.excerpt && !showContent ? (
-          <p className="mt-2 line-clamp-3 text-[12px] leading-5 text-[#6B7280]">
+        {post.excerpt ? (
+          <p className="mt-[8px] line-clamp-3 font-poppins text-[11px] leading-[18px] text-[#6B7280]">
             {post.excerpt}
           </p>
         ) : null}
@@ -415,9 +395,8 @@ function ArticleRow({
 }
 
 /* =========================================================
-   SMALL SIDE ARTICLE
+   SMALL SIDE ARTICLE (Right side stack) - ROBOTO
 ========================================================= */
-
 function SideArticle({ post }) {
   if (!post) return null;
   const externalUrl = getPostExternalUrl(post, "format");
@@ -425,52 +404,51 @@ function SideArticle({ post }) {
   return (
     <motion.article
       variants={staggerChild}
-      className="group flex items-stretch gap-4"
+      className="group flex items-start gap-[17px]"
     >
+      {/* IMAGE */}
       {externalUrl ? (
         <a
           href={externalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-[160px] shrink-0 self-stretch"
+          className="block w-[203px] min-w-[203px] shrink-0"
         >
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-full min-h-[100px] w-full"
+            className="h-[139px] min-h-[139px] w-[203px]"
           />
         </a>
       ) : (
-        <div className="block w-[160px] shrink-0 self-stretch">
+        <div className="block w-[203px] min-w-[203px] shrink-0">
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-full min-h-[100px] w-full"
+            className="h-[139px] min-h-[139px] w-[203px]"
           />
         </div>
       )}
 
-      <div className="min-w-0 flex-1">
+      {/* CONTENT */}
+      <div className="min-w-0 flex-1 font-poppins">
         {externalUrl ? (
           <a
             href={externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="
-              block text-[13px] leading-[22px] text-[#111827]
-              transition-colors hover:text-[#0B4D8C]
-            "
+            className="roboto-heading block text-[12px] leading-[19px] text-[#111111] transition-colors hover:text-[#0B4D8C]"
           >
             {post.title}
           </a>
         ) : (
-          <div className="block text-[13px] leading-[22px] text-[#111827]">
+          <div className="roboto-heading block text-[12px] leading-[19px] text-[#111111]">
             {post.title}
           </div>
         )}
 
         {post.excerpt ? (
-          <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-[#6B7280]">
+          <p className="mt-[7px] line-clamp-2 font-poppins text-[10.5px] leading-[17px] text-[#6B7280]">
             {post.excerpt}
           </p>
         ) : null}
@@ -482,9 +460,8 @@ function SideArticle({ post }) {
 }
 
 /* =========================================================
-   MEMBER LOGO
+   MEMBER LOGO & SECTION - ROBOTO
 ========================================================= */
-
 function MemberLogo({ member }) {
   const logo = normalizeUrl(member?.logo_url);
   if (logo) {
@@ -502,35 +479,30 @@ function MemberLogo({ member }) {
     );
   }
   return (
-    <div className="flex h-[50px] items-center text-2xl font-bold text-[#111827]">
+    <div className="roboto-heading flex h-[50px] items-center text-2xl text-[#111827]">
       {member?.name}
     </div>
   );
 }
-
-/* =========================================================
-   MEMBERS
-========================================================= */
 
 function MembersSection({ members = [] }) {
   if (!members.length) return null;
 
   return (
     <motion.section
-      className="mt-20"
+      className="mt-[80px] font-poppins"
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.15 }}
     >
       <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
-        <h2 className="text-xl font-bold text-[#111827] md:text-2xl">Members</h2>
+        <h2 className="roboto-heading text-[26px] leading-[32px] text-[#111827]">
+          Members
+        </h2>
         <Link
           to="/PartnerDirectory"
-          className="
-            flex items-center gap-1.5 text-[12px] font-semibold tracking-wide
-            text-[#0B4D8C] transition-colors hover:text-[#083B6B]
-          "
+          className="flex items-center gap-1.5 font-poppins text-[12px] font-semibold tracking-wide text-[#0B4D8C] transition-colors hover:text-[#083B6B]"
         >
           View All
           <svg
@@ -560,11 +532,7 @@ function MembersSection({ members = [] }) {
             <motion.div
               key={member.id || member.name || index}
               variants={staggerChild}
-              className={`
-                px-0 py-5 sm:px-6
-                ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"}
-                ${index === 0 ? "sm:pl-0" : ""}
-              `}
+              className={`px-0 py-5 sm:px-6 ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"} ${index === 0 ? "sm:pl-0" : ""}`}
             >
               {websiteUrl ? (
                 <a
@@ -580,7 +548,7 @@ function MembersSection({ members = [] }) {
                   <MemberLogo member={member} />
                 </div>
               )}
-              <p className="mt-8 max-w-xs text-[14px] leading-6 text-[#4B5563]">
+              <p className="mt-8 max-w-xs font-poppins text-[14px] leading-6 text-[#4B5563]">
                 {member.description}
               </p>
             </motion.div>
@@ -592,16 +560,14 @@ function MembersSection({ members = [] }) {
 }
 
 /* =========================================================
-   NEWSLETTER
+   NEWSLETTER - ROBOTO
 ========================================================= */
-
 function Newsletter() {
   const [email, setEmail] = useState("");
   const [sendSubscribe, { isLoading }] = useSendSubscribeMutation();
 
   const handleSubscribe = async () => {
     const trimmedEmail = email.trim();
-  
     if (!trimmedEmail) {
       Swal.fire({
         icon: "error",
@@ -611,9 +577,8 @@ function Newsletter() {
       });
       return;
     }
-  
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
     if (!emailRegex.test(trimmedEmail)) {
       Swal.fire({
         icon: "warning",
@@ -623,10 +588,9 @@ function Newsletter() {
       });
       return;
     }
-  
+
     try {
       const res = await sendSubscribe({ email: trimmedEmail }).unwrap();
-  
       Swal.fire({
         icon: "success",
         title: "Subscribed Successfully",
@@ -635,7 +599,6 @@ function Newsletter() {
           "Your email address has been subscribed successfully!",
         confirmButtonColor: COLORS.primary,
       });
-  
       setEmail("");
     } catch (error) {
       const apiMessage =
@@ -643,7 +606,6 @@ function Newsletter() {
         error?.data?.message ||
         error?.message ||
         "Something went wrong. Please try again.";
-    
       Swal.fire({
         icon: "error",
         title: "Subscription Failed",
@@ -652,6 +614,7 @@ function Newsletter() {
       });
     }
   };
+
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && !isLoading) {
       event.preventDefault();
@@ -661,7 +624,7 @@ function Newsletter() {
 
   return (
     <motion.aside
-      className="self-start lg:sticky lg:top-6"
+      className="self-start font-poppins lg:sticky lg:top-6"
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
@@ -671,15 +634,14 @@ function Newsletter() {
         className="rounded-3xl p-6 text-white"
         style={{ backgroundColor: COLORS.primary }}
       >
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
+        <p className="font-poppins text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
           Newsletter
         </p>
-        <h3 className="mt-3 text-2xl font-medium leading-tight tracking-tight md:text-3xl">
+        <h3 className="roboto-heading mt-3 text-2xl leading-tight tracking-tight md:text-3xl">
           Insights For
-          <br />
-          A Brighter Tomorrow
+          <br />A Brighter Tomorrow
         </h3>
-        <p className="mt-4 text-[14px] leading-6 text-blue-50">
+        <p className="mt-4 font-poppins text-[14px] leading-6 text-blue-50">
           Receive the latest perspectives on wealth, legacy and family offices.
         </p>
 
@@ -691,31 +653,17 @@ function Newsletter() {
             onKeyDown={handleKeyDown}
             placeholder="Enter your email address"
             disabled={isLoading}
-            className="
-              min-w-0 flex-1 bg-transparent text-[13px] text-[#111827]
-              outline-none placeholder:text-[#9CA3AF]
-              disabled:cursor-not-allowed disabled:opacity-60
-            "
+            className="min-w-0 flex-1 bg-transparent font-poppins text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF] disabled:cursor-not-allowed disabled:opacity-60"
           />
           <button
             type="button"
             aria-label="Subscribe"
             onClick={handleSubscribe}
             disabled={isLoading}
-            className="
-              flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center
-              rounded-full bg-[#E7EEF7] text-[#0B4D8C]
-              transition-all duration-300 hover:bg-[#D9E6F4]
-              disabled:cursor-not-allowed disabled:opacity-70
-            "
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#E7EEF7] font-poppins text-[#0B4D8C] transition-all duration-300 hover:bg-[#D9E6F4] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isLoading ? (
-              <span
-                className="
-                  h-4 w-4 animate-spin rounded-full
-                  border-2 border-[#0B4D8C] border-t-transparent
-                "
-              />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#0B4D8C] border-t-transparent" />
             ) : (
               <svg
                 viewBox="0 0 24 24"
@@ -737,12 +685,10 @@ function Newsletter() {
 }
 
 /* =========================================================
-   HERO CONTENT
+   HERO CONTENT (Main Article) - ROBOTO
 ========================================================= */
-
 function HeroContent({ content }) {
   if (!content) return null;
-
   const paragraphs = String(content)
     .split(/\r?\n/)
     .map((item) => item.trim())
@@ -753,7 +699,7 @@ function HeroContent({ content }) {
 
   return (
     <motion.div
-      className="mt-6"
+      className="mt-6 font-poppins"
       variants={staggerParent}
       initial="hidden"
       whileInView="show"
@@ -763,7 +709,7 @@ function HeroContent({ content }) {
         <motion.p
           key={`${paragraph}-${index}`}
           variants={staggerChild}
-          className="mb-3 text-[14px] leading-7 text-[#4B5563]"
+          className="mb-3 font-poppins text-[14px] leading-7 text-[#4B5563]"
         >
           {paragraph}
         </motion.p>
@@ -773,352 +719,266 @@ function HeroContent({ content }) {
 }
 
 /* =========================================================
-   MAIN PAGE
+   MAIN PAGE COMPONENT
 ========================================================= */
-
 export default function ArticlePage() {
   const { data: apiResponse, isLoading, isError } = useGetCommentaryPageQuery();
-
-  /* =======================================================
-     LOAD MORE CONFIG
-     - Initially 5 dikhao
-     - Load More par +5
-  ======================================================= */
 
   const POSTS_PER_LOAD = 5;
   const [visibleMoreCount, setVisibleMoreCount] = useState(POSTS_PER_LOAD);
 
   const pageData = apiResponse?.data;
-
   const hero = pageData?.hero || null;
-
   const leftPosts = Array.isArray(pageData?.left_posts)
     ? pageData.left_posts
     : [];
-
   const rightGrid = Array.isArray(pageData?.right_grid)
     ? pageData.right_grid
     : [];
-
-  const members = Array.isArray(pageData?.members)
-    ? pageData.members
-    : [];
-
+  const members = Array.isArray(pageData?.members) ? pageData.members : [];
   const morePosts = Array.isArray(pageData?.more_posts?.items)
     ? pageData.more_posts.items
     : [];
 
-  /* =======================================================
-     VISIBLE MORE POSTS
-     Initially 5, Load More par +5
-  ======================================================= */
-
   const visibleMorePosts = morePosts.slice(0, visibleMoreCount);
-
   const handleLoadMore = () => {
     setVisibleMoreCount((prev) =>
-      Math.min(prev + POSTS_PER_LOAD, morePosts.length)
+      Math.min(prev + POSTS_PER_LOAD, morePosts.length),
     );
   };
-
   const hasMorePosts = visibleMoreCount < morePosts.length;
-
-  /* =======================================================
-     LOADING
-  ======================================================= */
 
   if (isLoading) {
     return (
-      <>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
-          rel="stylesheet"
-        />
-        <div
-          className="bg-white text-[#111827]"
-          style={{ fontFamily: "'Roboto', sans-serif" }}
-        >
-          <PageSkeleton />
-        </div>
-      </>
+      <div className="min-h-screen bg-white font-poppins">
+        <PageSkeleton />
+      </div>
     );
   }
 
-  /* =======================================================
-     ERROR
-  ======================================================= */
-
   if (isError || !pageData) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-white">
-        <div className="text-sm text-red-500">
+      <div className="flex min-h-[60vh] items-center justify-center bg-white font-poppins">
+        <div className="font-poppins text-sm text-red-500">
           Unable to load commentary content.
         </div>
       </div>
     );
   }
 
-  /* =======================================================
-     PAGE
-  ======================================================= */
-
   return (
-    <>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossOrigin="anonymous"
-      />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
-        rel="stylesheet"
-      />
+    <div className="min-h-screen bg-white font-poppins text-[#111827]">
+      <div className="mx-auto max-w-[1608px] px-5 pt-[42px] pb-10 lg:px-0">
+        {/* =================================================
+            MAIN TOP GRID
+        ================================================= */}
+        <div className="grid gap-12 lg:grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-[112px]">
+          {/* LEFT ARTICLES - POPPINS */}
+          <motion.div
+            className="space-y-[35px]"
+            variants={staggerParent}
+            initial="hidden"
+            animate="show"
+          >
+            {leftPosts.map((post, index) => (
+              <ArticleRow
+                key={post.id || post.slug || index}
+                post={post}
+                linkType="format"
+              />
+            ))}
+          </motion.div>
 
-      <div
-        className="min-h-screen bg-white text-[#111827]"
-        style={{ fontFamily: "'Roboto', sans-serif" }}
-      >
-        <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
+          {/* RIGHT FEATURED AREA - ROBOTO */}
+          <motion.div variants={fadeUp} initial="hidden" animate="show">
+            {hero ? (
+              <>
+                {/* HERO TITLE - ROBOTO */}
+                <motion.h1
+                  variants={fadeUp}
+                  className="roboto-heading text-[34px] leading-[42px] tracking-[-0.025em] text-black md:text-[36px] md:leading-[43px]"
+                  style={{ color: COLORS.heading }}
+                >
+                  {hero.title}
+                </motion.h1>
 
-          {/* =================================================
-              MAIN GRID
-          ================================================= */}
-
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-
-            {/* LEFT POSTS */}
-
-            <motion.div
-              className="space-y-10"
-              variants={staggerParent}
-              initial="hidden"
-              animate="show"
-            >
-              {leftPosts.map((post, index) => (
-                <ArticleRow
-                  key={post.id || post.slug || index}
-                  post={post}
-                  showContent
-                  rotateImage
-                  linkType="format"
-                />
-              ))}
-            </motion.div>
-
-            {/* FEATURED / HERO */}
-
-            <motion.div variants={fadeUp} initial="hidden" animate="show">
-              {hero ? (
-                <>
-                  <motion.h1
-                    variants={fadeUp}
-                    className="
-                      text-3xl font-semibold leading-tight tracking-tight md:text-4xl
-                    "
-                    style={{ color: COLORS.heading }}
+                {/* HERO DESCRIPTION */}
+                {hero.excerpt ? (
+                  <motion.p
+                    variants={fadeIn}
+                    className="mt-[21px] max-w-full font-poppins text-[15px] leading-[24px] text-[#4B5563]"
                   >
-                    {hero.title}
-                  </motion.h1>
+                    {hero.excerpt}
+                  </motion.p>
+                ) : null}
 
-                  {hero.excerpt ? (
-                    <motion.p
-                      variants={fadeIn}
-                      className="mt-5 max-w-3xl text-[14px] leading-7 text-[#4B5563]"
-                    >
-                      {hero.excerpt}
-                    </motion.p>
-                  ) : null}
+                {/* HERO META */}
+                <motion.div variants={fadeIn}>
+                  <Meta post={hero} />
+                </motion.div>
 
-                  <motion.div variants={fadeIn}>
-                    <Meta post={hero} />
+                {/* HERO IMAGE */}
+                {getPostExternalUrl(hero, "source") ? (
+                  <motion.a
+                    variants={fadeIn}
+                    href={getPostExternalUrl(hero, "source")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block"
+                  >
+                    <Thumb
+                      src={hero.image_url}
+                      title={hero.title}
+                      className="mt-[18px] aspect-[2.28/1] w-full"
+                    />
+                  </motion.a>
+                ) : (
+                  <motion.div variants={fadeIn} className="group block">
+                    <Thumb
+                      src={hero.image_url}
+                      title={hero.title}
+                      className="mt-[18px] aspect-[2.28/1] w-full"
+                    />
                   </motion.div>
+                )}
 
-                  {getPostExternalUrl(hero, "source") ? (
-                    <motion.a
-                      variants={fadeIn}
-                      href={getPostExternalUrl(hero, "source")}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group block"
-                    >
-                      <Thumb
-                        src={hero.image_url}
-                        title={hero.title}
-                        className="mt-5 aspect-video w-full"
-                      />
-                    </motion.a>
-                  ) : (
-                    <motion.div variants={fadeIn} className="group block">
-                      <Thumb
-                        src={hero.image_url}
-                        title={hero.title}
-                        className="mt-5 aspect-video w-full"
-                      />
-                    </motion.div>
-                  )}
+                {/* HERO CONTENT */}
+                <HeroContent content={hero.content} />
+              </>
+            ) : null}
 
-                  <HeroContent content={hero.content} />
-                </>
-              ) : null}
-
-              {/* SECONDARY GRID */}
-
-              {(rightGrid.length > 0 || leftPosts.length > 0) && (
-                <div className="mt-14 grid gap-10 md:grid-cols-2">
-
-                  {rightGrid[0] ? (
-                    <motion.div
-                      variants={fadeUp}
-                      initial="hidden"
-                      whileInView="show"
-                      viewport={{ once: true, amount: 0.2 }}
-                    >
-                      {getPostExternalUrl(rightGrid[0], "format") ? (
-                        <a
-                          href={getPostExternalUrl(rightGrid[0], "format")}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block"
-                        >
-                          <h2
-                            className="
-                              text-2xl font-bold leading-tight tracking-tight
-                              text-[#111827] hover:text-[#0B4D8C] md:text-3xl
-                            "
-                          >
-                            {rightGrid[0].title}
-                          </h2>
-                        </a>
-                      ) : (
-                        <h2
-                          className="
-                            text-2xl font-bold leading-tight tracking-tight
-                            text-[#111827] md:text-3xl
-                          "
-                        >
-                          {rightGrid[0].title}
-                        </h2>
-                      )}
-
-                      {rightGrid[0].excerpt ? (
-                        <p className="mt-5 text-[14px] leading-7 text-[#4B5563]">
-                          {rightGrid[0].excerpt}
-                        </p>
-                      ) : null}
-
-                      <Meta post={rightGrid[0]} />
-
-                      {getPostExternalUrl(rightGrid[0], "format") ? (
-                        <a
-                          href={getPostExternalUrl(rightGrid[0], "format")}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group block"
-                        >
-                          <Thumb
-                            src={rightGrid[0].image_url}
-                            title={rightGrid[0].title}
-                            className="mt-6 aspect-video w-full"
-                          />
-                        </a>
-                      ) : (
-                        <div className="group block">
-                          <Thumb
-                            src={rightGrid[0].image_url}
-                            title={rightGrid[0].title}
-                            className="mt-6 aspect-video w-full"
-                          />
-                        </div>
-                      )}
-                    </motion.div>
-                  ) : null}
-
+            {/* SECONDARY GRID */}
+            {rightGrid.length > 0 ? (
+              <div className="mt-[46px] grid gap-[17px] md:grid-cols-2">
+                {/* SECONDARY FEATURED CARD - ROBOTO */}
+                {rightGrid[0] ? (
                   <motion.div
-                    className="space-y-9"
-                    variants={staggerParent}
+                    variants={fadeUp}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ once: true, amount: 0.15 }}
+                    viewport={{ once: true, amount: 0.2 }}
                   >
-                    {rightGrid.slice(1, 4).map((post, index) => (
-                      <SideArticle
-                        key={post.id || post.slug || index}
-                        post={post}
-                      />
-                    ))}
+                    {getPostExternalUrl(rightGrid[0], "format") ? (
+                      <a
+                        href={getPostExternalUrl(rightGrid[0], "format")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        <h2 className="roboto-heading max-w-[430px] text-[29px] leading-[35px] tracking-[-0.02em] text-[#344B55] transition-colors hover:text-[#0B4D8C]">
+                          {rightGrid[0].title}
+                        </h2>
+                      </a>
+                    ) : (
+                      <h2 className="roboto-heading max-w-[430px] text-[29px] leading-[35px] tracking-[-0.02em] text-[#344B55]">
+                        {rightGrid[0].title}
+                      </h2>
+                    )}
+
+                    {rightGrid[0].excerpt ? (
+                      <p className="mt-[13px] max-w-[430px] font-poppins text-[14px] leading-[26px] text-[#4B5563]">
+                        {rightGrid[0].excerpt}
+                      </p>
+                    ) : null}
+
+                    <Meta post={rightGrid[0]} />
+
+                    {getPostExternalUrl(rightGrid[0], "format") ? (
+                      <a
+                        href={getPostExternalUrl(rightGrid[0], "format")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group block"
+                      >
+                        <Thumb
+                          src={rightGrid[0].image_url}
+                          title={rightGrid[0].title}
+                          className="mt-[18px] aspect-[1.9/1] w-full"
+                        />
+                      </a>
+                    ) : (
+                      <div className="group block">
+                        <Thumb
+                          src={rightGrid[0].image_url}
+                          title={rightGrid[0].title}
+                          className="mt-[18px] aspect-[1.9/1] w-full"
+                        />
+                      </div>
+                    )}
                   </motion.div>
-                </div>
-              )}
-            </motion.div>
-          </div>
+                ) : null}
 
-          {/* MEMBERS */}
-
-          <MembersSection members={members} />
-
-          {/* MORE POSTS + NEWSLETTER */}
-
-          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
-
-            <div className="hidden lg:block" />
-
-            {/* MORE POSTS */}
-
-            <div>
-              {visibleMorePosts.length > 0 ? (
-                <div className="space-y-10">
-                  {visibleMorePosts.map((post, index) => (
-                    <motion.div
-                      key={post.id ?? `${post.slug}-${index}`}
-                      initial={{ opacity: 0, y: 18 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.45, ease: "easeOut" }}
-                    >
-                      <ArticleRow post={post} linkType="format" />
-                    </motion.div>
-                  ))}
-                </div>
-              ) : null}
-
-              {/* LOAD MORE BUTTON */}
-
-              {hasMorePosts ? (
+                {/* RIGHT SIDE SMALL ARTICLES - ROBOTO */}
                 <motion.div
-                  className="mt-12 flex justify-center"
-                  variants={fadeIn}
+                  className="space-y-[35px]"
+                  variants={staggerParent}
                   initial="hidden"
-                  animate="show"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.15 }}
                 >
-                  <button
-                    type="button"
-                    onClick={handleLoadMore}
-                    className="
-                      cursor-pointer rounded-full border border-[#D1D5DB]
-                      px-8 py-2.5 text-[13px] font-semibold tracking-wide
-                      text-[#0B4D8C] transition-all duration-300
-                      hover:border-[#0B4D8C] hover:bg-[#F5F8FC]
-                      active:scale-[0.98]
-                    "
-                  >
-                    LOAD MORE
-                  </button>
+                  {rightGrid.slice(1, 4).map((post, index) => (
+                    <SideArticle
+                      key={post.id || post.slug || index}
+                      post={post}
+                    />
+                  ))}
                 </motion.div>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
+          </motion.div>
+        </div>
 
-            {/* NEWSLETTER */}
+        {/* =================================================
+            MEMBERS SECTION - ROBOTO
+        ================================================= */}
+        <MembersSection members={members} />
 
-            <Newsletter />
+        {/* =================================================
+            MORE POSTS + NEWSLETTER
+        ================================================= */}
+        <div className="mt-[56px] grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
+          <div className="hidden lg:block" />
+
+          {/* MORE POSTS - POPPINS */}
+          <div>
+            {visibleMorePosts.length > 0 ? (
+              <div className="space-y-[35px]">
+                {visibleMorePosts.map((post, index) => (
+                  <motion.div
+                    key={post.id ?? `${post.slug}-${index}`}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: "easeOut" }}
+                  >
+                    <ArticleRow post={post} linkType="format" />
+                  </motion.div>
+                ))}
+              </div>
+            ) : null}
+
+            {/* LOAD MORE BUTTON */}
+            {hasMorePosts ? (
+              <motion.div
+                className="mt-12 flex justify-center"
+                variants={fadeIn}
+                initial="hidden"
+                animate="show"
+              >
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  className="cursor-pointer rounded-full border border-[#D1D5DB] px-8 py-2.5 font-poppins text-[13px] font-semibold tracking-wide text-[#0B4D8C] transition-all duration-300 hover:border-[#0B4D8C] hover:bg-[#F5F8FC] active:scale-[0.98]"
+                >
+                  LOAD MORE
+                </button>
+              </motion.div>
+            ) : null}
           </div>
+
+          {/* NEWSLETTER - ROBOTO */}
+          <Newsletter />
         </div>
       </div>
-    </>
+    </div>
   );
 }

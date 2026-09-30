@@ -2,14 +2,16 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+
 import {
   useGetInsightReportsQuery,
   useSendSubscribeMutation,
 } from "../../Redux/api/publicApiSlice";
+
 import Swal from "sweetalert2";
 
 /* =========================================================
-   HELPERS
+   HELPERS & CONSTANTS
 ========================================================= */
 
 const COLORS = {
@@ -26,21 +28,13 @@ const COLORS = {
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200";
 
-/* =========================================================
-   URL NORMALIZER
-========================================================= */
-
 function normalizeUrl(value) {
   if (!value) return "";
-
   const url = String(value).trim();
-
   const markdownMatch = url.match(/\((https?:\/\/[^)]+)\)/);
-
   if (markdownMatch?.[1]) {
     return markdownMatch[1];
   }
-
   return url;
 }
 
@@ -68,11 +62,7 @@ function extractTopics(response) {
 }
 
 function extractActiveTopic(response) {
-  return (
-    response?.data?.active_topic ||
-    response?.active_topic ||
-    null
-  );
+  return response?.data?.active_topic || response?.active_topic || null;
 }
 
 function extractMembers(response) {
@@ -86,83 +76,57 @@ function extractMorePosts(response) {
   const root = response?.data;
   if (Array.isArray(root?.more_posts?.items)) return root.more_posts.items;
   if (Array.isArray(root?.more_posts)) return root.more_posts;
-  if (Array.isArray(response?.more_posts?.items)) return response.more_posts.items;
+  if (Array.isArray(response?.more_posts?.items))
+    return response.more_posts.items;
   return [];
 }
 
-function extractPagination(response) {
-  const root = response?.data;
-  return (
-    root?.pagination ||
-    root?.more_posts?.pagination ||
-    response?.pagination ||
-    response?.meta ||
-    null
-  );
-}
-
 /* =========================================================
-   ANIMATION VARIANTS
+   ANIMATIONS
 ========================================================= */
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
 const fadeIn = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
+  show: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
 const staggerParent = {
   hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05,
-    },
-  },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
 const staggerChild = {
   hidden: { opacity: 0, y: 18 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: "easeOut" },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
 
 /* =========================================================
-   SKELETON
+   SKELETON LOADERS
 ========================================================= */
 
 function SkeletonBlock({ className = "" }) {
-  return (
-    <div className={`animate-pulse rounded bg-[#E9EDF2] ${className}`} />
-  );
+  return <div className={`animate-pulse rounded bg-[#E9EDF2] ${className}`} />;
 }
 
 function SkeletonArticleRow() {
   return (
-    <div className="flex gap-4">
-      <SkeletonBlock className="h-[80px] w-[140px] shrink-0" />
-      <div className="min-w-0 flex-1 space-y-3 pt-1">
-        <SkeletonBlock className="h-4 w-[85%]" />
-        <SkeletonBlock className="h-4 w-[65%]" />
-        <SkeletonBlock className="h-3 w-[40%]" />
-        <div className="flex items-center gap-3 pt-2">
+    <div className="flex items-stretch gap-[15px]">
+      <SkeletonBlock className="h-[147px] w-[183px] shrink-0" />
+      <div className="min-w-0 flex-1 space-y-3 pt-[1px]">
+        <SkeletonBlock className="h-[15px] w-[96%]" />
+        <SkeletonBlock className="h-[15px] w-[87%]" />
+        <SkeletonBlock className="h-[15px] w-[82%]" />
+        <SkeletonBlock className="h-[15px] w-[62%]" />
+        <div className="flex items-center gap-4 pt-2">
           <SkeletonBlock className="h-3 w-20" />
-          <SkeletonBlock className="h-4 w-24" />
+          <SkeletonBlock className="h-5 w-24" />
         </div>
+        <SkeletonBlock className="h-3 w-[55%]" />
       </div>
     </div>
   );
@@ -215,23 +179,25 @@ function SkeletonNewsletter() {
 
 function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
+    <div className="min-h-screen bg-white font-poppins">
+      <div className="mx-auto max-w-[1455px] px-6 py-[42px] lg:px-0">
         <SkeletonTopics />
-        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-          <div className="space-y-10">
+        <div className="mt-10 grid gap-[30px] lg:grid-cols-[5fr_6fr]">
+          <div className="space-y-[31px]">
             {Array.from({ length: 4 }).map((_, index) => (
               <SkeletonArticleRow key={index} />
             ))}
           </div>
           <div>
-            <SkeletonBlock className="h-9 w-[75%]" />
-            <SkeletonBlock className="mt-3 h-9 w-[55%]" />
-            <SkeletonBlock className="mt-5 aspect-video w-full" />
+            <SkeletonBlock className="h-[42px] w-[72%]" />
+            <SkeletonBlock className="mt-5 h-5 w-[98%]" />
+            <SkeletonBlock className="mt-2 h-5 w-[88%]" />
+            <SkeletonBlock className="mt-5 h-4 w-[42%]" />
+            <SkeletonBlock className="mt-5 aspect-[2.27/1] w-full" />
           </div>
         </div>
         <SkeletonMembers />
-        <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
+        <div className="mt-14 grid gap-12 lg:grid-cols-[1fr_1.6fr_1fr]">
           <div className="hidden lg:block" />
           <div className="space-y-10">
             {Array.from({ length: 3 }).map((_, index) => (
@@ -246,13 +212,13 @@ function PageSkeleton() {
 }
 
 /* =========================================================
-   IMAGE
+   IMAGE COMPONENT
 ========================================================= */
 
 function Thumb({ src, className = "", title = "" }) {
   const image = normalizeUrl(src) || FALLBACK_IMAGE;
   return (
-    <div className={`relative overflow-hidden rounded bg-[#F4F6F8] ${className}`}>
+    <div className={`relative overflow-hidden bg-[#F4F6F8] ${className}`}>
       <img
         src={image}
         alt={title || "Report"}
@@ -267,14 +233,14 @@ function Thumb({ src, className = "", title = "" }) {
 }
 
 /* =========================================================
-   SOURCE / LOGO
+   SOURCE INFO
 ========================================================= */
 
 function SourceInfo({ sourceLogo, sourceName, authorName }) {
   const logo = normalizeUrl(sourceLogo);
   if (logo) {
     return (
-      <div className="flex h-8 max-w-[170px] items-center overflow-hidden">
+      <div className="flex h-6 max-w-[170px] items-center overflow-hidden">
         <img
           src={logo}
           alt={sourceName || authorName || "Source"}
@@ -287,14 +253,14 @@ function SourceInfo({ sourceLogo, sourceName, authorName }) {
     );
   }
   return (
-    <span className="max-w-[190px] truncate text-[11px] font-semibold text-[#374151]">
+    <span className="max-w-[190px] truncate font-poppins text-[11px] font-semibold text-[#374151]">
       {sourceName || authorName || "Source"}
     </span>
   );
 }
 
 /* =========================================================
-   MEDIA LABEL
+   TAGS & META
 ========================================================= */
 
 function getMediaLabel(mediaType) {
@@ -309,16 +275,9 @@ function getMediaLabel(mediaType) {
   return labels[String(mediaType || "").toLowerCase()] || null;
 }
 
-/* =========================================================
-   TAGS
-========================================================= */
-
 function Tags({ post }) {
   const topicName =
-    post?.insight_topic?.name ||
-    post?.topic?.name ||
-    post?.topic_name;
-
+    post?.insight_topic?.name || post?.topic?.name || post?.topic_name;
   const tags = [
     post?.category?.name,
     topicName,
@@ -327,7 +286,7 @@ function Tags({ post }) {
   ].filter(Boolean);
 
   return (
-    <p className="text-[12px] font-medium text-[#2A57C4]">
+    <p style={{fontWeight:'normal'}} className="font-poppins text-[12px]  leading-5 text-[#2A57C4]">
       {tags.map((tag, index) => (
         <React.Fragment key={`${tag}-${index}`}>
           {index > 0 && <span className="mx-1 text-[#4B5563]">|</span>}
@@ -337,10 +296,6 @@ function Tags({ post }) {
     </p>
   );
 }
-
-/* =========================================================
-   DATE
-========================================================= */
 
 function formatDate(date) {
   if (!date) return "";
@@ -355,15 +310,11 @@ function formatDate(date) {
   }
 }
 
-/* =========================================================
-   META
-========================================================= */
-
 function Meta({ post }) {
   return (
     <>
-      <div className="mt-1 flex flex-wrap items-center gap-3">
-        <span className="text-[12px] text-[#9CA3AF]">
+      <div className="mt-[9px] flex flex-wrap items-center gap-[12px] font-poppins">
+        <span className="text-[12px] leading-4 text-[#9CA3AF]">
           {post?.published_date_formatted ||
             formatDate(post?.published_date || post?.created_at)}
         </span>
@@ -373,12 +324,12 @@ function Meta({ post }) {
           authorName={post?.author_name}
         />
         {post?.read_time ? (
-          <span className="text-[11px] text-[#9CA3AF]">
+          <span className="font-poppins text-[11px] leading-4 text-[#9CA3AF]">
             {post.read_time} min read
           </span>
         ) : null}
       </div>
-      <div className="mt-1">
+      <div className="mt-[5px]">
         <Tags post={post} />
       </div>
     </>
@@ -386,7 +337,7 @@ function Meta({ post }) {
 }
 
 /* =========================================================
-   LINK
+   LINK HELPERS
 ========================================================= */
 
 function getPostHref(post, type = "format") {
@@ -406,7 +357,7 @@ function isExternalUrl(url) {
 }
 
 /* =========================================================
-   ARTICLE ROW
+   ARTICLE ROW (Left Side - Poppins font)
 ========================================================= */
 
 function ArticleRow({ post, showContent = false, linkType = "format" }) {
@@ -417,27 +368,27 @@ function ArticleRow({ post, showContent = false, linkType = "format" }) {
   return (
     <motion.article
       variants={staggerChild}
-      className="group flex items-stretch gap-4"
+      className="group flex items-stretch gap-[15px]"
     >
       <a
         href={href}
         target={external ? "_blank" : undefined}
         rel={external ? "noopener noreferrer" : undefined}
-        className="block w-[140px] shrink-0 self-stretch"
+        className="block w-[183px] min-w-[183px] shrink-0 self-stretch"
       >
         <Thumb
           src={post.image_url}
           title={post.title}
-          className="h-full min-h-[80px] w-full"
+          className="h-[147px] min-h-[147px] w-full"
         />
       </a>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 font-poppins">
         <a
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noopener noreferrer" : undefined}
-          className="block text-[14px] leading-[22px] text-[#111827] underline decoration-[#9CA3AF] underline-offset-2 transition-colors hover:text-[#0B4D8C]"
+          className="font-poppins block text-[13.5px] leading-[19px] tracking-[-0.005em] text-[#111111] underline decoration-[#9CA3AF] underline-offset-[2px] transition-colors hover:text-[#0B4D8C]"
         >
           {showContent
             ? post.content || post.excerpt || post.description || post.title
@@ -445,7 +396,7 @@ function ArticleRow({ post, showContent = false, linkType = "format" }) {
         </a>
 
         {post.excerpt && !showContent ? (
-          <p className="mt-2 line-clamp-3 text-[12px] leading-5 text-[#6B7280]">
+          <p className="mt-2 line-clamp-3 font-poppins text-[12px] leading-[19px] text-[#6B7280]">
             {post.excerpt}
           </p>
         ) : null}
@@ -457,7 +408,7 @@ function ArticleRow({ post, showContent = false, linkType = "format" }) {
 }
 
 /* =========================================================
-   SIDE ARTICLE
+   SIDE ARTICLE (Right Side Stack - Roboto font)
 ========================================================= */
 
 function SideArticle({ post }) {
@@ -468,33 +419,33 @@ function SideArticle({ post }) {
   return (
     <motion.article
       variants={staggerChild}
-      className="group flex items-stretch gap-4"
+      className="group flex items-start gap-[15px]"
     >
       <a
         href={href}
         target={external ? "_blank" : undefined}
         rel={external ? "noopener noreferrer" : undefined}
-        className="block w-[160px] shrink-0 self-stretch"
+        className="block w-[183px] min-w-[183px] shrink-0"
       >
         <Thumb
           src={post.image_url}
           title={post.title}
-          className="h-full min-h-[100px] w-full"
+          className="h-[126px] min-h-[126px] w-full"
         />
       </a>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 font-poppins">
         <a
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noopener noreferrer" : undefined}
-          className="block text-[13px] leading-[22px] text-[#111827] transition-colors hover:text-[#0B4D8C]"
+          className="roboto-heading block text-[12.5px] leading-[19px] text-[#111111] transition-colors hover:text-[#0B4D8C]"
         >
           {post.title}
         </a>
 
         {post.excerpt ? (
-          <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-[#6B7280]">
+          <p className="mt-2 line-clamp-2 font-poppins text-[11px] leading-[17px] text-[#6B7280]">
             {post.excerpt}
           </p>
         ) : null}
@@ -532,7 +483,7 @@ function TopicsFilter({ topics = [], activeTopic }) {
       variants={fadeUp}
       initial="hidden"
       animate="show"
-      className="mb-10"
+      className="mb-10 font-poppins"
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {topics.map((topic) => {
@@ -545,32 +496,21 @@ function TopicsFilter({ topics = [], activeTopic }) {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.18 }}
-              className="
-                group flex h-[54px] w-full items-center justify-between
-                rounded-full border border-transparent bg-[#F8F8F8]
-                pl-6 pr-[6px] text-left transition-all hover:bg-[#F1F3F8]
-              "
+              className="group flex h-[54px] w-full items-center justify-between rounded-full border border-transparent bg-[#F8F8F8] pl-6 pr-[6px] text-left font-poppins transition-all hover:bg-[#F1F3F8]"
               style={
                 isActive
-                  ? {
-                      borderColor: "#2A57C4",
-                      backgroundColor: "#EEF2FB",
-                    }
+                  ? { borderColor: "#2A57C4", backgroundColor: "#EEF2FB" }
                   : undefined
               }
             >
               <span
-                className="truncate pr-4 text-[14px] font-medium tracking-[-0.01em]"
+                className="truncate pr-4 font-poppins text-[14px] font-medium tracking-[-0.01em]"
                 style={{ color: COLORS.topicText }}
               >
                 {topic.name}
               </span>
-
               <span
-                className="
-                  flex h-[42px] w-[42px] shrink-0 items-center justify-center
-                  rounded-full transition-colors
-                "
+                className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full transition-colors"
                 style={{
                   backgroundColor: isActive ? "#2A57C4" : "#DCE5F8",
                   color: isActive ? "#FFFFFF" : "#2A57C4",
@@ -587,7 +527,7 @@ function TopicsFilter({ topics = [], activeTopic }) {
 }
 
 /* =========================================================
-   MEMBER LOGO
+   MEMBER LOGO & SECTION
 ========================================================= */
 
 function MemberLogo({ member }) {
@@ -607,34 +547,30 @@ function MemberLogo({ member }) {
     );
   }
   return (
-    <div className="flex h-[50px] items-center text-2xl font-bold text-[#111827]">
+    <div className="roboto-heading flex h-[50px] items-center text-2xl text-[#111827]">
       {member?.name}
     </div>
   );
 }
-
-/* =========================================================
-   MEMBERS SECTION
-========================================================= */
 
 function MembersSection({ members = [] }) {
   if (!members.length) return null;
 
   return (
     <motion.section
-      className="mt-20"
+      className="mt-20 font-poppins"
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.15 }}
     >
       <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
-        <h2 className="text-xl font-bold text-[#111827] md:text-2xl">
+        <h2 className="roboto-heading text-xl text-[#111827] md:text-2xl">
           Members
         </h2>
         <Link
           to="/PartnerDirectory"
-          className="flex items-center gap-1.5 text-[12px] font-semibold tracking-wide text-[#0B4D8C] transition-colors hover:text-[#083B6B]"
+          className="flex items-center gap-1.5 font-poppins text-[12px] font-semibold tracking-wide text-[#0B4D8C] transition-colors hover:text-[#083B6B]"
         >
           View All
           <svg
@@ -662,11 +598,7 @@ function MembersSection({ members = [] }) {
           <motion.div
             key={member.id || member.name || index}
             variants={staggerChild}
-            className={`
-              px-0 py-5 sm:px-6
-              ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"}
-              ${index === 0 ? "sm:pl-0" : ""}
-            `}
+            className={`px-0 py-5 sm:px-6 ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"} ${index === 0 ? "sm:pl-0" : ""}`}
           >
             <a
               href={normalizeUrl(member.website_url) || "#"}
@@ -676,7 +608,7 @@ function MembersSection({ members = [] }) {
             >
               <MemberLogo member={member} />
             </a>
-            <p className="mt-8 max-w-xs text-[14px] leading-6 text-[#4B5563]">
+            <p className="mt-8 max-w-xs font-poppins text-[14px] leading-6 text-[#4B5563]">
               {member.description}
             </p>
           </motion.div>
@@ -734,7 +666,6 @@ function Newsletter() {
         error?.data?.message ||
         error?.message ||
         "Something went wrong. Please try again.";
-    
       Swal.fire({
         icon: "error",
         title: "Subscription Failed",
@@ -753,7 +684,7 @@ function Newsletter() {
 
   return (
     <motion.aside
-      className="self-start lg:sticky lg:top-6"
+      className="self-start font-poppins lg:sticky lg:top-6"
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
@@ -763,15 +694,14 @@ function Newsletter() {
         className="rounded-3xl p-6 text-white"
         style={{ backgroundColor: COLORS.primary }}
       >
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
+        <p className="font-poppins text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
           Newsletter
         </p>
-        <h3 className="mt-3 text-2xl font-medium leading-tight tracking-tight md:text-3xl">
+        <h3 className="roboto-heading mt-3 text-2xl leading-tight tracking-tight md:text-3xl">
           Insights For
-          <br />
-          A Brighter Tomorrow
+          <br />A Brighter Tomorrow
         </h3>
-        <p className="mt-4 text-[14px] leading-6 text-blue-50">
+        <p className="mt-4 font-poppins text-[14px] leading-6 text-blue-50">
           Receive the latest perspectives on wealth, legacy and family offices.
         </p>
 
@@ -783,30 +713,17 @@ function Newsletter() {
             onKeyDown={handleKeyDown}
             placeholder="Enter your email address"
             disabled={isLoading}
-            className="
-              min-w-0 flex-1 bg-transparent text-[13px] text-[#111827]
-              outline-none placeholder:text-[#9CA3AF]
-              disabled:cursor-not-allowed disabled:opacity-60
-            "
+            className="min-w-0 flex-1 bg-transparent font-poppins text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF] disabled:cursor-not-allowed disabled:opacity-60"
           />
           <button
             type="button"
             aria-label="Subscribe"
             onClick={handleSubscribe}
             disabled={isLoading}
-            className="
-              flex h-10 w-10 shrink-0 items-center justify-center rounded-full
-              bg-[#E7EEF7] text-[#0B4D8C] transition-all duration-300
-              hover:bg-[#D9E6F4] disabled:cursor-not-allowed disabled:opacity-70
-            "
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E7EEF7] font-poppins text-[#0B4D8C] transition-all duration-300 hover:bg-[#D9E6F4] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isLoading ? (
-              <span
-                className="
-                  h-4 w-4 animate-spin rounded-full
-                  border-2 border-[#0B4D8C] border-t-transparent
-                "
-              />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#0B4D8C] border-t-transparent" />
             ) : (
               <svg
                 viewBox="0 0 24 24"
@@ -843,7 +760,7 @@ function HeroContent({ content }) {
 
   return (
     <motion.div
-      className="mt-6"
+      className="mt-6 font-poppins"
       variants={staggerParent}
       initial="hidden"
       whileInView="show"
@@ -853,7 +770,7 @@ function HeroContent({ content }) {
         <motion.p
           key={`${paragraph}-${index}`}
           variants={staggerChild}
-          className="mb-3 text-[14px] leading-7 text-[#4B5563]"
+          className="mb-3 font-poppins text-[14px] leading-7 text-[#4B5563]"
         >
           {paragraph}
         </motion.p>
@@ -870,42 +787,30 @@ export default function Alternativeinvestments() {
   const [searchParams] = useSearchParams();
   const selectedTopic = searchParams.get("topic") || undefined;
 
-  const { data: apiResponse, isLoading, isFetching, isError } =
-    useGetInsightReportsQuery({
-      topic: selectedTopic,
-      search: searchParams.get("search") || undefined,
-      page: Number(searchParams.get("page")) || 1,
-      per_page: 9,
-    });
-
-  /* =======================================================
-     LOAD MORE CONFIG
-     - Initially 5 dikhao
-     - Load More par +5
-     - Jab saara data load ho jaye, button hide
-  ======================================================= */
+  const {
+    data: apiResponse,
+    isLoading,
+    isFetching,
+    isError,
+  } = useGetInsightReportsQuery({
+    topic: selectedTopic,
+    search: searchParams.get("search") || undefined,
+    page: Number(searchParams.get("page")) || 1,
+    per_page: 9,
+  });
 
   const POSTS_PER_LOAD = 5;
   const [visibleMoreCount, setVisibleMoreCount] = useState(POSTS_PER_LOAD);
 
-  /* =======================================================
-     API DATA
-  ======================================================= */
-
+  /* API DATA EXTRACTION */
   const reports = extractReports(apiResponse);
   const topics = extractTopics(apiResponse);
-  const activeTopic =
-    extractActiveTopic(apiResponse) || selectedTopic || null;
+  const activeTopic = extractActiveTopic(apiResponse) || selectedTopic || null;
   const members = extractMembers(apiResponse);
   const morePosts = extractMorePosts(apiResponse);
-  const pagination = extractPagination(apiResponse);
 
-  /* =======================================================
-     BUILD SAME PAGE STRUCTURE
-  ======================================================= */
-
+  /* PAGE STRUCTURE */
   const rootData = apiResponse?.data || {};
-
   const hero = rootData?.hero || reports?.[0] || null;
 
   const leftPosts = Array.isArray(rootData?.left_posts)
@@ -918,352 +823,261 @@ export default function Alternativeinvestments() {
 
   const resolvedMorePosts = morePosts.length ? morePosts : reports.slice(6);
 
-  /* =======================================================
-     VISIBLE MORE POSTS
-     Initially 5, Load More par +5
-  ======================================================= */
-
+  /* MORE POSTS */
   const visibleMorePosts = resolvedMorePosts.slice(0, visibleMoreCount);
-
   const handleLoadMore = () => {
     setVisibleMoreCount((prev) =>
-      Math.min(prev + POSTS_PER_LOAD, resolvedMorePosts.length)
+      Math.min(prev + POSTS_PER_LOAD, resolvedMorePosts.length),
     );
   };
-
-  /* =======================================================
-     LOAD MORE BUTTON VISIBILITY
-     - Button tab tak dikhao jab tak aur items bache hain
-     - Jab saara data load ho jaye, button hide
-  ======================================================= */
-
   const hasMorePosts = visibleMoreCount < resolvedMorePosts.length;
 
-  /* =======================================================
-     LOADING
-  ======================================================= */
-
+  /* LOADING & ERROR STATES */
   if (isLoading) {
     return (
-      <>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
-          rel="stylesheet"
-        />
-        <div
-          className="bg-white text-[#111827]"
-          style={{ fontFamily: "'Roboto', sans-serif" }}
-        >
-          <PageSkeleton />
-        </div>
-      </>
+      <div className="min-h-screen bg-white font-poppins text-[#111827]">
+        <PageSkeleton />
+      </div>
     );
   }
-
-  /* =======================================================
-     ERROR
-  ======================================================= */
 
   if (isError) {
     return (
-      <>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
-          rel="stylesheet"
-        />
-        <div
-          className="flex min-h-[60vh] items-center justify-center bg-white"
-          style={{ fontFamily: "'Roboto', sans-serif" }}
-        >
-          <div className="text-sm text-red-500">
-            Unable to load insight reports.
-          </div>
+      <div className="flex min-h-[60vh] items-center justify-center bg-white font-poppins">
+        <div className="text-sm text-red-500">
+          Unable to load insight reports.
         </div>
-      </>
+      </div>
     );
   }
 
-  /* =======================================================
-     PAGE
-  ======================================================= */
-
   return (
-    <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap"
-        rel="stylesheet"
-      />
+    <div className="min-h-screen bg-white font-poppins text-[#111827]">
+      <div className="mx-auto max-w-[1455px] px-6 py-[42px] lg:px-0">
+        {/* TOPICS */}
+        <TopicsFilter topics={topics} activeTopic={activeTopic} />
 
-      <div
-        className="min-h-screen bg-white text-[#111827]"
-        style={{ fontFamily: "'Roboto', sans-serif" }}
-      >
-        <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-10">
+        {/* FETCHING INDICATOR */}
+        {isFetching && (
+          <div className="mb-5 flex items-center gap-2 font-poppins text-[12px] text-[#9CA3AF]">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#2A57C4]" />
+            Loading reports...
+          </div>
+        )}
 
-          {/* =================================================
-              TOPICS FILTER
-          ================================================= */}
+        {/* MAIN GRID */}
+        <div className="grid gap-[30px] lg:grid-cols-[5fr_6fr]">
+          {/* LEFT SIDE - MAIN LIST (Poppins) */}
+          <motion.div
+            className="space-y-[31px]"
+            variants={staggerParent}
+            initial="hidden"
+            animate="show"
+          >
+            {leftPosts.length > 0 ? (
+              leftPosts.map((post, index) => (
+                <ArticleRow
+                  key={post.id || post.slug || index}
+                  post={post}
+                  showContent
+                  linkType="format"
+                />
+              ))
+            ) : (
+              <div className="rounded-2xl bg-[#F8F8F8] px-6 py-8 text-center font-poppins text-sm text-[#6B7280]">
+                No insight reports found for this topic.
+              </div>
+            )}
+          </motion.div>
 
-          <TopicsFilter topics={topics} activeTopic={activeTopic} />
+          {/* RIGHT SIDE - HERO & SIDE ARTICLES (Roboto for headings) */}
+          <motion.div variants={fadeUp} initial="hidden" animate="show">
+            {hero ? (
+              <>
+                {/* HERO HEADING */}
+                <motion.h1
+                  variants={fadeUp}
+                  className="roboto-heading text-[34px] leading-[1.08] tracking-[-0.02em] text-black md:text-[36px]"
+                >
+                  {hero.title}
+                </motion.h1>
 
-          {/* =================================================
-              FETCHING
-          ================================================= */}
-
-          {isFetching && (
-            <div className="mb-5 flex items-center gap-2 text-[12px] text-[#9CA3AF]">
-              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#2A57C4]" />
-              Loading reports...
-            </div>
-          )}
-
-          {/* =================================================
-              MAIN GRID
-          ================================================= */}
-
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-
-            {/* =================================================
-                LEFT REPORTS
-            ================================================= */}
-
-            <motion.div
-              className="space-y-10"
-              variants={staggerParent}
-              initial="hidden"
-              animate="show"
-            >
-              {leftPosts.length > 0 ? (
-                leftPosts.map((post, index) => (
-                  <ArticleRow
-                    key={post.id || post.slug || index}
-                    post={post}
-                    showContent
-                    linkType="format"
-                  />
-                ))
-              ) : (
-                <div className="rounded-2xl bg-[#F8F8F8] px-6 py-8 text-center text-sm text-[#6B7280]">
-                  No insight reports found for this topic.
-                </div>
-              )}
-            </motion.div>
-
-            {/* =================================================
-                HERO REPORT
-            ================================================= */}
-
-            <motion.div variants={fadeUp} initial="hidden" animate="show">
-              {hero ? (
-                <>
-                  <motion.h1
-                    variants={fadeUp}
-                    className="text-3xl font-semibold leading-tight tracking-tight md:text-4xl"
-                    style={{ color: COLORS.heading }}
-                  >
-                    {hero.title}
-                  </motion.h1>
-
-                  {(hero.excerpt || hero.content || hero.description) ? (
-                    <motion.p
-                      variants={fadeIn}
-                      className="mt-5 max-w-3xl text-[14px] leading-7 text-[#4B5563]"
-                    >
-                      {hero.excerpt || hero.content || hero.description}
-                    </motion.p>
-                  ) : null}
-
-                  <motion.div variants={fadeIn}>
-                    <Meta post={hero} />
-                  </motion.div>
-
-                  <motion.a
+                {/* HERO DESCRIPTION */}
+                {hero.excerpt || hero.content || hero.description ? (
+                  <motion.p
                     variants={fadeIn}
-                    href={getPostHref(hero, "source")}
-                    target={
-                      isExternalUrl(getPostHref(hero, "source"))
-                        ? "_blank"
-                        : undefined
-                    }
-                    rel={
-                      isExternalUrl(getPostHref(hero, "source"))
-                        ? "noopener noreferrer"
-                        : undefined
-                    }
-                    className="group block"
+                    className="mt-[22px] max-w-[800px] font-poppins text-[15px] leading-[24px] text-[#4B5563]"
                   >
-                    <Thumb
-                      src={hero.image_url}
-                      title={hero.title}
-                      className="mt-5 aspect-video w-full"
-                    />
-                  </motion.a>
+                    {hero.excerpt || hero.content || hero.description}
+                  </motion.p>
+                ) : null}
 
-                  <HeroContent content={hero.content || hero.description} />
-                </>
-              ) : (
-                <div className="rounded-2xl bg-[#F8F8F8] px-6 py-8 text-center text-sm text-[#6B7280]">
-                  No featured insight report available.
-                </div>
-              )}
+                <motion.div variants={fadeIn} className="mt-[7px]">
+                  <Meta post={hero} />
+                </motion.div>
 
-              {/* =================================================
-                  SECONDARY GRID
-              ================================================= */}
+                {/* HERO IMAGE */}
+                <motion.a
+                  variants={fadeIn}
+                  href={getPostHref(hero, "source")}
+                  target={
+                    isExternalUrl(getPostHref(hero, "source"))
+                      ? "_blank"
+                      : undefined
+                  }
+                  rel={
+                    isExternalUrl(getPostHref(hero, "source"))
+                      ? "noopener noreferrer"
+                      : undefined
+                  }
+                  className="group block"
+                >
+                  <Thumb
+                    src={hero.image_url}
+                    title={hero.title}
+                    className="mt-[18px] aspect-[2.27/1] w-full"
+                  />
+                </motion.a>
 
-              {rightGrid.length > 0 ? (
-                <div className="mt-14 grid gap-10 md:grid-cols-2">
+                <HeroContent content={hero.content || hero.description} />
+              </>
+            ) : (
+              <div className="rounded-2xl bg-[#F8F8F8] px-6 py-8 text-center font-poppins text-sm text-[#6B7280]">
+                No featured insight report available.
+              </div>
+            )}
 
-                  {/* FEATURED SECOND CARD */}
-
-                  {rightGrid[0] ? (
-                    <motion.div
-                      variants={fadeUp}
-                      initial="hidden"
-                      whileInView="show"
-                      viewport={{ once: true, amount: 0.2 }}
-                    >
-                      <a
-                        href={getPostHref(rightGrid[0], "format")}
-                        target={
-                          isExternalUrl(getPostHref(rightGrid[0], "format"))
-                            ? "_blank"
-                            : undefined
-                        }
-                        rel={
-                          isExternalUrl(getPostHref(rightGrid[0], "format"))
-                            ? "noopener noreferrer"
-                            : undefined
-                        }
-                        className="block"
-                      >
-                        <h2 className="text-2xl font-bold leading-tight tracking-tight text-[#111827] hover:text-[#0B4D8C] md:text-3xl">
-                          {rightGrid[0].title}
-                        </h2>
-                      </a>
-
-                      {(rightGrid[0].excerpt ||
-                        rightGrid[0].content ||
-                        rightGrid[0].description) ? (
-                        <p className="mt-5 text-[14px] leading-7 text-[#4B5563]">
-                          {rightGrid[0].excerpt ||
-                            rightGrid[0].content ||
-                            rightGrid[0].description}
-                        </p>
-                      ) : null}
-
-                      <Meta post={rightGrid[0]} />
-
-                      <a
-                        href={getPostHref(rightGrid[0], "format")}
-                        target={
-                          isExternalUrl(getPostHref(rightGrid[0], "format"))
-                            ? "_blank"
-                            : undefined
-                        }
-                        rel={
-                          isExternalUrl(getPostHref(rightGrid[0], "format"))
-                            ? "noopener noreferrer"
-                            : undefined
-                        }
-                        className="group block"
-                      >
-                        <Thumb
-                          src={rightGrid[0].image_url}
-                          title={rightGrid[0].title}
-                          className="mt-6 aspect-video w-full"
-                        />
-                      </a>
-                    </motion.div>
-                  ) : null}
-
-                  {/* SIDE REPORTS */}
-
+            {/* SECONDARY SECTION */}
+            {rightGrid.length > 0 ? (
+              <div className="mt-[34px] grid gap-[17px] md:grid-cols-[1.05fr_1fr]">
+                {/* FEATURED SECOND CARD (Roboto) */}
+                {rightGrid[0] ? (
                   <motion.div
-                    className="space-y-9"
-                    variants={staggerParent}
+                    variants={fadeUp}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ once: true, amount: 0.15 }}
+                    viewport={{ once: true, amount: 0.2 }}
                   >
-                    {rightGrid.slice(1, 4).map((post, index) => (
-                      <SideArticle
-                        key={post.id || post.slug || index}
-                        post={post}
-                      />
-                    ))}
-                  </motion.div>
-                </div>
-              ) : null}
-            </motion.div>
-          </div>
-
-          {/* =================================================
-              MEMBERS
-          ================================================= */}
-
-          <MembersSection members={members} />
-
-          {/* =================================================
-              MORE REPORTS + NEWSLETTER
-          ================================================= */}
-
-          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
-
-            <div className="hidden lg:block" />
-
-            <div>
-              {visibleMorePosts.length > 0 ? (
-                <div className="space-y-10">
-                  {visibleMorePosts.map((post, index) => (
-                    <motion.div
-                      key={post.id ?? `${post.slug}-${index}`}
-                      initial={{ opacity: 0, y: 18 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.45, ease: "easeOut" }}
+                    <a
+                      href={getPostHref(rightGrid[0], "format")}
+                      target={
+                        isExternalUrl(getPostHref(rightGrid[0], "format"))
+                          ? "_blank"
+                          : undefined
+                      }
+                      rel={
+                        isExternalUrl(getPostHref(rightGrid[0], "format"))
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
+                      className="block"
                     >
-                      <ArticleRow post={post} linkType="format" />
-                    </motion.div>
-                  ))}
-                </div>
-              ) : null}
+                      <h2 className="roboto-heading max-w-[420px] text-[29px] leading-[34px] tracking-[-0.02em] text-[#344B55] transition-colors hover:text-[#0B4D8C]">
+                        {rightGrid[0].title}
+                      </h2>
+                    </a>
 
-              {/* =================================================
-                  LOAD MORE BUTTON
-                  - Sirf tab dikhao jab aur items bache hain
-                  - Jab saara data load ho jaye, button hide
-              ================================================= */}
+                    {rightGrid[0].excerpt ||
+                    rightGrid[0].content ||
+                    rightGrid[0].description ? (
+                      <p className="mt-[13px] max-w-[430px] font-poppins text-[14px] leading-[26px] text-[#4B5563]">
+                        {rightGrid[0].excerpt ||
+                          rightGrid[0].content ||
+                          rightGrid[0].description}
+                      </p>
+                    ) : null}
 
-              {hasMorePosts ? (
+                    <Meta post={rightGrid[0]} />
+
+                    <a
+                      href={getPostHref(rightGrid[0], "format")}
+                      target={
+                        isExternalUrl(getPostHref(rightGrid[0], "format"))
+                          ? "_blank"
+                          : undefined
+                      }
+                      rel={
+                        isExternalUrl(getPostHref(rightGrid[0], "format"))
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
+                      className="group block"
+                    >
+                      <Thumb
+                        src={rightGrid[0].image_url}
+                        title={rightGrid[0].title}
+                        className="mt-[18px] aspect-[1.9/1] w-full"
+                      />
+                    </a>
+                  </motion.div>
+                ) : null}
+
+                {/* RIGHT SIDE SMALL ARTICLES (Roboto for headings) */}
                 <motion.div
-                  className="mt-12 flex justify-center"
-                  variants={fadeIn}
+                  className="space-y-[31px]"
+                  variants={staggerParent}
                   initial="hidden"
-                  animate="show"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.15 }}
                 >
-                  <button
-                    type="button"
-                    onClick={handleLoadMore}
-                    className="
-                      cursor-pointer rounded-full border border-[#D1D5DB]
-                      px-8 py-2.5 text-[13px] font-semibold tracking-wide
-                      text-[#0B4D8C] transition-all duration-300
-                      hover:border-[#0B4D8C] hover:bg-[#F5F8FC]
-                      active:scale-[0.98]
-                    "
-                  >
-                    LOAD MORE
-                  </button>
+                  {rightGrid.slice(1, 4).map((post, index) => (
+                    <SideArticle
+                      key={post.id || post.slug || index}
+                      post={post}
+                    />
+                  ))}
                 </motion.div>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
+          </motion.div>
+        </div>
 
-            {/* NEWSLETTER */}
+        {/* MEMBERS */}
+        <MembersSection members={members} />
 
-            <Newsletter />
+        {/* MORE REPORTS + NEWSLETTER */}
+        <div className="mt-[56px] grid gap-[48px] lg:grid-cols-[1fr_1.6fr_1fr]">
+          <div className="hidden lg:block" />
+
+          <div>
+            {visibleMorePosts.length > 0 ? (
+              <div className="space-y-[31px]">
+                {visibleMorePosts.map((post, index) => (
+                  <motion.div
+                    key={post.id ?? `${post.slug}-${index}`}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: "easeOut" }}
+                  >
+                    <ArticleRow post={post} linkType="format" />
+                  </motion.div>
+                ))}
+              </div>
+            ) : null}
+
+            {/* LOAD MORE */}
+            {hasMorePosts ? (
+              <motion.div
+                className="mt-12 flex justify-center"
+                variants={fadeIn}
+                initial="hidden"
+                animate="show"
+              >
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  className="cursor-pointer rounded-full border border-[#D1D5DB] px-8 py-2.5 font-poppins text-[13px] font-semibold tracking-wide text-[#0B4D8C] transition-all duration-300 hover:border-[#0B4D8C] hover:bg-[#F5F8FC] active:scale-[0.98]"
+                >
+                  LOAD MORE
+                </button>
+              </motion.div>
+            ) : null}
           </div>
+
+          {/* NEWSLETTER */}
+          <Newsletter />
         </div>
       </div>
-    </>
+    </div>
   );
 }

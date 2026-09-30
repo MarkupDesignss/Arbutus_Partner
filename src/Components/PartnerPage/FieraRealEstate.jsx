@@ -88,9 +88,7 @@ const getContactLink = (socialLinks = {}) => {
     socialLinks?.contact_url ||
     socialLinks?.contact_link;
 
-  const email =
-    socialLinks?.email ||
-    socialLinks?.contact_email;
+  const email = socialLinks?.email || socialLinks?.contact_email;
 
   if (contact) {
     return normalizeUrl(contact);
@@ -108,7 +106,7 @@ const getTwitterLink = (socialLinks = {}) => {
     socialLinks?.twitter ||
       socialLinks?.twitter_url ||
       socialLinks?.x ||
-      socialLinks?.x_url
+      socialLinks?.x_url,
   );
 };
 
@@ -117,7 +115,7 @@ const getLinkedinLink = (socialLinks = {}) => {
     socialLinks?.linkedin ||
       socialLinks?.linkedin_url ||
       socialLinks?.linkedIn ||
-      socialLinks?.linkedIn_url
+      socialLinks?.linkedIn_url,
   );
 };
 
@@ -125,26 +123,14 @@ const getLinkedinLink = (socialLinks = {}) => {
    ACTION BUTTON
 ========================================================= */
 
-const ActionButton = ({
-  icon: Icon,
-  children,
-  href = "#",
-}) => {
+const ActionButton = ({ icon: Icon, children, href = "#" }) => {
   const isDisabled = !href || href === "#";
 
   return (
     <a
       href={isDisabled ? undefined : href}
-      target={
-        href?.startsWith("mailto:")
-          ? undefined
-          : "_blank"
-      }
-      rel={
-        href?.startsWith("mailto:")
-          ? undefined
-          : "noreferrer"
-      }
+      target={href?.startsWith("mailto:") ? undefined : "_blank"}
+      rel={href?.startsWith("mailto:") ? undefined : "noreferrer"}
       onClick={(e) => {
         if (isDisabled) {
           e.preventDefault();
@@ -166,7 +152,7 @@ const ActionButton = ({
         text-[#245aa8]
         text-[10px]
         sm:text-[11px]
-        font-medium
+        poppins-medium
         tracking-[0.01em]
         transition-all
         duration-200
@@ -177,11 +163,7 @@ const ActionButton = ({
         }
       `}
     >
-      <Icon
-        size={12}
-        strokeWidth={1.8}
-        className="shrink-0"
-      />
+      <Icon size={12} strokeWidth={1.8} className="shrink-0" />
 
       <span>{children}</span>
     </a>
@@ -192,15 +174,9 @@ const ActionButton = ({
    FEATURE CARD
 ========================================================= */
 
-const FeatureCard = ({
-  icon: Icon,
-  color,
-  bg,
-  title,
-  text,
-}) => {
+const FeatureCard = ({ icon: Icon, color, bg, title, text }) => {
   return (
-    <div className="flex flex-col items-start text-left">
+    <div className="flex flex-col items-start text-left h-full">
       <div
         className={`
           w-12
@@ -214,16 +190,13 @@ const FeatureCard = ({
           ${color}
         `}
       >
-        <Icon
-          size={22}
-          strokeWidth={1.75}
-        />
+        <Icon size={22} strokeWidth={1.75} />
       </div>
 
       <h3
         className="
           text-sm
-          font-bold
+          poppins-semibold
           tracking-wider
           uppercase
           text-gray-900
@@ -236,6 +209,7 @@ const FeatureCard = ({
       <p
         className="
           text-sm
+          poppins-medium
           text-gray-500
           leading-relaxed
         "
@@ -253,6 +227,7 @@ const FeatureCard = ({
 const ArticleCard = ({ article }) => {
   const {
     image_url,
+    image_badge,
     title,
     published_date_formatted,
     source_name,
@@ -262,11 +237,12 @@ const ArticleCard = ({ article }) => {
   } = article;
 
   const isBadge = media_type === "pdf";
+  const displayTags = [category?.name, insight_topic?.name].filter(Boolean);
 
   return (
-    <article className="flex items-start gap-4 min-w-0">
-      {/* IMAGE */}
-      <div className="w-[135px] h-[90px] shrink-0 overflow-hidden bg-[#f2f4f5]">
+    <article className="flex items-start gap-4 min-w-0 bg-white">
+      {/* IMAGE WITH OVERLAY BADGE */}
+      <div className="relative w-[135px] h-[90px] shrink-0 overflow-hidden bg-[#f2f4f5]">
         {image_url ? (
           <img
             src={image_url}
@@ -277,83 +253,61 @@ const ArticleCard = ({ article }) => {
             }}
           />
         ) : null}
+
+        {image_badge && (
+          <span className="absolute top-1 right-1 bg-[#123c5a] text-white text-[9px] poppins-semibold px-2 py-[2px] rounded-[2px] uppercase">
+            {image_badge}
+          </span>
+        )}
       </div>
 
       {/* CONTENT */}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 flex flex-col justify-between min-h-[90px]">
+        {/* TITLE */}
         <h4
+          style={{ fontWeight: "normal", fontSize: "12px", lineHeight: "18px" }}
           className="
-            text-[14px]
-            sm:text-[15px]
-            lg:text-[14px]
-            xl:text-[15px]
-            font-normal
-            leading-[1.45]
+            poppins-medium
             text-[#3d454b]
-            line-clamp-3
           "
         >
           {title}
         </h4>
 
-        <div className="flex items-center flex-wrap gap-x-2.5 mt-2">
+        {/* META INFO */}
+        <div className="flex items-center gap-x-2 mt-2">
           {published_date_formatted && (
-            <span className="text-[11px] sm:text-[12px] text-[#8b9298]">
+            <span className="text-[11px] sm:text-[12px] poppins-medium text-[#8b9298] whitespace-nowrap">
               {published_date_formatted}
             </span>
           )}
 
           {source_name &&
             (isBadge ? (
-              <span
-                className="
-                  inline-flex
-                  items-center
-                  px-2
-                  py-[3px]
-                  rounded-[2px]
-                  bg-[#123c5a]
-                  text-white
-                  text-[9px]
-                  font-semibold
-                  tracking-wide
-                "
-              >
+              <span className="inline-flex items-center px-2 py-[3px] rounded-[2px] bg-[#123c5a] text-white text-[9px] poppins-semibold tracking-wide whitespace-nowrap">
                 {source_name}
               </span>
             ) : (
-              <span
-                className="
-                  text-[10px]
-                  sm:text-[11px]
-                  font-bold
-                  text-[#d71920]
-                  whitespace-nowrap
-                "
-              >
+              <span className="text-[10px] sm:text-[11px] poppins-medium text-[#d71920] whitespace-nowrap">
                 {source_name}
               </span>
             ))}
         </div>
 
+        {/* TAGS */}
         <div className="flex items-center flex-wrap gap-1.5 mt-1.5">
-          {category?.name && (
-            <span className="text-[11px] sm:text-[12px] text-[#245aa8]">
-              {category.name}
-            </span>
-          )}
-
-          {category?.name && insight_topic?.name && (
-            <span className="text-[11px] sm:text-[12px] text-[#b0b5b9]">
-              |
-            </span>
-          )}
-
-          {insight_topic?.name && (
-            <span className="text-[11px] sm:text-[12px] text-[#245aa8]">
-              {insight_topic.name}
-            </span>
-          )}
+          {displayTags.map((tag, index) => (
+            <React.Fragment key={index}>
+              <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
+                {tag}
+              </span>
+              {index < displayTags.length - 1 && (
+                <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
+                  |
+                </span>
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </div>
     </article>
@@ -365,31 +319,29 @@ const ArticleCard = ({ article }) => {
 ========================================================= */
 
 const ArticlesSection = ({ posts = [] }) => {
-  const [visibleCount, setVisibleCount] =
-    React.useState(9);
+  const [visibleCount, setVisibleCount] = React.useState(9);
 
-  const visibleArticles = posts.slice(
-    0,
-    visibleCount
-  );
+  const visibleArticles = posts.slice(0, visibleCount);
 
   const handleLoadMore = () => {
-    setVisibleCount((prev) =>
-      Math.min(prev + 3, posts.length)
-    );
+    setVisibleCount((prev) => Math.min(prev + 3, posts.length));
   };
 
   if (!posts.length) return null;
 
   return (
-    <section className="bg-white py-16 lg:py-20">
+    <section
+      style={{ marginBottom: "30px" }}
+      className="bg-white py-16 lg:py-0"
+    >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
         {/* HEADING */}
         <div className="flex items-center gap-3 mb-9">
           <h3
             className="
               text-[20px]
-              font-medium
+            
+              poppins-semibold
               text-[#222b31]
             "
           >
@@ -412,10 +364,7 @@ const ArticlesSection = ({ posts = [] }) => {
           "
         >
           {visibleArticles.map((article) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-            />
+            <ArticleCard key={article.id} article={article} />
           ))}
         </div>
 
@@ -433,7 +382,7 @@ const ArticlesSection = ({ posts = [] }) => {
                 border-[#d8e1eb]
                 bg-white
                 text-[11px]
-                font-medium
+                poppins-medium
                 text-[#245aa8]
                 hover:bg-[#f7f9fc]
                 transition-colors
@@ -462,18 +411,10 @@ const HeroSection = ({
   bannerUrl,
   socialLinks,
 }) => {
-  const websiteLink =
-    getWebsiteLink(socialLinks);
-
-  const twitterLink =
-    getTwitterLink(socialLinks);
-
-  const linkedinLink =
-    getLinkedinLink(socialLinks);
-
-  /* Contact Member always goes to Peartree contact page */
-  const contactLink =
-    "https://peartreecanada.com/contact-us/";
+  const websiteLink = getWebsiteLink(socialLinks);
+  const twitterLink = getTwitterLink(socialLinks);
+  const linkedinLink = getLinkedinLink(socialLinks);
+  const contactLink = "https://peartreecanada.com/contact-us/";
 
   return (
     <header
@@ -500,7 +441,7 @@ const HeroSection = ({
           object-center
         "
       />
-     
+
       {/* CONTENT */}
       <div className="relative z-10 h-full">
         <div
@@ -541,13 +482,13 @@ const HeroSection = ({
               </div>
             )}
 
-            {/* MEMBER TAGLINE — only if exists */}
+            {/* MEMBER TAGLINE */}
             {tagline && (
               <span
                 className="
                   text-[10px]
                   sm:text-[11px]
-                  font-semibold
+                  poppins-semibold
                   tracking-[0.04em]
                   uppercase
                   text-[#4c5b64]
@@ -565,7 +506,7 @@ const HeroSection = ({
                 sm:text-[36px]
                 lg:text-[38px]
                 xl:text-[40px]
-                font-bold
+                poppins-semibold
                 leading-[1.04]
                 tracking-[-0.02em]
                 text-[#384952]
@@ -591,6 +532,7 @@ const HeroSection = ({
                   className="
                     text-[10px]
                     sm:text-[11px]
+                    poppins-medium
                     text-[#59636a]
                   "
                 >
@@ -610,13 +552,11 @@ const HeroSection = ({
                     gap-1.5
                     text-[10px]
                     sm:text-[11px]
+                    poppins-medium
                     text-[#59636a]
                   "
                 >
-                  <MapPin
-                    size={11}
-                    strokeWidth={1.8}
-                  />
+                  <MapPin size={11} strokeWidth={1.8} />
                   {location}
                 </span>
               )}
@@ -630,6 +570,7 @@ const HeroSection = ({
                   text-[10.5px]
                   sm:text-[11px]
                   lg:text-[11.5px]
+                  poppins-medium
                   leading-[1.6]
                   text-[#626c72]
                   mb-4.5
@@ -649,39 +590,22 @@ const HeroSection = ({
                 w-fit
               "
             >
-              {/* WEBSITE */}
               <ActionButton
                 icon={Link2}
-                href={
-                  websiteLink !== "#"
-                    ? normalizeUrl(websiteLink)
-                    : "#"
-                }
+                href={websiteLink !== "#" ? normalizeUrl(websiteLink) : "#"}
               >
                 Website Link
               </ActionButton>
 
-              {/* CONTACT — always Peartree contact page */}
-              <ActionButton
-                icon={Mail}
-                href={contactLink}
-              >
+              <ActionButton icon={Mail} href={contactLink}>
                 Contact Member
               </ActionButton>
 
-              {/* X (TWITTER) */}
-              <ActionButton
-                icon={XIcon}
-                href={twitterLink}
-              >
+              <ActionButton icon={XIcon} href={twitterLink}>
                 Twitter
               </ActionButton>
 
-              {/* LINKEDIN */}
-              <ActionButton
-                icon={Linkedin}
-                href={linkedinLink}
-              >
+              <ActionButton icon={Linkedin} href={linkedinLink}>
                 LinkedIn
               </ActionButton>
             </div>
@@ -693,51 +617,40 @@ const HeroSection = ({
 };
 
 /* =========================================================
-   EXPERTISE SECTION
+   EXPERTISE SECTION (UPDATED WITH VERTICAL LINES)
 ========================================================= */
 
 const ExpertiseSection = ({ expertises = [] }) => {
   if (!expertises.length) return null;
 
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white pt-20 pb-10">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
-        <div
-          className="
-            grid
-            grid-cols-1
-            md:grid-cols-3
-            gap-x-14
-            lg:gap-x-16
-            gap-y-14
-          "
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-14 gap-x-0">
           {expertises.map((item, index) => {
-            const style =
-              ICON_STYLES[
-                index % ICON_STYLES.length
-              ];
+            const style = ICON_STYLES[index % ICON_STYLES.length];
+            const isFirst = index % 3 === 0;
+            const isSecond = index % 3 === 1;
+            const isThird = index % 3 === 2;
 
             return (
-              <FeatureCard
-                key={
-                  item?.id ||
-                  `expertise-${index}`
-                }
-                icon={style.icon}
-                color={style.color}
-                bg={style.bg}
-                title={
-                  item?.title ||
-                  item?.name ||
-                  ""
-                }
-                text={
-                  item?.description ||
-                  item?.text ||
-                  ""
-                }
-              />
+              <div
+                key={item?.id || `expertise-${index}`}
+                className={`
+                  ${!isFirst ? "md:border-l md:border-[#eaeaea]" : ""}
+                  ${isFirst ? "md:pr-8" : ""}
+                  ${isSecond ? "md:px-8" : ""}
+                  ${isThird ? "md:pl-8" : ""}
+                `}
+              >
+                <FeatureCard
+                  icon={style.icon}
+                  color={style.color}
+                  bg={style.bg}
+                  title={item?.title || item?.name || ""}
+                  text={item?.description || item?.text || ""}
+                />
+              </div>
             );
           })}
         </div>
@@ -747,181 +660,82 @@ const ExpertiseSection = ({ expertises = [] }) => {
 };
 
 /* =========================================================
-   PERSPECTIVE SECTION
+   PERSPECTIVE SECTION (UPDATED: Starts below lines, Image on LEFT)
 ========================================================= */
 
-const PerspectiveSection = ({
-  perspective,
-}) => {
-  if (
-    !perspective ||
-    !perspective.images?.length
-  ) {
+const PerspectiveSection = ({ perspective }) => {
+  if (!perspective || !perspective.title) {
     return null;
   }
 
-  const images = perspective.images || [];
-
-  /* CTA URL — hardcoded to Peartree Canada contact page */
-  const ctaUrl =
-    "https://peartreecanada.com/contact-us/";
-
+  const ctaUrl = "https://peartreecanada.com/contact-us/";
+  const images = perspective?.images || [];
+  const titleWords = perspective?.title ? perspective.title.split(" ") : [];
+  const firstTwoWords = titleWords.slice(0, 2).join(" ");
+  const remainingWords = titleWords.slice(2).join(" ");
   return (
-    <section
-      className="
-        bg-white
-        py-16
-        sm:py-20
-        lg:py-[78px]
-      "
-    >
-      <div
-        className="
-          max-w-[1400px]
-          mx-auto
-          px-6
-          lg:px-10
-          grid
-          grid-cols-1
-          lg:grid-cols-[290px_minmax(0,1fr)]
-          gap-10
-          lg:gap-[52px]
-          items-start
-        "
-      >
-        {/* =================================================
-            LEFT IMAGES
-        ================================================= */}
-        <div className="w-full">
-          <div className="flex flex-col gap-[15px]">
-            {images.slice(0, 2).map((image, index) => (
-              <div
-                key={index}
-                className="
-                  w-full
-                  h-[150px]
-                  sm:h-[165px]
-                  lg:h-[145px]
-                  overflow-hidden
-                  bg-[#eef1f3]
-                "
-              >
+    <section className="bg-white pb-20 pt-10">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-0">
+          {/* LEFT: IMAGE (As requested: "usk left wale hisse m image aaye gi") */}
+          <div className="lg:col-span-1 lg:pr-8">
+            {images.length > 0 ? (
+              <div className="w-[400px] h-auto overflow-hidden bg-[#eef1f3] rounded-[4px]">
                 <img
-                  src={image}
-                  alt={`Perspective ${index + 1}`}
-                  className="
-                    w-full
-                    h-full
-                    object-cover
-                    transition-transform
-                    duration-500
-                    hover:scale-[1.02]
-                  "
+                  src={images[0]}
+                  alt="Perspective"
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
                 />
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* =================================================
-            RIGHT CONTENT
-        ================================================= */}
-        <div className="pt-0 lg:pt-[1px]">
-          {/* LABEL */}
-          <div
-            className="
-              flex
-              items-center
-              gap-3
-              mb-2.5
-            "
-          >
-            <span
-              className="
-                text-[10px]
-                sm:text-[11px]
-                font-bold
-                uppercase
-                tracking-[0.08em]
-                text-[#56646d]
-              "
-            >
-              {perspective?.label ||
-                "Our Perspective"}
-            </span>
-
-            <div className="w-8 h-px bg-[#dce1e4]" />
+            ) : (
+              <div className="w-full h-[250px] bg-[#eef1f3] rounded-[4px]"></div>
+            )}
           </div>
 
-          {/* TITLE */}
-          <h2
-            className="
-              text-[28px]
-              sm:text-[31px]
-              lg:text-[33px]
-              xl:text-[35px]
-              font-bold
-              leading-[1.12]
-              tracking-[-0.01em]
-              text-[#3c4d56]
-              max-w-[700px]
-              mb-4
-              uppercase
-            "
-          >
-            {perspective?.title}
-          </h2>
+          {/* RIGHT: TEXT CONTENT (Aligned with the 2nd and 3rd columns of Expertise) */}
+          <div className="lg:col-span-2 ">
+            <div>
+              {/* LABL */}
+              <div className="mb-4">
+                <span
+                  style={{}}
+                  className="text-[10px] sm:text-[11px] poppins-semibold uppercase tracking-[0.08em] text-[#56646d]"
+                >
+                  {perspective?.label || "Our Perspective"}
+                </span>
+                <div className="w-10 h-px bg-[#dce1e4]" />
+              </div>
 
-          {/* DESCRIPTION */}
-          {perspective?.description && (
-            <div className="max-w-[850px]">
-              <p
-                className="
-                  text-[10.5px]
-                  sm:text-[11px]
-                  lg:text-[11.5px]
-                  leading-[1.62]
-                  text-[#5e696f]
-                "
+              {/* TITLE */}
+              <h2
+                style={{ width: "400px", lineHeight: "36px" }}
+                className="text-[28px] sm:text-[32px] lg:text-[30px] poppins-semibold leading-[1.15] tracking-[-0.01em] text-[#3c4d56] mb-5 uppercase"
               >
-                {perspective.description}
-              </p>
+                {firstTwoWords}
+                <br />
+                {remainingWords}
+              </h2>
+
+              {/* DESCRIPTION */}
+              {perspective?.description && (
+                <p className="text-[11px] sm:text-[12px] lg:text-[13px] poppins- leading-[1.65] text-[#5e696f] mt-2 mb-6">
+                  {perspective.description}
+                </p>
+              )}
+
+              {/* CTA */}
+              <div>
+                <a
+                  href={ctaUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2.5 h-[34px] px-4 border border-[#dfe5ea] rounded-[3px] bg-white text-[10px] sm:text-[11px] poppins-medium text-[#2c65a5] hover:bg-[#f8fafc] hover:border-[#cdd7df] transition-all"
+                >
+                  {perspective?.cta_text || "Learn More About Our Approach"}
+                  <ArrowRight size={12} strokeWidth={1.8} />
+                </a>
+              </div>
             </div>
-          )}
-
-          {/* CTA — always links to Peartree contact page */}
-          <div className="mt-5">
-            <a
-              href={ctaUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="
-                inline-flex
-                items-center
-                gap-2.5
-                h-[29px]
-                px-3
-                border
-                border-[#dfe5ea]
-                rounded-[3px]
-                bg-white
-                text-[10px]
-                sm:text-[11px]
-                font-medium
-                text-[#2c65a5]
-                hover:bg-[#f8fafc]
-                hover:border-[#cdd7df]
-                transition-all
-              "
-            >
-              {perspective?.cta_text ||
-                "Learn More About Our Approach"}
-
-              <ArrowRight
-                size={12}
-                strokeWidth={1.8}
-              />
-            </a>
           </div>
         </div>
       </div>
@@ -945,10 +759,7 @@ const FieraRealEstate = () => {
     skip: !id,
   });
 
-  /* =======================================================
-     LOADING
-  ======================================================= */
-
+  /* LOADING */
   if (isLoading) {
     return (
       <div
@@ -975,10 +786,7 @@ const FieraRealEstate = () => {
     );
   }
 
-  /* =======================================================
-     ERROR
-  ======================================================= */
-
+  /* ERROR */
   if (isError) {
     return (
       <div
@@ -991,19 +799,15 @@ const FieraRealEstate = () => {
           bg-white
           text-red-500
           text-center
+          poppins-medium
         "
       >
-        Error:{" "}
-        {error?.data?.message ||
-          "Failed to load member."}
+        Error: {error?.data?.message || "Failed to load member."}
       </div>
     );
   }
 
-  /* =======================================================
-     DATA
-  ======================================================= */
-
+  /* DATA */
   const member = response?.data;
 
   if (!member) {
@@ -1026,27 +830,6 @@ const FieraRealEstate = () => {
 
   return (
     <>
-      {/* =====================================================
-          ROBOTO
-      ===================================================== */}
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
-
-          .fiera-real-estate-page {
-            font-family: 'Roboto', Arial, sans-serif;
-          }
-
-          .fiera-real-estate-page *,
-          .fiera-real-estate-page button,
-          .fiera-real-estate-page a,
-          .fiera-real-estate-page input,
-          .fiera-real-estate-page textarea {
-            font-family: inherit;
-          }
-        `}
-      </style>
-
       <div
         className="
           fiera-real-estate-page
@@ -1055,10 +838,6 @@ const FieraRealEstate = () => {
           text-[#3d474d]
         "
       >
-        {/* ===================================================
-            HERO
-        =================================================== */}
-
         <HeroSection
           name={name}
           tagline={tagline}
@@ -1070,29 +849,11 @@ const FieraRealEstate = () => {
           socialLinks={social_links}
         />
 
-        {/* ===================================================
-            EXPERTISE
-        =================================================== */}
+        <ExpertiseSection expertises={expertises} />
 
-        <ExpertiseSection
-          expertises={expertises}
-        />
+        <PerspectiveSection perspective={perspective} />
 
-        {/* ===================================================
-            PERSPECTIVE
-        =================================================== */}
-
-        <PerspectiveSection
-          perspective={perspective}
-        />
-
-        {/* ===================================================
-            ARTICLES
-        =================================================== */}
-
-        <ArticlesSection
-          posts={posts}
-        />
+        <ArticlesSection posts={posts} />
       </div>
     </>
   );
