@@ -9,7 +9,6 @@ export default function ContactForm() {
     firstName: "",
     lastName: "",
     phone: "",
-    subject: "",
     email: "",
     message: "",
   });
@@ -24,7 +23,6 @@ export default function ContactForm() {
       newErrors.firstName = "First name is required.";
     if (!formData.lastName.trim())
       newErrors.lastName = "Last name is required.";
-    if (!formData.subject) newErrors.subject = "Please choose a subject.";
     if (!formData.email.trim()) newErrors.email = "Email is required.";
     if (!formData.message.trim()) newErrors.message = "Message is required.";
 
@@ -55,7 +53,6 @@ export default function ContactForm() {
       fname: formData.firstName,
       lname: formData.lastName,
       mobile: formData.phone,
-      subject: formData.subject,
       email: formData.email,
       message: formData.message,
     };
@@ -75,7 +72,6 @@ export default function ContactForm() {
         firstName: "",
         lastName: "",
         phone: "",
-        subject: "",
         email: "",
         message: "",
       });
@@ -91,8 +87,6 @@ export default function ContactForm() {
           fname: "firstName",
           lname: "lastName",
           mobile: "phone",
-          topic: "topic",
-          subject: "subject",
           email: "email",
           message: "message",
         };
@@ -125,10 +119,7 @@ export default function ContactForm() {
     }
   };
 
-  const wordCount = formData.message
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const wordCount = formData.message.trim().split(/\s+/).filter(Boolean).length;
 
   const inputStyle = (field) =>
     `w-full px-4 py-3 rounded-xl outline-none transition-all text-sm bg-gray-50/50
@@ -139,15 +130,6 @@ export default function ContactForm() {
      }
      placeholder:text-gray-400`;
 
-  const selectBgStyle = {
-    backgroundImage: `url("/arbutus-web/assets/Contact/arrow-down.png")`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 0.75rem center",
-    backgroundSize: "1em 1em",
-    paddingRight: "2.5rem",
-    appearance: "none",
-  };
-
   return (
     <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="w-full max-w-6xl bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/50 p-8 md:p-12">
@@ -157,8 +139,8 @@ export default function ContactForm() {
             Get in Touch
           </h2>
           <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-            Have a question or want to work together? Fill out the form below and
-            we'll get back to you as soon as possible.
+            Have a question or want to work together? Fill out the form below
+            and we'll get back to you as soon as possible.
           </p>
         </div>
 
@@ -204,8 +186,8 @@ export default function ContactForm() {
             </div>
           </div>
 
-          {/* Second Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Second Row - Updated to 2 columns instead of 3 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Phone (Optional) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -221,31 +203,6 @@ export default function ContactForm() {
               {errors.phone && (
                 <p className="mt-1.5 text-xs text-red-500 font-medium">
                   {errors.phone}
-                </p>
-              )}
-            </div>
-
-            {/* Subject */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                className={inputStyle("subject")}
-                style={selectBgStyle}
-              >
-                <option value="">Choose</option>
-                <option value="product">Product Question</option>
-                <option value="technical">Technical Issue</option>
-                <option value="billing">Billing</option>
-                <option value="feedback">Feedback</option>
-              </select>
-              {errors.subject && (
-                <p className="mt-1.5 text-xs text-red-500 font-medium">
-                  {errors.subject}
                 </p>
               )}
             </div>
@@ -274,8 +231,7 @@ export default function ContactForm() {
           {/* Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Write Your Message Here{" "}
-              <span className="text-red-500">*</span>
+              Write Your Message Here <span className="text-red-500">*</span>
             </label>
 
             <div className="relative">

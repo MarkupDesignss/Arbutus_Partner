@@ -221,7 +221,7 @@ const FeatureCard = ({ icon: Icon, color, bg, title, text }) => {
 };
 
 /* =========================================================
-   ARTICLE CARD
+   ARTICLE CARD (UPDATED: Clickable using format_url)
 ========================================================= */
 
 const ArticleCard = ({ article }) => {
@@ -234,83 +234,100 @@ const ArticleCard = ({ article }) => {
     category,
     media_type,
     insight_topic,
+    format_url,
   } = article;
 
   const isBadge = media_type === "pdf";
   const displayTags = [category?.name, insight_topic?.name].filter(Boolean);
 
+  // Determine the link URL (fallback to # if not provided)
+  const linkUrl = format_url || "#";
+  const isExternal = linkUrl.startsWith("http");
+
   return (
-    <article className="flex items-start gap-4 min-w-0 bg-white">
-      {/* IMAGE WITH OVERLAY BADGE */}
-      <div className="relative w-[135px] h-[90px] shrink-0 overflow-hidden bg-[#f2f4f5]">
-        {image_url ? (
-          <img
-            src={image_url}
-            alt={title || "Article"}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        ) : null}
+    <a
+      href={linkUrl}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+      className="block group"
+    >
+      <article className="flex items-start gap-4 min-w-0 bg-white p-2 -m-2 rounded-lg transition-colors duration-200 group-hover:bg-[#F8FAFC]">
+        {/* IMAGE WITH OVERLAY BADGE */}
+        <div className="relative w-[135px] h-[90px] shrink-0 overflow-hidden bg-[#f2f4f5] rounded-[4px]">
+          {image_url ? (
+            <img
+              src={image_url}
+              alt={title || "Article"}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : null}
 
-        {image_badge && (
-          <span className="absolute top-1 right-1 bg-[#123c5a] text-white text-[9px] poppins-semibold px-2 py-[2px] rounded-[2px] uppercase">
-            {image_badge}
-          </span>
-        )}
-      </div>
-
-      {/* CONTENT */}
-      <div className="min-w-0 flex-1 flex flex-col justify-between min-h-[90px]">
-        {/* TITLE */}
-        <h4
-          style={{ fontWeight: "normal", fontSize: "12px", lineHeight: "18px" }}
-          className="
-            poppins-medium
-            text-[#3d454b]
-          "
-        >
-          {title}
-        </h4>
-
-        {/* META INFO */}
-        <div className="flex items-center gap-x-2 mt-2">
-          {published_date_formatted && (
-            <span className="text-[11px] sm:text-[12px] poppins-medium text-[#8b9298] whitespace-nowrap">
-              {published_date_formatted}
+          {image_badge && (
+            <span className="absolute top-1 right-1 bg-[#123c5a] text-white text-[9px] poppins-semibold px-2 py-[2px] rounded-[2px] uppercase">
+              {image_badge}
             </span>
           )}
-
-          {source_name &&
-            (isBadge ? (
-              <span className="inline-flex items-center px-2 py-[3px] rounded-[2px] bg-[#123c5a] text-white text-[9px] poppins-semibold tracking-wide whitespace-nowrap">
-                {source_name}
-              </span>
-            ) : (
-              <span className="text-[10px] sm:text-[11px] poppins-medium text-[#d71920] whitespace-nowrap">
-                {source_name}
-              </span>
-            ))}
         </div>
 
-        {/* TAGS */}
-        <div className="flex items-center flex-wrap gap-1.5 mt-1.5">
-          {displayTags.map((tag, index) => (
-            <React.Fragment key={index}>
-              <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
-                {tag}
+        {/* CONTENT */}
+        <div className="min-w-0 flex-1 flex flex-col justify-between min-h-[90px]">
+          {/* TITLE */}
+          <h4
+            style={{
+              fontWeight: "normal",
+              fontSize: "12px",
+              lineHeight: "18px",
+            }}
+            className="
+              poppins-medium
+              text-[#3d454b]
+              transition-colors duration-200 group-hover:text-[#245aa8] group-hover:underline decoration-[#245aa8]/30 underline-offset-2
+            "
+          >
+            {title}
+          </h4>
+
+          {/* META INFO */}
+          <div className="flex items-center gap-x-2 mt-2">
+            {published_date_formatted && (
+              <span className="text-[11px] sm:text-[12px] poppins-medium text-[#8b9298] whitespace-nowrap">
+                {published_date_formatted}
               </span>
-              {index < displayTags.length - 1 && (
-                <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
-                  |
+            )}
+
+            {source_name &&
+              (isBadge ? (
+                <span className="inline-flex items-center px-2 py-[3px] rounded-[2px] bg-[#123c5a] text-white text-[9px] poppins-semibold tracking-wide whitespace-nowrap">
+                  {source_name}
                 </span>
-              )}
-            </React.Fragment>
-          ))}
+              ) : (
+                <span className="text-[10px] sm:text-[11px] poppins-medium text-[#d71920] whitespace-nowrap">
+                  {source_name}
+                </span>
+              ))}
+          </div>
+
+          {/* TAGS */}
+          <div className="flex items-center flex-wrap gap-1.5 mt-1.5">
+            {displayTags.map((tag, index) => (
+              <React.Fragment key={index}>
+                <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
+                  {tag}
+                </span>
+                {index < displayTags.length - 1 && (
+                  <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
+                    |
+                  </span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </a>
   );
 };
 
@@ -340,7 +357,6 @@ const ArticlesSection = ({ posts = [] }) => {
           <h3
             className="
               text-[20px]
-            
               poppins-semibold
               text-[#222b31]
             "
@@ -617,7 +633,7 @@ const HeroSection = ({
 };
 
 /* =========================================================
-   EXPERTISE SECTION (UPDATED WITH VERTICAL LINES)
+   EXPERTISE SECTION
 ========================================================= */
 
 const ExpertiseSection = ({ expertises = [] }) => {
@@ -660,7 +676,7 @@ const ExpertiseSection = ({ expertises = [] }) => {
 };
 
 /* =========================================================
-   PERSPECTIVE SECTION (UPDATED: Starts below lines, Image on LEFT)
+   PERSPECTIVE SECTION
 ========================================================= */
 
 const PerspectiveSection = ({ perspective }) => {
@@ -673,11 +689,12 @@ const PerspectiveSection = ({ perspective }) => {
   const titleWords = perspective?.title ? perspective.title.split(" ") : [];
   const firstTwoWords = titleWords.slice(0, 2).join(" ");
   const remainingWords = titleWords.slice(2).join(" ");
+
   return (
     <section className="bg-white pb-20 pt-10">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-0">
-          {/* LEFT: IMAGE (As requested: "usk left wale hisse m image aaye gi") */}
+          {/* LEFT: IMAGE */}
           <div className="lg:col-span-1 lg:pr-8">
             {images.length > 0 ? (
               <div className="w-[400px] h-auto overflow-hidden bg-[#eef1f3] rounded-[4px]">
@@ -692,15 +709,12 @@ const PerspectiveSection = ({ perspective }) => {
             )}
           </div>
 
-          {/* RIGHT: TEXT CONTENT (Aligned with the 2nd and 3rd columns of Expertise) */}
-          <div className="lg:col-span-2 ">
+          {/* RIGHT: TEXT CONTENT */}
+          <div className="lg:col-span-2">
             <div>
-              {/* LABL */}
+              {/* LABEL */}
               <div className="mb-4">
-                <span
-                  style={{}}
-                  className="text-[10px] sm:text-[11px] poppins-semibold uppercase tracking-[0.08em] text-[#56646d]"
-                >
+                <span className="text-[10px] sm:text-[11px] poppins-semibold uppercase tracking-[0.08em] text-[#56646d]">
                   {perspective?.label || "Our Perspective"}
                 </span>
                 <div className="w-10 h-px bg-[#dce1e4]" />
@@ -718,7 +732,7 @@ const PerspectiveSection = ({ perspective }) => {
 
               {/* DESCRIPTION */}
               {perspective?.description && (
-                <p className="text-[11px] sm:text-[12px] lg:text-[13px] poppins- leading-[1.65] text-[#5e696f] mt-2 mb-6">
+                <p className="text-[11px] sm:text-[12px] lg:text-[13px] poppins-medium leading-[1.65] text-[#5e696f] mt-2 mb-6">
                   {perspective.description}
                 </p>
               )}

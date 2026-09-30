@@ -1,7 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const AlternativeInvesting = () => {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+
+  // =========================================================
+  // FETCH API DATA
+  // =========================================================
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setIsError(false);
+
+        const response = await fetch(
+          "https://www.markupdesigns.net/arbutus-partner/api/pages/alternative_investing_literacy_terms_and_definitions",
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const json = await response.json();
+
+        if (isMounted) {
+          setData(json);
+        }
+      } catch (error) {
+        console.error("Alternative Investing fetch error:", error);
+        if (isMounted) {
+          setIsError(true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -25,20 +72,88 @@ const AlternativeInvesting = () => {
     },
   };
 
-  const termData = [
-    {
-      term: "Liquidity Premium",
-      definition:
-        "The additional return investors demand for holding illiquid assets.",
-      why: "Essential for understanding returns in private markets.",
-    },
-    {
-      term: "Alpha Generation",
-      definition:
-        "Excess returns above a benchmark achieved through active management.",
-      why: "Critical for evaluating fund manager performance.",
-    },
-  ];
+  // =========================================================
+  // PARSE API DATA
+  // =========================================================
+  const page = data?.data || null;
+  const sections = page?.sections || [];
+
+  // First section = hero (main heading + hero image)
+  const heroSection = sections[0] || null;
+
+  // Remaining sections = term cards
+  const termData = sections.slice(1).map((section, index) => ({
+    id: section?.id ?? index,
+    term: section?.heading || `Term ${index + 1}`,
+    definition: section?.data || "",
+    image: section?.images?.[0] || null,
+    label: section?.label || "Term",
+    number: String(index + 1).padStart(2, "0"),
+  }));
+
+  // Helper: render HTML definition safely
+  const renderHTML = (htmlContent) => {
+    if (!htmlContent) return null;
+    return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  };
+
+  // Strip HTML for plain-text preview
+  const stripHTML = (html) => {
+    if (!html) return "";
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
+  // =========================================================
+  // LOADING SKELETON
+  // =========================================================
+  if (isLoading) {
+    return (
+      <section className="relative py-16 md:py-24 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+          <div className="animate-pulse">
+            <div className="h-4 w-48 bg-gray-200 mx-auto mb-6" />
+            <div className="h-10 w-96 bg-gray-200 mx-auto mb-4" />
+            <div className="h-4 w-64 bg-gray-200 mx-auto mb-16" />
+            <div className="h-[280px] bg-gray-200 mb-12" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="h-64 bg-gray-200" />
+              <div className="h-64 bg-gray-200" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // =========================================================
+  // ERROR / EMPTY STATE
+  // =========================================================
+  if (isError || !page) {
+    return (
+      <section className="relative py-16 md:py-24 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF]">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
+          <p className="text-gray-500 text-sm">
+            Unable to load Alternative Investing content. Please try again
+            later.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  // =========================================================
+  // HERO VALUES
+  // =========================================================
+  const heroImage =
+    heroSection?.images?.[0] ||
+    "/arbutus-web/assets/Home/AlternativeInvesting/Alternative.png";
+
+  const heroHeading =
+    heroSection?.heading ||
+    page?.title ||
+    "Alternative Investing Literacy – Terms and Definitions";
 
   return (
     <section className="relative py-16 md:py-24 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden">
@@ -70,9 +185,18 @@ const AlternativeInvesting = () => {
           </div>
 
           <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold leading-tight text-gray-900">
-            Alternative Investing Literacy
-            <br className="hidden sm:block" />
-            <span className="text-[#2A57C4]"> Terms &amp; Definitions</span>
+            {heroHeading.includes("–") ? (
+              <>
+                {heroHeading.split("–")[0].trim()}
+                <br className="hidden sm:block" />
+                <span className="text-[#2A57C4]">
+                  {" "}
+                  {heroHeading.split("–").slice(1).join("–").trim()}
+                </span>
+              </>
+            ) : (
+              heroHeading
+            )}
           </h2>
 
           <p className="mt-4 text-gray-500 text-sm md:text-base max-w-2xl mx-auto">
@@ -82,7 +206,7 @@ const AlternativeInvesting = () => {
         </motion.div>
 
         {/* =====================================================
-            TOP HERO IMAGE (full-width banner)
+            TOP HERO IMAGE
         ===================================================== */}
         <motion.div
           variants={itemVariants}
@@ -93,15 +217,18 @@ const AlternativeInvesting = () => {
         >
           <div className="relative overflow-hidden shadow-xl group">
             <img
-              src="/arbutus-web/assets/Home/AlternativeInvesting/Alternative.png"
-              alt="Alternative Investing Illustration"
+              src={heroImage}
+              alt={heroHeading}
               className="w-full h-[220px] sm:h-[280px] lg:h-[340px] object-cover transition-transform duration-700 group-hover:scale-105"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src =
+                  "/arbutus-web/assets/Home/AlternativeInvesting/Alternative.png";
+              }}
             />
 
-            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
-            {/* Caption */}
             <div className="absolute bottom-5 left-5 right-5 sm:bottom-7 sm:left-7 flex flex-col gap-1">
               <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/80">
                 Knowledge Base
@@ -111,11 +238,9 @@ const AlternativeInvesting = () => {
               </span>
             </div>
 
-            {/* Corner brackets */}
             <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-white/70" />
             <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-white/70" />
 
-            {/* LIVE badge */}
             <div className="absolute top-4 right-4 bg-white shadow-lg px-3 py-1.5 flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider">
@@ -126,89 +251,105 @@ const AlternativeInvesting = () => {
         </motion.div>
 
         {/* =====================================================
-            TERMS — GRID FORM (2 columns on desktop)
+            TERMS — GRID FORM
         ===================================================== */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
-        >
-          {termData.map((item, index) => (
-            <motion.div
-              key={index}
-              variants={itemVariants}
-              className="relative group h-full"
-            >
-              {/* Big background numeral */}
-              <span
-                className="
-                  absolute -top-8 -left-2
-                  text-[110px] md:text-[130px]
-                  font-bold text-[#2A57C4]/[0.06]
-                  leading-none select-none pointer-events-none
-                "
+        {termData.length > 0 ? (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
+          >
+            {termData.map((item, index) => (
+              <motion.div
+                key={item.id}
+                variants={itemVariants}
+                className="relative group h-full"
               >
-                0{index + 1}
-              </span>
+                <span
+                  className="
+                    absolute -top-8 -left-2
+                    text-[110px] md:text-[130px]
+                    font-bold text-[#2A57C4]/[0.06]
+                    leading-none select-none pointer-events-none
+                  "
+                >
+                  {item.number}
+                </span>
 
-              <div
-                className="
-                  relative h-full flex flex-col
-                  bg-white/90 backdrop-blur-sm
-                  border border-gray-100
-                  p-6 md:p-8
-                  shadow-sm hover:shadow-xl
-                  transition-all duration-300
-                  group-hover:-translate-y-1
-                "
-              >
-                {/* Left gradient accent bar */}
-                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#2A57C4] to-[#7C3AED]" />
+                <div
+                  className="
+                    relative h-full flex flex-col
+                    bg-white/90 backdrop-blur-sm
+                    border border-gray-100
+                    p-6 md:p-8
+                    shadow-sm hover:shadow-xl
+                    transition-all duration-300
+                    group-hover:-translate-y-1
+                  "
+                >
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#2A57C4] to-[#7C3AED]" />
 
-                <div className="pl-4 flex flex-col h-full">
-                  {/* Term pill + title */}
-                  <div className="flex items-center gap-3 mb-4 flex-wrap">
-                    <span
-                      className="
-                        text-[10px] font-semibold uppercase tracking-[0.2em]
-                        text-[#2A57C4] bg-[#E6EDFF]
-                        px-3 py-1
-                      "
-                    >
-                      Term 0{index + 1}
-                    </span>
+                  <div className="pl-4 flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-4 flex-wrap">
+                      <span
+                        className="
+                          text-[10px] font-semibold uppercase tracking-[0.2em]
+                          text-[#2A57C4] bg-[#E6EDFF]
+                          px-3 py-1
+                        "
+                      >
+                        {item.label || "Term"} {item.number}
+                      </span>
 
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-900">
-                      {item.term}
-                    </h3>
-                  </div>
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+                        {item.term}
+                      </h3>
+                    </div>
 
-                  {/* Definition */}
-                  <div className="mb-5 flex-1">
-                    <span className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.2em] mb-1">
-                      Definition
-                    </span>
-                    <p className="text-gray-700 text-[15px] leading-relaxed">
-                      {item.definition}
-                    </p>
-                  </div>
+                    {item.image && (
+                      <div className="mb-4 overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.term}
+                          className="w-full h-32 object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
 
-                  {/* Why it matters */}
-                  <div className="pt-4 border-t border-dashed border-gray-200 mt-auto">
-                    <span className="block text-[10px] font-semibold text-[#2A57C4] uppercase tracking-[0.2em] mb-1">
-                      Why it matters
-                    </span>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {item.why}
-                    </p>
+                    <div className="mb-5 flex-1">
+                      <span className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.2em] mb-1">
+                        Definition
+                      </span>
+                      <div className="text-gray-700 text-[15px] leading-relaxed prose prose-sm max-w-none">
+                        {renderHTML(item.definition)}
+                      </div>
+                    </div>
+
+                    {stripHTML(item.definition) && (
+                      <div className="pt-4 border-t border-dashed border-gray-200 mt-auto">
+                        <span className="block text-[10px] font-semibold text-[#2A57C4] uppercase tracking-[0.2em] mb-1">
+                          Why it matters
+                        </span>
+                        <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                          {stripHTML(item.definition)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <div className="text-center text-gray-400 text-sm py-10">
+            No terms available.
+          </div>
+        )}
 
         {/* =====================================================
             BOTTOM CTA LINE

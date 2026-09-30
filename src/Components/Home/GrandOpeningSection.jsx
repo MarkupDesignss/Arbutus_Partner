@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
@@ -7,6 +7,53 @@ const GrandOpeningSection = () => {
     triggerOnce: true,
     threshold: 0.1,
   });
+
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+
+  // =========================================================
+  // FETCH API DATA
+  // =========================================================
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setIsError(false);
+
+        const response = await fetch(
+          "https://www.markupdesigns.net/arbutus-partner/api/pages/grand_opening_remarks",
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const json = await response.json();
+
+        if (isMounted) {
+          setData(json);
+        }
+      } catch (error) {
+        console.error("Grand Opening fetch error:", error);
+        if (isMounted) {
+          setIsError(true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -43,6 +90,105 @@ const GrandOpeningSection = () => {
     },
   };
 
+  // =========================================================
+  // PARSE API DATA
+  // =========================================================
+  const page = data?.data || null;
+  const pageTitle = page?.title || "Grand Opening Remarks";
+  const pageContentHTML = page?.content || "";
+  const sections = page?.sections || [];
+
+  // Hero section (first section with image)
+  const heroSection = sections[0] || null;
+  const heroImage =
+    heroSection?.images?.[0] ||
+    "/arbutus-web/assets/Home/GrandOpeningSection/GrandOpeningSection.png";
+
+  // Secondary section (Section-1) with 2 images
+  const secondarySection = sections[1] || null;
+  const secondaryImages = secondarySection?.images || [];
+
+  // =========================================================
+  // PARSE HTML CONTENT INTO PARAGRAPHS
+  // ---------------------------------------------------------
+  // API returns HTML with <p> and <strong> tags.
+  // We split into paragraphs and detect which are "callouts"
+  // (they contain <strong>) vs regular paragraphs.
+  // =========================================================
+  const parsedParagraphs = (() => {
+    if (!pageContentHTML) return [];
+
+    const tmp = document.createElement("div");
+    tmp.innerHTML = pageContentHTML;
+
+    const result = [];
+    const paragraphs = tmp.querySelectorAll("p");
+
+    paragraphs.forEach((p) => {
+      const html = p.innerHTML.trim();
+      const text = p.textContent.trim();
+
+      // Skip empty paragraphs (just &nbsp;)
+      if (!text || text === "\u00a0") return;
+
+      // Check if this paragraph is a "callout" (contains <strong>)
+      const isCallout = p.querySelector("strong") !== null;
+
+      result.push({
+        html,
+        text,
+        isCallout,
+      });
+    });
+
+    return result;
+  })();
+
+  // =========================================================
+  // LOADING SKELETON
+  // =========================================================
+  if (isLoading) {
+    return (
+      <section className="w-full bg-gradient-to-b from-white to-gray-50 py-16 lg:py-24 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="animate-pulse">
+            <div className="h-6 w-40 bg-gray-200 mx-auto mb-6" />
+            <div className="h-10 w-80 bg-gray-200 mx-auto mb-4" />
+            <div className="h-[3px] w-24 bg-gray-200 mx-auto mb-12" />
+            <div className="h-[340px] bg-gray-200 mb-12" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200" />
+                <div className="h-4 bg-gray-200" />
+                <div className="h-4 w-3/4 bg-gray-200" />
+              </div>
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200" />
+                <div className="h-4 bg-gray-200" />
+                <div className="h-4 w-2/3 bg-gray-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // =========================================================
+  // ERROR STATE
+  // =========================================================
+  if (isError || !page) {
+    return (
+      <section className="w-full bg-gradient-to-b from-white to-gray-50 py-16 lg:py-24">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="text-gray-500 text-sm">
+            Unable to load Grand Opening content. Please try again later.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full bg-gradient-to-b from-white to-gray-50 py-16 lg:py-24 roboto-regular overflow-hidden">
       <div className="max-w-6xl mx-auto px-6" ref={ref}>
@@ -63,11 +209,11 @@ const GrandOpeningSection = () => {
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              Grand Opening
+              {heroSection?.heading || "Grand Opening"}
             </span>
 
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black roboto-bold tracking-tight">
-              Grand Opening Remarks
+              {pageTitle}
             </h2>
 
             <motion.div
@@ -79,24 +225,28 @@ const GrandOpeningSection = () => {
           </motion.div>
 
           {/* =====================================================
-              FULL-WIDTH HERO IMAGE (NOT side-by-side)
+              FULL-WIDTH HERO IMAGE
           ===================================================== */}
           <motion.div
             variants={imageVariants}
             className="relative w-full mb-12 lg:mb-16"
           >
             <div className="relative overflow-hidden shadow-xl group">
-              {/* Image */}
               <motion.img
-                src="/arbutus-web/assets/Home/GrandOpeningSection/GrandOpeningSection.png"
-                alt="Grand Opening"
+                src={heroImage}
+                alt={pageTitle}
                 className="w-full h-[260px] sm:h-[340px] lg:h-[440px] object-cover transition-transform duration-700 group-hover:scale-105"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src =
+                    "/arbutus-web/assets/Home/GrandOpeningSection/GrandOpeningSection.png";
+                }}
               />
 
               {/* Subtle gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent pointer-events-none" />
 
-              {/* Caption inside image (bottom-left) */}
+              {/* Caption inside image */}
               <div className="absolute bottom-5 left-5 right-5 sm:bottom-7 sm:left-7 sm:right-auto flex flex-col gap-1">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
                   Est. 2025
@@ -105,11 +255,14 @@ const GrandOpeningSection = () => {
                   A new chapter in alternative fund discovery.
                 </span>
               </div>
+
+              {/* Corner brackets */}
+              <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-white/70" />
+              <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-white/70" />
             </div>
 
             {/* =================================================
-                OVERLAPPING STAT CARD (unique touch)
-                Sits at the bottom-right, slightly outside image
+                OVERLAPPING STAT CARD
             ================================================= */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -155,13 +308,13 @@ const GrandOpeningSection = () => {
           </motion.div>
 
           {/* =====================================================
-              TEXT CONTENT (below image, full width, 2-col reading)
+              TEXT CONTENT (from API content, split into 2 cols)
           ===================================================== */}
           <motion.div
             variants={itemVariants}
             className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12"
           >
-            {/* Left: vertical accent + lead paragraph */}
+            {/* LEFT: vertical accent + first half of paragraphs */}
             <div className="lg:col-span-5 flex gap-4">
               <div className="hidden lg:flex flex-col items-center pt-1">
                 <div className="w-[3px] h-16 bg-gradient-to-b from-blue-500 to-purple-500" />
@@ -177,69 +330,144 @@ const GrandOpeningSection = () => {
               </div>
 
               <div className="space-y-4">
-                <p className="text-gray-700 leading-relaxed text-[15px]">
-                  In the past 30 years over open end fund investing in Canada,
-                  the market has evolved from actively managed, to passive ETFs
-                  (Exchange Traded Funds), to hedge funds, liquid alternatives,
-                  and now private asset funds (private equity, private credit,
-                  private real estate and more).
-                </p>
+                {parsedParagraphs
+                  .slice(0, Math.ceil(parsedParagraphs.length / 2))
+                  .map((para, index) => {
+                    if (para.isCallout) {
+                      return (
+                        <div
+                          key={index}
+                          className="bg-blue-50 border-l-4 border-blue-500 p-4"
+                        >
+                          <p
+                            className="text-gray-800 font-medium text-[14px]"
+                            dangerouslySetInnerHTML={{
+                              __html: para.html,
+                            }}
+                          />
+                        </div>
+                      );
+                    }
 
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-                  <p className="text-gray-800 font-medium text-[14px]">
-                    Why we built AltDB. To go beyond the world of traditional
-                    60/40 investing with improved confidence and awareness.
-                  </p>
-                </div>
+                    return (
+                      <p
+                        key={index}
+                        className="text-gray-700 leading-relaxed text-[15px]"
+                        dangerouslySetInnerHTML={{ __html: para.html }}
+                      />
+                    );
+                  })}
               </div>
             </div>
 
-            {/* Right: continued paragraphs + stat callout */}
+            {/* RIGHT: second half of paragraphs */}
             <div className="lg:col-span-7 space-y-5">
-              <p className="text-gray-700 leading-relaxed text-[15px]">
-                <span className="text-gray-900 font-semibold">
-                  Why alternative funds matter more than ever before.
-                </span>{" "}
-                There is a growing consensus that public market returns may be
-                constrained resulting in a lost decade.
-              </p>
+              {parsedParagraphs
+                .slice(Math.ceil(parsedParagraphs.length / 2))
+                .map((para, index) => {
+                  if (para.isCallout) {
+                    // The "Future growth expectations" callout gets
+                    // a distinct purple/pink treatment
+                    const isFutureGrowth =
+                      para.text.toLowerCase().includes("future growth") ||
+                      para.text.toLowerCase().includes("$14 trillion");
 
-              <p className="text-gray-700 leading-relaxed text-[15px]">
-                Through democratised finance, all investors and allocators can
-                access liquid alternative (public) funds, and those investors
-                who are eligible or accredited have a wide and growing array of
-                offering memorandum based (private) funds to chose from.
-              </p>
+                    if (isFutureGrowth) {
+                      return (
+                        <motion.div
+                          key={index}
+                          whileHover={{ y: -3 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                          }}
+                          className="
+                            bg-gradient-to-r from-purple-50 to-pink-50
+                            p-5 border border-purple-100
+                            relative
+                          "
+                        >
+                          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-pink-500" />
+                          <p
+                            className="text-gray-800 font-medium text-[14px] pl-2"
+                            dangerouslySetInnerHTML={{
+                              __html: para.html,
+                            }}
+                          />
+                        </motion.div>
+                      );
+                    }
 
-              <motion.div
-                whileHover={{ y: -3 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="
-                  bg-gradient-to-r from-purple-50 to-pink-50
-                  p-5 border border-purple-100
-                  relative
-                "
-              >
-                {/* small corner accent */}
-                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-pink-500" />
+                    // Other callouts (e.g. "Why we built AltDB")
+                    return (
+                      <div
+                        key={index}
+                        className="bg-blue-50 border-l-4 border-blue-500 p-4"
+                      >
+                        <p
+                          className="text-gray-800 font-medium text-[14px]"
+                          dangerouslySetInnerHTML={{ __html: para.html }}
+                        />
+                      </div>
+                    );
+                  }
 
-                <p className="text-gray-800 font-medium text-[14px] pl-2">
-                  <span className="text-purple-600 font-bold">
-                    Future growth expectations:
-                  </span>{" "}
-                  the global alternatives market quadrupled to $10 Trillion
-                  since 2007, and is expected to reach{" "}
-                  <span className="text-purple-600 font-bold">
-                    $14 Trillion
-                  </span>{" "}
-                  by 2030
-                  <span className="text-xs text-gray-500 ml-1">
-                    (Source: Holden)
-                  </span>
-                </p>
-              </motion.div>
+                  return (
+                    <p
+                      key={index}
+                      className="text-gray-700 leading-relaxed text-[15px]"
+                      dangerouslySetInnerHTML={{ __html: para.html }}
+                    />
+                  );
+                })}
             </div>
           </motion.div>
+
+          {/* =====================================================
+              SECONDARY IMAGES (Section-1 with 2 images)
+          ===================================================== */}
+          {secondaryImages.length > 0 && (
+            <motion.div variants={itemVariants} className="mt-14 lg:mt-20">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="w-8 h-[2px] bg-[#2A57C4]" />
+                <span className="text-[11px] font-semibold text-[#2A57C4] uppercase tracking-[0.25em]">
+                  {secondarySection?.heading || "Gallery"}
+                </span>
+              </div>
+
+              <div
+                className={`grid gap-4 lg:gap-6 ${
+                  secondaryImages.length === 1
+                    ? "grid-cols-1"
+                    : "grid-cols-1 sm:grid-cols-2"
+                }`}
+              >
+                {secondaryImages.map((img, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.6, delay: index * 0.15 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="relative overflow-hidden shadow-lg group"
+                  >
+                    <img
+                      src={img}
+                      alt={`${secondarySection?.heading || "Section"} ${
+                        index + 1
+                      }`}
+                      className="w-full h-[240px] sm:h-[280px] lg:h-[340px] object-cover transition-transform duration-700 group-hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>

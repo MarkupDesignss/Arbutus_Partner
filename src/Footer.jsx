@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   useSendSubscribeMutation,
@@ -13,499 +12,330 @@ import Swal from "sweetalert2";
 ========================================================= */
 const COLORS = {
   primary: "#0B4D8C",
-  primaryDark: "#083B6B",
 };
 
-/* =========================================================
-   ANIMATION
-========================================================= */
-const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 16,
-  },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.45,
-      ease: "easeOut",
-    },
-  },
-};
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+const alert = (icon, title, text) =>
+  Swal.fire({ icon, title, text, confirmButtonColor: COLORS.primary });
 
 /* =========================================================
-   NEWSLETTER
+   NEWSLETTER (wide band, the focal point of the footer)
 ========================================================= */
 function Newsletter() {
   const [email, setEmail] = useState("");
-
   const [sendSubscribe, { isLoading }] = useSendSubscribeMutation();
 
   const handleSubscribe = async () => {
-    const trimmedEmail = email.trim();
+    const trimmed = email.trim();
 
-    if (!trimmedEmail) {
-      Swal.fire({
-        icon: "error",
-        title: "Email Required",
-        text: "Please enter your email address.",
-        confirmButtonColor: COLORS.primary,
-      });
-
+    if (!trimmed) {
+      alert("error", "Email Required", "Please enter your email address.");
       return;
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(trimmedEmail)) {
-      Swal.fire({
-        icon: "warning",
-        title: "Invalid Email",
-        text: "Please enter a valid email address.",
-        confirmButtonColor: COLORS.primary,
-      });
-
+    if (!EMAIL_REGEX.test(trimmed)) {
+      alert("warning", "Invalid Email", "Please enter a valid email address.");
       return;
     }
 
     try {
-      const res = await sendSubscribe({
-        email: trimmedEmail,
-      }).unwrap();
-
-      Swal.fire({
-        icon: "success",
-        title: "Subscribed Successfully",
-        text:
-          res?.message ||
-          "Your email address has been subscribed successfully!",
-        confirmButtonColor: COLORS.primary,
-      });
-
+      const res = await sendSubscribe({ email: trimmed }).unwrap();
+      alert(
+        "success",
+        "Subscribed Successfully",
+        res?.message || "Your email address has been subscribed successfully!",
+      );
       setEmail("");
     } catch (error) {
-      // =====================================================
-      // API VALIDATION ERROR MESSAGE
-      // Example:
-      // {
-      //   status: false,
-      //   message: "Validation failed",
-      //   errors: {
-      //     email: [
-      //       "This email is already subscribed to our newsletter."
-      //     ]
-      //   }
-      // }
-      // =====================================================
-      const apiEmailError = error?.data?.errors?.email?.[0];
-
-      const apiMessage =
-        apiEmailError ||
-        error?.data?.message ||
-        error?.message ||
-        "Something went wrong. Please try again.";
-
-      Swal.fire({
-        icon: "error",
-        title: "Subscription Failed",
-        text: apiMessage,
-        confirmButtonColor: COLORS.primary,
-      });
+      alert(
+        "error",
+        "Subscription Failed",
+        error?.data?.errors?.email?.[0] ||
+          error?.data?.message ||
+          error?.message ||
+          "Something went wrong. Please try again.",
+      );
     }
   };
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter" && !isLoading) {
-      event.preventDefault();
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !isLoading) {
+      e.preventDefault();
       handleSubscribe();
     }
   };
 
   return (
-    <motion.aside
-      className="w-full max-w-[390px] self-start"
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="show"
-      viewport={{
-        once: true,
-        amount: 0.2,
-      }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="
+        relative overflow-hidden rounded-[28px] border border-white/15
+        bg-gradient-to-br from-white/[0.14] to-white/[0.04]
+        p-6 shadow-[0_24px_60px_-20px_rgba(3,15,40,0.6)] backdrop-blur-md
+        sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-12 lg:p-10
+      "
     >
-      <div
-        className="
-          w-full
-          rounded-[24px]
-          px-6
-          py-5
-          text-white
-        "
-        style={{
-          backgroundColor: COLORS.primary,
-        }}
-      >
-        {/* LABEL */}
-        <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/95">
-          Newsletter
-        </p>
+      {/* soft glow */}
+      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#7FB2FF]/25 blur-3xl" />
 
-        {/* HEADING */}
-        <h3 className="mt-2 text-[22px] font-normal leading-[1.15] tracking-tight text-white md:text-[25px]">
-          Insights For
-          <br />
-          A Brighter Tomorrow
+      <div className="relative max-w-xl">
+        <h3 className="font-serif text-[28px] leading-[1.12] tracking-tight text-white sm:text-[34px] lg:text-[40px]">
+          Insights for a brighter tomorrow
         </h3>
-
-        {/* DESCRIPTION */}
-        <p className="mt-3 max-w-[320px] text-[13px] font-normal leading-5 text-white/95">
-          Receive the latest perspectives on wealth, legacy and family
-          offices.
+        <p className="mt-3 max-w-md text-[14px] leading-6 text-white/75 sm:text-[15px]">
+          Get the latest perspectives on wealth, legacy and family offices,
+          delivered to your inbox.
         </p>
+      </div>
 
-        {/* SUBSCRIBE INPUT */}
-        <div className="mt-4 flex h-[46px] w-full items-center rounded-full bg-white p-1 pl-4">
+      <div className="relative mt-6 w-full lg:mt-0 lg:max-w-md">
+        <div className="flex h-14 w-full items-center rounded-full bg-white p-1.5 pl-5 shadow-lg ring-1 ring-white/40 transition focus-within:ring-4 focus-within:ring-[#7FB2FF]/50">
           <input
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter your email address"
+            aria-label="Email address"
             disabled={isLoading}
             className="
-              min-w-0
-              flex-1
-              bg-transparent
-              pr-2
-              text-[12px]
-              font-normal
-              text-[#111827]
-              outline-none
-              placeholder:text-[#9CA3AF]
-              disabled:cursor-not-allowed
-              disabled:opacity-60
+              min-w-0 flex-1 bg-transparent pr-2 text-[14px] text-[#111827]
+              outline-none placeholder:text-[#9CA3AF]
+              disabled:cursor-not-allowed disabled:opacity-60
             "
           />
-
           <button
             type="button"
-            aria-label="Subscribe"
             onClick={handleSubscribe}
             disabled={isLoading}
             className="
-              flex
-              h-9
-              w-9
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              bg-[#E7EEF7]
-              text-[#0B4D8C]
-              transition-all
-              duration-300
-              hover:bg-[#D9E6F4]
-              disabled:cursor-not-allowed
-              disabled:opacity-70
+              flex h-11 shrink-0 items-center gap-2 rounded-full px-5
+              bg-[#0B4D8C] text-[14px] font-semibold text-white
+              transition hover:bg-[#083B6B] active:scale-95
+              focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B4D8C]
+              disabled:cursor-not-allowed disabled:opacity-70
             "
           >
             {isLoading ? (
-              <span
-                className="
-                  h-4
-                  w-4
-                  animate-spin
-                  rounded-full
-                  border-2
-                  border-[#0B4D8C]
-                  border-t-transparent
-                "
-              />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             ) : (
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
+              "Subscribe"
             )}
           </button>
         </div>
+       
       </div>
-    </motion.aside>
+    </motion.div>
   );
 }
+
+/* =========================================================
+   LINK COLUMN
+========================================================= */
+const LinkColumn = ({ title, links }) => (
+  <nav aria-label={title} className="min-w-0">
+    <h4 className="mb-5 text-[15px] font-semibold text-white">{title}</h4>
+    <ul className="space-y-3">
+      {links.map((link) => (
+        <li key={link.to}>
+          <Link
+            to={link.to}
+            onClick={scrollToTop}
+            className="
+              group inline-flex items-center text-[14px] text-white/70
+              transition-colors hover:text-white
+              focus-visible:text-white focus-visible:outline-none
+            "
+          >
+            <span className="mr-0 inline-block h-px w-0 bg-[#7FB2FF] transition-all duration-300 group-hover:mr-2 group-hover:w-3 group-focus-visible:mr-2 group-focus-visible:w-3" />
+            {link.label}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </nav>
+);
 
 /* =========================================================
    FOOTER
 ========================================================= */
 const Footer = () => {
-  const navigate = useNavigate();
-
   const { data: footerRes } = useGetFooterQuery();
   const footer = footerRes?.data || {};
 
-  const handleNavigation = (path) => {
-    navigate(path);
+  const socialLinks = [
+    {
+      key: "linkedin",
+      src: "/arbutus-web/assets/Footer/linkedin.png",
+      alt: "LinkedIn",
+    },
+    {
+      key: "youtube",
+      src: "/arbutus-web/assets/Footer/youtube.png",
+      alt: "YouTube",
+    },
+    {
+      key: "twitter",
+      src: "/arbutus-web/assets/Footer/twitter.png",
+      alt: "Twitter",
+    },
+  ].filter((item) => footer[item.key]);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  const mail = footer.mail || "info@altdb.ca";
 
   return (
-    <footer className="relative overflow-hidden bg-[#2A57C4]">
-      {/* WAVE */}
+    <footer className="relative w-full overflow-hidden bg-gradient-to-b from-[#1F47A8] via-[#12388A] to-[#0A2560] text-white">
+      {/* WAVE TEXTURE */}
       <img
         src="/arbutus-web/assets/Footer/wave.png"
-        alt="wave"
-        className="absolute left-0 top-0 h-full w-full object-cover"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-soft-light"
       />
+      {/* top hairline highlight */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-8 pt-6">
-        {/* =================================================
-            LOGO + SOCIAL
-        ================================================= */}
-        <div className="flex flex-col items-start justify-between md:flex-row">
-          <img
-            src="/arbutus-web/assets/Footer/logo.png"
-            alt="AltDB"
-            className="h-18"
-          />
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-8 pt-12 sm:px-8 sm:pt-16">
+        {/* NEWSLETTER */}
+        <Newsletter />
 
-          <div className="mt-6 text-sm md:mt-0 md:text-right">
-            <p className="mb-2 font-normal text-white/90">
-              Follow us on:
+        {/* MAIN GRID */}
+        <div className="mt-14 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-12 md:gap-x-8">
+          {/* BRAND + CONTACT */}
+          <div className="col-span-2 min-w-0 md:col-span-6 lg:col-span-5">
+            <img
+              src="/arbutus-web/assets/Footer/logo.png"
+              alt="AltDB"
+              className="h-14 w-auto sm:h-16"
+            />
+
+            <p className="mt-5 max-w-sm text-[14px] leading-6 text-white/75">
+              {footer["contact-us"] ||
+                "Questions about the database or partnerships? We'd love to hear from you."}
             </p>
 
-            <div className="flex gap-4 md:justify-end">
-              {footer.linkedin && (
+            <div className="mt-6 space-y-4">
+              <div>
+                <p className="mb-1 text-[13px] text-white/55">Mail us</p>
                 <a
-                  href={footer.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
+                  href={`mailto:${mail}`}
+                  className="break-all text-[15px] font-medium text-white underline decoration-white/30 underline-offset-4 transition hover:decoration-white focus-visible:decoration-white focus-visible:outline-none"
                 >
-                  <img
-                    src="/arbutus-web/assets/Footer/linkedin.png"
-                    className="h-5 w-5 cursor-pointer"
-                    alt="linkedin"
-                  />
+                  {mail}
                 </a>
-              )}
+              </div>
 
-              {footer.youtube && (
-                <a
-                  href={footer.youtube}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img
-                    src="/arbutus-web/assets/Footer/youtube.png"
-                    className="h-5 w-5 cursor-pointer"
-                    alt="youtube"
-                  />
-                </a>
-              )}
-
-              {footer.twitter && (
-                <a
-                  href={footer.twitter}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img
-                    src="/arbutus-web/assets/Footer/twitter.png"
-                    className="h-5 w-5 cursor-pointer"
-                    alt="twitter"
-                  />
-                </a>
+              {footer.Phone && (
+                <div>
+                  <p className="mb-1 text-[13px] text-white/55">Call us</p>
+                  <a
+                    href={`tel:${footer.Phone}`}
+                    className="text-[15px] font-medium text-white underline decoration-white/30 underline-offset-4 transition hover:decoration-white focus-visible:decoration-white focus-visible:outline-none"
+                  >
+                    {footer.Phone}
+                  </a>
+                </div>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* DIVIDER */}
-        <div className="my-5 h-px bg-white/30" />
-
-        {/* =================================================
-            MAIN GRID
-        ================================================= */}
-        <div className="grid grid-cols-1 gap-10 text-sm text-white md:grid-cols-4">
-          {/* =================================================
-              CONTACT
-          ================================================= */}
-          <div>
-            <h4 className="mb-4 font-medium text-white">
-              Contact us
-            </h4>
-
-            <p className="mb-4 font-normal leading-6 text-white/90">
-              {footer["contact-us"] ||
-                "Lorem ipsum dolor sit amet consectetur adipiscing elitcdd"}
-            </p>
-
-            <p className="mb-1 font-normal text-white/75">
-              Mail us:
-            </p>
-
-            <a
-              href={`mailto:${footer.mail || "info@altdb.ca"}`}
-              className="font-normal text-white/95 underline hover:text-white"
-            >
-              {footer.mail || "info@altdb.ca"}
-            </a>
-
-            {footer.Phone && (
-              <>
-                <p className="mb-1 mt-2 font-normal text-white/75">
-                  Call us:
-                </p>
-
-                <a
-                  href={`tel:${footer.Phone}`}
-                  className="font-normal text-white/95 underline hover:text-white"
-                >
-                  {footer.Phone}
-                </a>
-              </>
+            {socialLinks.length > 0 && (
+              <div className="mt-7">
+                <p className="mb-3 text-[13px] text-white/55">Follow us</p>
+                <div className="flex gap-3">
+                  {socialLinks.map((item) => (
+                    <a
+                      key={item.key}
+                      href={footer[item.key]}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={item.alt}
+                      className="
+                        flex h-10 w-10 items-center justify-center rounded-full
+                        border border-white/20 bg-white/5 transition duration-300
+                        hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/15
+                        focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white
+                      "
+                    >
+                      <img src={item.src} alt="" className="h-4 w-4" />
+                    </a>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
-          {/* =================================================
-              QUICK LINKS
-          ================================================= */}
-          <div>
-            <h4 className="mb-4 font-medium text-white">
-              Quick Links
-            </h4>
-
-            <ul className="space-y-2 text-white/85">
-              <li>
-                <Link
-                  to="/AltDatabaseMain"
-                  onClick={() =>
-                    window.scrollTo({
-                      top: 0,
-                      behavior: "smooth",
-                    })
-                  }
-                  className="font-normal transition-colors hover:text-white"
-                >
-                  AltDB Database
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to="/Aboutmain"
-                  onClick={() =>
-                    window.scrollTo({
-                      top: 0,
-                      behavior: "smooth",
-                    })
-                  }
-                  className="font-normal transition-colors hover:text-white"
-                >
-                  About Us
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to="/Contactmain"
-                  onClick={() =>
-                    window.scrollTo({
-                      top: 0,
-                      behavior: "smooth",
-                    })
-                  }
-                  className="font-normal transition-colors hover:text-white"
-                >
-                  Contact Us
-                </Link>
-              </li>
-            </ul>
+          {/* QUICK LINKS */}
+          <div className="col-span-1 md:col-span-3 lg:col-span-3 lg:col-start-7">
+            <LinkColumn
+              title="Quick Links"
+              links={[
+                { to: "/Altdbmain", label: "AltDB Database" },
+                { to: "/Aboutmain", label: "About Us" },
+                { to: "/Contactmain", label: "Contact Us" },
+              ]}
+            />
           </div>
 
-          {/* =================================================
-              TOOLS
-          ================================================= */}
-          <div>
-            <h4 className="mb-4 font-medium text-white">
-              Tools
-            </h4>
-
-            <button
-              onClick={() =>
-                handleNavigation("/AltDatabaseMain")
-              }
-              className="
-                cursor-pointer
-                border-none
-                bg-transparent
-                p-0
-                font-normal
-                text-sm
-                text-white/85
-                transition-colors
-                hover:text-white
-              "
-            >
-              AltDB Screener
-            </button>
-          </div>
-
-          {/* =================================================
-              NEWSLETTER
-          ================================================= */}
-          <div className="flex w-full justify-start">
-            <Newsletter />
+          {/* TOOLS */}
+          <div className="col-span-1 md:col-span-3 lg:col-span-3">
+            <LinkColumn
+              title="Tools"
+              links={[
+                { to: "/ArticlePage", label: "Commentary" },
+                { to: "/PartnerDirectory", label: "Partner Directory" },
+                { to: "/insightreports", label: "Insight Reports" },
+              ]}
+            />
           </div>
         </div>
 
-        {/* =================================================
-            BOTTOM
-        ================================================= */}
-        <div className="my-10 h-px bg-white/30" />
+        {/* BOTTOM BAR */}
+        <div className="mt-14 flex flex-col items-center justify-between gap-5 border-t border-white/15 pt-6 text-center text-[13px] text-white/65 md:flex-row md:text-left">
+          <p>{footer["All right"] || "© 2026 AltDB. All rights reserved."}</p>
 
-        <div className="flex flex-col items-center justify-between text-sm text-white/85 md:flex-row">
-          <p className="font-normal">
-            {footer["All right"] ||
-              "© 2026 AltDB. All rights reserved."}
-          </p>
-
-          <div className="mt-2 flex gap-4 md:mt-0">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
             <Link
               to="/TremsandCondition"
-              onClick={() =>
-                window.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                })
-              }
-              className="font-normal transition-colors hover:text-white"
+              onClick={scrollToTop}
+              className="transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none"
             >
               Terms of Policy
             </Link>
-
             <Link
               to="/Privacypolicy"
-              onClick={() =>
-                window.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                })
-              }
-              className="font-normal transition-colors hover:text-white"
+              onClick={scrollToTop}
+              className="transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none"
             >
               Privacy Policy
             </Link>
+            <button
+              type="button"
+              onClick={scrollToTop}
+              className="
+                flex items-center gap-2 rounded-full border border-white/25 px-4 py-1.5
+                text-white/85 transition hover:border-white/70 hover:bg-white/10 hover:text-white
+                focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white
+              "
+            >
+              Back to top
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 19V5M6 11l6-6 6 6" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
