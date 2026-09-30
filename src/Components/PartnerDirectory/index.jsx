@@ -18,11 +18,21 @@ import {
   useGetWebBannersQuery,
 } from "../../Redux/api/publicApiSlice";
 
+/* ============================================================================
+   FALLBACK IMAGES
+============================================================================ */
+
 const FALLBACK_CARD_IMAGE =
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85";
 
 const FALLBACK_HERO_IMAGE =
   "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1800&q=90";
+
+/* ============================================================================
+   CONSTANTS
+============================================================================ */
+
+const PAGE_MAX_WIDTH = "max-w-[1320px]";
 
 /* ============================================================================
    HELPERS
@@ -155,9 +165,12 @@ const PartnerCard = ({ partner }) => {
   const hasCtaUrl = Boolean(partner?.cta_url);
   const memberId = partner?.id;
 
-  const contactUrl = hasCtaUrl ? partner.cta_url : "/arbutus-web/Contactmain";
+  const contactUrl = hasCtaUrl
+    ? partner.cta_url
+    : "/arbutus-web/Contactmain";
 
-  const contactText = partner?.cta_text || "Contact Member";
+  const contactText =
+    partner?.cta_text || "Contact Member";
 
   return (
     <motion.div
@@ -175,16 +188,19 @@ const PartnerCard = ({ partner }) => {
       }}
       className="
         group
-        bg-white
-        rounded-[12px]
-        overflow-hidden
-        border border-[#EBEBEB]
-        shadow-[0_2px_12px_rgba(0,0,0,0.03)]
-        hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]
-        transition-shadow duration-300
+        flex
         min-h-[416px]
-        flex flex-col
         w-full
+        flex-col
+        overflow-hidden
+        rounded-[12px]
+        border
+        border-[#EBEBEB]
+        bg-white
+        shadow-[0_2px_12px_rgba(0,0,0,0.03)]
+        transition-shadow
+        duration-300
+        hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]
       "
     >
       {/* ================================================================
@@ -194,20 +210,23 @@ const PartnerCard = ({ partner }) => {
       <div
         className="
           relative
+          flex
           h-[108px]
           shrink-0
-          overflow-hidden
-          bg-[#F5F5F5]
-          flex
           items-center
           justify-center
-          px-[20px]
+          overflow-hidden
           border-b
           border-[#EBEBEB]
+          bg-[#F5F5F5]
+          px-[20px]
         "
       >
         <motion.img
-          src={cleanImageUrl(partner?.logo_url) || FALLBACK_CARD_IMAGE}
+          src={
+            cleanImageUrl(partner?.logo_url) ||
+            FALLBACK_CARD_IMAGE
+          }
           alt={`${partner?.name || "Partner"} logo`}
           initial={{ scale: 1 }}
           whileHover={{ scale: 1.04 }}
@@ -216,10 +235,10 @@ const PartnerCard = ({ partner }) => {
             ease: "easeOut",
           }}
           className="
-            max-w-full
-            max-h-full
-            w-auto
             h-auto
+            w-auto
+            max-h-full
+            max-w-full
             object-contain
           "
           onError={(e) => {
@@ -235,8 +254,8 @@ const PartnerCard = ({ partner }) => {
       <div
         className="
           flex
-          flex-col
           flex-1
+          flex-col
           px-[24px]
           pt-[22px]
           pb-[20px]
@@ -244,12 +263,12 @@ const PartnerCard = ({ partner }) => {
       >
         <h3
           className="
+            mb-[6px]
             text-[17px]
             font-semibold
-            text-[#1D2B36]
             leading-[24px]
             tracking-[-0.01em]
-            mb-[6px]
+            text-[#1D2B36]
           "
         >
           {partner?.name || "Partner"}
@@ -257,17 +276,18 @@ const PartnerCard = ({ partner }) => {
 
         <p
           className="
-            text-[14px]
-            font-normal
-            text-[#5A6872]
-            leading-[22px]
-            line-clamp-2
+            mb-[14px]
             min-h-[44px]
             overflow-hidden
-            mb-[14px]
+            line-clamp-2
+            text-[14px]
+            font-normal
+            leading-[22px]
+            text-[#5A6872]
           "
         >
-          {partner?.description || "No description available."}
+          {partner?.description ||
+            "No description available."}
         </p>
 
         {/* CATEGORY */}
@@ -276,20 +296,20 @@ const PartnerCard = ({ partner }) => {
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.2 }}
           className="
-            self-start
+            mb-[20px]
             inline-flex
+            h-[28px]
+            self-start
             items-center
             justify-center
-            bg-[#E8F0FE]
-            text-[#1A56DB]
             rounded-full
+            bg-[#E8F0FE]
             px-[14px]
-            h-[28px]
             text-[12px]
             font-normal
             leading-none
             tracking-[0.01em]
-            mb-[20px]
+            text-[#1A56DB]
           "
         >
           {partner?.category || "General"}
@@ -300,19 +320,25 @@ const PartnerCard = ({ partner }) => {
         <div className="mt-auto">
           <div
             className="
+              mb-[12px]
               grid
               grid-cols-1
-              sm:grid-cols-2
               gap-[10px]
-              mb-[12px]
+              sm:grid-cols-2
             "
           >
             {/* WEBSITE */}
 
             <motion.a
               href={hasWebsite ? partner.website_url : "#"}
-              target={hasWebsite ? "_blank" : undefined}
-              rel={hasWebsite ? "noopener noreferrer" : undefined}
+              target={
+                hasWebsite ? "_blank" : undefined
+              }
+              rel={
+                hasWebsite
+                  ? "noopener noreferrer"
+                  : undefined
+              }
               onClick={(e) => {
                 if (!hasWebsite) {
                   e.preventDefault();
@@ -322,26 +348,30 @@ const PartnerCard = ({ partner }) => {
               whileTap={{ scale: 0.988 }}
               transition={{ duration: 0.18 }}
               className="
+                flex
                 h-[42px]
                 w-full
-                border
-                border-[#D9DEE5]
-                rounded-[8px]
-                bg-white
-                text-[#315DCC]
-                text-[13px]
-                font-normal
-                flex
+                cursor-pointer
                 items-center
                 justify-center
                 gap-[6px]
-                hover:bg-[#F8FAFF]
-                hover:border-[#B8C7E8]
+                rounded-[8px]
+                border
+                border-[#D9DEE5]
+                bg-white
+                text-[13px]
+                font-normal
+                text-[#315DCC]
                 transition-all
-                cursor-pointer
+                hover:border-[#B8C7E8]
+                hover:bg-[#F8FAFF]
               "
             >
-              <Link2 size={15} strokeWidth={1.8} className="shrink-0" />
+              <Link2
+                size={15}
+                strokeWidth={1.8}
+                className="shrink-0"
+              />
 
               <span>Website Link</span>
             </motion.a>
@@ -350,32 +380,42 @@ const PartnerCard = ({ partner }) => {
 
             <motion.a
               href={contactUrl}
-              target={hasCtaUrl ? "_blank" : undefined}
-              rel={hasCtaUrl ? "noopener noreferrer" : undefined}
+              target={
+                hasCtaUrl ? "_blank" : undefined
+              }
+              rel={
+                hasCtaUrl
+                  ? "noopener noreferrer"
+                  : undefined
+              }
               whileHover={{ scale: 1.012 }}
               whileTap={{ scale: 0.988 }}
               transition={{ duration: 0.18 }}
               className="
+                flex
                 h-[42px]
                 w-full
-                border
-                border-[#D9DEE5]
-                rounded-[8px]
-                bg-white
-                text-[#315DCC]
-                text-[13px]
-                font-normal
-                flex
+                cursor-pointer
                 items-center
                 justify-center
                 gap-[6px]
-                hover:bg-[#F8FAFF]
-                hover:border-[#B8C7E8]
+                rounded-[8px]
+                border
+                border-[#D9DEE5]
+                bg-white
+                text-[13px]
+                font-normal
+                text-[#315DCC]
                 transition-all
-                cursor-pointer
+                hover:border-[#B8C7E8]
+                hover:bg-[#F8FAFF]
               "
             >
-              <Mail size={15} strokeWidth={1.8} className="shrink-0" />
+              <Mail
+                size={15}
+                strokeWidth={1.8}
+                className="shrink-0"
+              />
 
               <span>{contactText}</span>
             </motion.a>
@@ -383,26 +423,29 @@ const PartnerCard = ({ partner }) => {
 
           {/* READ MORE */}
 
-          <Link to={`/FieraRealEstate/${memberId}`} className="block">
+          <Link
+            to={`/FieraRealEstate/${memberId}`}
+            className="block"
+          >
             <motion.div
               whileHover={{ scale: 1.008 }}
               whileTap={{ scale: 0.992 }}
               transition={{ duration: 0.18 }}
               className="
+                flex
                 h-[42px]
                 w-full
-                bg-[#315DCC]
-                hover:bg-[#2852B5]
-                rounded-[8px]
-                text-white
-                text-[13px]
-                font-normal
-                flex
+                cursor-pointer
                 items-center
                 justify-center
                 gap-[8px]
+                rounded-[8px]
+                bg-[#315DCC]
+                text-[13px]
+                font-normal
+                text-white
                 transition-colors
-                cursor-pointer
+                hover:bg-[#2852B5]
               "
             >
               <span>Read More</span>
@@ -412,7 +455,10 @@ const PartnerCard = ({ partner }) => {
                 whileHover={{ x: 3 }}
                 transition={{ duration: 0.2 }}
               >
-                <ArrowRight size={16} strokeWidth={2} />
+                <ArrowRight
+                  size={16}
+                  strokeWidth={2}
+                />
               </motion.span>
             </motion.div>
           </Link>
@@ -441,38 +487,38 @@ const SkeletonCard = ({ index = 0 }) => (
       duration: 0.35,
     }}
     className="
-      bg-white
-      rounded-[12px]
+      min-h-[416px]
+      w-full
+      animate-pulse
       overflow-hidden
+      rounded-[12px]
       border
       border-[#EBEBEB]
-      min-h-[416px]
-      animate-pulse
-      w-full
+      bg-white
     "
   >
     <div
       className="
         h-[108px]
-        bg-[#F5F5F5]
         border-b
         border-[#EBEBEB]
+        bg-[#F5F5F5]
       "
     />
 
     <div className="px-[24px] pt-[22px] pb-[20px]">
-      <div className="h-[22px] w-[55%] bg-gray-200 rounded mb-[10px]" />
+      <div className="mb-[10px] h-[22px] w-[55%] rounded bg-gray-200" />
 
-      <div className="h-[44px] bg-gray-200 rounded mb-[15px]" />
+      <div className="mb-[15px] h-[44px] rounded bg-gray-200" />
 
-      <div className="h-[28px] w-[140px] bg-gray-200 rounded-full mb-[20px]" />
+      <div className="mb-[20px] h-[28px] w-[140px] rounded-full bg-gray-200" />
 
-      <div className="grid grid-cols-2 gap-[10px] mb-[12px]">
-        <div className="h-[42px] bg-gray-200 rounded" />
-        <div className="h-[42px] bg-gray-200 rounded" />
+      <div className="mb-[12px] grid grid-cols-2 gap-[10px]">
+        <div className="h-[42px] rounded bg-gray-200" />
+        <div className="h-[42px] rounded bg-gray-200" />
       </div>
 
-      <div className="h-[42px] bg-gray-200 rounded" />
+      <div className="h-[42px] rounded bg-gray-200" />
     </div>
   </motion.div>
 );
@@ -481,7 +527,12 @@ const SkeletonCard = ({ index = 0 }) => (
    PAGINATION
 ============================================================================ */
 
-const Pagination = ({ currentPage, lastPage, onPageChange, isFetching }) => {
+const Pagination = ({
+  currentPage,
+  lastPage,
+  onPageChange,
+  isFetching,
+}) => {
   if (!lastPage || lastPage <= 1) {
     return null;
   }
@@ -493,32 +544,36 @@ const Pagination = ({ currentPage, lastPage, onPageChange, isFetching }) => {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-[8px] mt-[42px]">
+    <div className="mt-[42px] flex flex-wrap items-center justify-center gap-[8px]">
       {/* PREVIOUS */}
 
       <button
         type="button"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1 || isFetching}
+        onClick={() =>
+          onPageChange(currentPage - 1)
+        }
+        disabled={
+          currentPage === 1 || isFetching
+        }
         className={`
+          flex
           h-[42px]
           min-w-[42px]
-          px-[12px]
+          items-center
+          justify-center
           rounded-[7px]
           border
           border-[#E3E3E3]
           bg-white
+          px-[12px]
           text-[#315dcc]
-          flex
-          items-center
-          justify-center
           transition-all
           duration-200
 
           ${
             currentPage === 1 || isFetching
-              ? "opacity-40 cursor-not-allowed"
-              : "cursor-pointer hover:bg-[#f6f8fd] hover:border-[#cdd7ec]"
+              ? "cursor-not-allowed opacity-40"
+              : "cursor-pointer hover:border-[#cdd7ec] hover:bg-[#f6f8fd]"
           }
         `}
       >
@@ -533,29 +588,27 @@ const Pagination = ({ currentPage, lastPage, onPageChange, isFetching }) => {
           type="button"
           onClick={() => onPageChange(page)}
           disabled={isFetching}
-          whileTap={{
-            scale: 0.96,
-          }}
+          whileTap={{ scale: 0.96 }}
           className={`
+            flex
             h-[42px]
             min-w-[42px]
-            px-[12px]
-            rounded-[7px]
-            border
-            text-[14px]
-            font-normal
-            flex
             items-center
             justify-center
+            rounded-[7px]
+            border
+            px-[12px]
+            text-[14px]
+            font-normal
             transition-all
             duration-200
 
             ${
               currentPage === page
-                ? "bg-[#315dcc] border-[#315dcc] text-white shadow-[0_4px_12px_rgba(49,93,204,0.18)] cursor-default"
+                ? "cursor-default border-[#315dcc] bg-[#315dcc] text-white shadow-[0_4px_12px_rgba(49,93,204,0.18)]"
                 : isFetching
-                  ? "bg-white border-[#E3E3E3] text-[#555555] opacity-50 cursor-not-allowed"
-                  : "bg-white border-[#E3E3E3] text-[#555555] hover:bg-[#f6f8fd] hover:border-[#cdd7ec] hover:text-[#315dcc] cursor-pointer"
+                  ? "cursor-not-allowed border-[#E3E3E3] bg-white text-[#555555] opacity-50"
+                  : "cursor-pointer border-[#E3E3E3] bg-white text-[#555555] hover:border-[#cdd7ec] hover:bg-[#f6f8fd] hover:text-[#315dcc]"
             }
           `}
         >
@@ -567,27 +620,32 @@ const Pagination = ({ currentPage, lastPage, onPageChange, isFetching }) => {
 
       <button
         type="button"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === lastPage || isFetching}
+        onClick={() =>
+          onPageChange(currentPage + 1)
+        }
+        disabled={
+          currentPage === lastPage || isFetching
+        }
         className={`
+          flex
           h-[42px]
           min-w-[42px]
-          px-[12px]
+          items-center
+          justify-center
           rounded-[7px]
           border
           border-[#E3E3E3]
           bg-white
+          px-[12px]
           text-[#315dcc]
-          flex
-          items-center
-          justify-center
           transition-all
           duration-200
 
           ${
-            currentPage === lastPage || isFetching
-              ? "opacity-40 cursor-not-allowed"
-              : "cursor-pointer hover:bg-[#f6f8fd] hover:border-[#cdd7ec]"
+            currentPage === lastPage ||
+            isFetching
+              ? "cursor-not-allowed opacity-40"
+              : "cursor-pointer hover:border-[#cdd7ec] hover:bg-[#f6f8fd]"
           }
         `}
       >
@@ -604,17 +662,22 @@ const Pagination = ({ currentPage, lastPage, onPageChange, isFetching }) => {
 const PartnerDirectory = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [category, setCategory] = useState("All Categories");
+  const [category, setCategory] =
+    useState("All Categories");
 
   const [sortBy, setSortBy] = useState("az");
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] =
+    useState(1);
 
   const filterBarRef = useRef(null);
 
   const pendingScrollRef = useRef(false);
 
-  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const debouncedSearch = useDebouncedValue(
+    searchQuery,
+    350,
+  );
 
   /* ==========================================================================
      API
@@ -630,8 +693,10 @@ const PartnerDirectory = () => {
     per_page: 9,
   });
 
-  const { data: webBannerResponse, isLoading: isBannerLoading } =
-    useGetWebBannersQuery();
+  const {
+    data: webBannerResponse,
+    isLoading: isBannerLoading,
+  } = useGetWebBannersQuery();
 
   /* ==========================================================================
      BANNER DATA
@@ -643,17 +708,24 @@ const PartnerDirectory = () => {
     return (
       pages.find(
         (item) =>
-          String(item?.slug || "").toLowerCase() === "partner-directory",
+          String(item?.slug || "").toLowerCase() ===
+          "partner-directory",
       ) || null
     );
   }, [webBannerResponse]);
 
-  const heroLabel = partnerDirectoryPage?.label || "OUR NETWORK";
+  const heroLabel =
+    partnerDirectoryPage?.label ||
+    "OUR NETWORK";
 
-  const heroTitle = partnerDirectoryPage?.title || "Partner Directory";
+  const heroTitle =
+    partnerDirectoryPage?.title ||
+    "Partner Directory";
 
   const heroImage =
-    cleanImageUrl(partnerDirectoryPage?.banner_image) || FALLBACK_HERO_IMAGE;
+    cleanImageUrl(
+      partnerDirectoryPage?.banner_image,
+    ) || FALLBACK_HERO_IMAGE;
 
   /* ==========================================================================
      DATA
@@ -661,30 +733,39 @@ const PartnerDirectory = () => {
 
   const members = response?.data?.items || [];
 
-  const categories = response?.data?.filters?.categories || [];
+  const categories =
+    response?.data?.filters?.categories || [];
 
-  const sortOptions = response?.data?.filters?.sort_options || [
-    {
-      value: "az",
-      label: "Sort by A-Z",
-    },
-    {
-      value: "za",
-      label: "Sort by Z-A",
-    },
-    {
-      value: "order",
-      label: "Default Order",
-    },
-  ];
+  const sortOptions =
+    response?.data?.filters?.sort_options || [
+      {
+        value: "az",
+        label: "Sort by A-Z",
+      },
+      {
+        value: "za",
+        label: "Sort by Z-A",
+      },
+      {
+        value: "order",
+        label: "Default Order",
+      },
+    ];
 
-  const pagination = response?.data?.pagination || {};
+  const pagination =
+    response?.data?.pagination || {};
 
-  const totalRecords = Number(pagination?.total || 0);
+  const totalRecords = Number(
+    pagination?.total || 0,
+  );
 
-  const lastPage = Number(pagination?.last_page || 1);
+  const lastPage = Number(
+    pagination?.last_page || 1,
+  );
 
-  const apiCurrentPage = Number(pagination?.current_page || currentPage);
+  const apiCurrentPage = Number(
+    pagination?.current_page || currentPage,
+  );
 
   /* ==========================================================================
      RESET PAGE WHEN FILTER CHANGES
@@ -699,54 +780,87 @@ const PartnerDirectory = () => {
   ========================================================================== */
 
   const filteredPartners = useMemo(() => {
-    const query = debouncedSearch.toLowerCase().trim();
+    const query = debouncedSearch
+      .toLowerCase()
+      .trim();
 
     let data = [...members];
 
     if (query) {
       data = data.filter(
         (p) =>
-          p?.name?.toLowerCase().includes(query) ||
-          p?.description?.toLowerCase().includes(query) ||
-          p?.category?.toLowerCase().includes(query),
+          p?.name
+            ?.toLowerCase()
+            .includes(query) ||
+          p?.description
+            ?.toLowerCase()
+            .includes(query) ||
+          p?.category
+            ?.toLowerCase()
+            .includes(query),
       );
     }
 
     if (category !== "All Categories") {
       data = data.filter(
-        (p) => p?.category?.toLowerCase() === category.toLowerCase(),
+        (p) =>
+          p?.category?.toLowerCase() ===
+          category.toLowerCase(),
       );
     }
 
     if (sortBy === "az") {
-      data.sort((a, b) => (a?.name || "").localeCompare(b?.name || ""));
+      data.sort((a, b) =>
+        (a?.name || "").localeCompare(
+          b?.name || "",
+        ),
+      );
     } else if (sortBy === "za") {
-      data.sort((a, b) => (b?.name || "").localeCompare(a?.name || ""));
+      data.sort((a, b) =>
+        (b?.name || "").localeCompare(
+          a?.name || "",
+        ),
+      );
     } else if (sortBy === "order") {
       data.sort(
-        (a, b) => Number(a?.display_order || 0) - Number(b?.display_order || 0),
+        (a, b) =>
+          Number(a?.display_order || 0) -
+          Number(b?.display_order || 0),
       );
     }
 
     return data;
-  }, [members, debouncedSearch, category, sortBy]);
+  }, [
+    members,
+    debouncedSearch,
+    category,
+    sortBy,
+  ]);
 
   /* ==========================================================================
      PAGINATION SCROLL
   ========================================================================== */
 
   useEffect(() => {
-    if (!pendingScrollRef.current || isFetching) {
+    if (
+      !pendingScrollRef.current ||
+      isFetching
+    ) {
       return;
     }
 
     pendingScrollRef.current = false;
 
     const timer = setTimeout(() => {
-      const el = document.getElementById("partner-search-bar");
+      const el = document.getElementById(
+        "partner-search-bar",
+      );
 
       if (el) {
-        const top = el.getBoundingClientRect().top + window.scrollY - 20;
+        const top =
+          el.getBoundingClientRect().top +
+          window.scrollY -
+          20;
 
         window.scrollTo({
           top: Math.max(top, 0),
@@ -759,7 +873,11 @@ const PartnerDirectory = () => {
   }, [isFetching]);
 
   const handlePageChange = (page) => {
-    if (page < 1 || page > lastPage || page === currentPage) {
+    if (
+      page < 1 ||
+      page > lastPage ||
+      page === currentPage
+    ) {
       return;
     }
 
@@ -773,92 +891,106 @@ const PartnerDirectory = () => {
   ========================================================================== */
 
   const isInitialLoading =
-    (isLoading || isBannerLoading) && members.length === 0;
+    (isLoading || isBannerLoading) &&
+    members.length === 0;
 
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-white">
-        {/* HERO SKELETON */}
+        {/* ================================================================
+            HERO SKELETON
+        ================================================================= */}
 
         <section
           className="
             relative
-            w-full
+            flex
             min-h-[242px]
+            w-full
+            items-center
             overflow-hidden
             bg-gray-100
             animate-pulse
           "
         >
           <div
-            className="
+            className={`
               relative
               z-10
-              max-w-[1680px]
               mx-auto
-              min-h-[242px]
               flex
+              min-h-[242px]
+              w-full
+              ${PAGE_MAX_WIDTH}
               items-center
-              px-[20px]
-              sm:px-[40px]
+              px-6
               lg:px-0
-            "
+            `}
           >
-            <div className="w-full lg:w-[50%] py-[40px]">
-              <div className="w-[120px] h-[14px] bg-gray-300 rounded mb-[18px]" />
+            <div className="w-full py-[40px] lg:w-[50%]">
+              <div className="mb-[18px] h-[14px] w-[120px] rounded bg-gray-300" />
 
-              <div className="w-[420px] max-w-full h-[42px] bg-gray-300 rounded mb-[22px]" />
+              <div className="mb-[22px] h-[42px] w-[420px] max-w-full rounded bg-gray-300" />
 
               <div className="flex flex-wrap gap-[16px]">
-                <div className="w-[165px] h-[42px] bg-gray-300 rounded-full" />
+                <div className="h-[42px] w-[165px] rounded-full bg-gray-300" />
 
-                <div className="w-[215px] h-[42px] bg-gray-300 rounded-full" />
+                <div className="h-[42px] w-[215px] rounded-full bg-gray-300" />
               </div>
             </div>
           </div>
         </section>
 
-        {/* FILTER SKELETON */}
+        {/* ================================================================
+            FILTER SKELETON
+        ================================================================= */}
 
         <section className="bg-white">
           <div
-            className="
-              max-w-[1680px]
+            className={`
               mx-auto
-              px-[20px]
-              lg:px-0
-              py-[30px]
               flex
+              ${PAGE_MAX_WIDTH}
               flex-col
-              lg:flex-row
               gap-[20px]
-            "
+              px-6
+              py-[30px]
+              lg:flex-row
+              lg:items-center
+              lg:px-0
+            `}
           >
-            <div className="flex-1 h-[44px] bg-gray-200 rounded-full animate-pulse" />
+            <div className="h-[44px] flex-1 animate-pulse rounded-full bg-gray-200" />
 
-            <div className="w-full lg:w-[240px] h-[44px] bg-gray-200 rounded-full animate-pulse" />
+            <div className="h-[44px] w-full animate-pulse rounded-full bg-gray-200 lg:w-[240px]" />
 
-            <div className="w-full lg:w-[240px] h-[44px] bg-gray-200 rounded-full animate-pulse" />
+            <div className="h-[44px] w-full animate-pulse rounded-full bg-gray-200 lg:w-[240px]" />
           </div>
         </section>
 
-        {/* CARD SKELETON */}
+        {/* ================================================================
+            CARD SKELETON
+        ================================================================= */}
 
         <main
-          className="
-            max-w-[1665px]
+          className={`
             mx-auto
-            px-[20px]
-            lg:px-0
+            w-full
+            ${PAGE_MAX_WIDTH}
+            px-6
             pb-[70px]
-          "
+            lg:px-0
+          `}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
-            {Array.from({
-              length: 9,
-            }).map((_, i) => (
-              <SkeletonCard key={i} index={i} />
-            ))}
+          <div className="grid grid-cols-1 gap-[20px] sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 9 }).map(
+              (_, i) => (
+                <SkeletonCard
+                  key={i}
+                  index={i}
+                />
+              ),
+            )}
           </div>
         </main>
       </div>
@@ -877,8 +1009,8 @@ const PartnerDirectory = () => {
       className="
         min-h-screen
         bg-white
-        text-[#273238]
         font-sans
+        text-[#273238]
       "
     >
       {/* ======================================================================
@@ -888,12 +1020,12 @@ const PartnerDirectory = () => {
       <section
         className="
           relative
+          flex
+          min-h-[242px]
           w-full
+          items-center
           overflow-hidden
           bg-[#F9F9F9]
-          min-h-[242px]
-          flex
-          items-center
         "
       >
         {/* RIGHT HERO IMAGE */}
@@ -906,14 +1038,17 @@ const PartnerDirectory = () => {
             absolute
             right-0
             top-0
-            w-[56%]
             h-full
+            w-[56%]
             overflow-hidden
           "
         >
           <motion.img
             src={heroImage}
-            alt={heroTitle || "Partner Directory"}
+            alt={
+              heroTitle ||
+              "Partner Directory"
+            }
             initial={{
               scale: 1.05,
             }}
@@ -927,13 +1062,14 @@ const PartnerDirectory = () => {
             className="
               absolute
               inset-0
-              w-full
               h-full
+              w-full
               object-cover
               object-center
             "
             onError={(e) => {
-              e.currentTarget.src = FALLBACK_HERO_IMAGE;
+              e.currentTarget.src =
+                FALLBACK_HERO_IMAGE;
             }}
           />
 
@@ -954,19 +1090,18 @@ const PartnerDirectory = () => {
         {/* HERO CONTENT */}
 
         <div
-          className="
+          className={`
             relative
             z-10
-            max-w-[1680px]
             mx-auto
-            w-full
-            px-[20px]
-            sm:px-[40px]
-            lg:px-0
             flex
-            justify-between
+            w-full
+            ${PAGE_MAX_WIDTH}
             items-center
-          "
+            justify-between
+            px-6
+            lg:px-0
+          `}
         >
           {/* LEFT */}
 
@@ -974,8 +1109,8 @@ const PartnerDirectory = () => {
             variants={fadeUpVariants}
             className="
               w-full
-              lg:w-[50%]
               py-[28px]
+              lg:w-[50%]
             "
           >
             {/* LABEL */}
@@ -983,20 +1118,20 @@ const PartnerDirectory = () => {
             <motion.div
               variants={heroTextVariants}
               className="
+                mb-[18px]
                 flex
                 items-center
                 gap-[12px]
-                mb-[18px]
               "
             >
               <span
                 className="
+                  whitespace-nowrap
                   text-[13px]
                   font-semibold
                   uppercase
                   tracking-[0.05em]
                   text-[#36434a]
-                  whitespace-nowrap
                 "
               >
                 {heroLabel}
@@ -1016,15 +1151,15 @@ const PartnerDirectory = () => {
             <motion.h1
               variants={heroTextVariants}
               className="
-                text-[32px]
-                sm:text-[36px]
-                lg:text-[36px]
-                font-semibold
-                text-[#111111]
-                leading-[1.12]
-                tracking-[-0.02em]
                 mb-[20px]
                 max-w-[550px]
+                text-[32px]
+                font-semibold
+                leading-[1.12]
+                tracking-[-0.02em]
+                text-[#111111]
+                sm:text-[36px]
+                lg:text-[36px]
               "
             >
               {heroTitle}
@@ -1052,26 +1187,26 @@ const PartnerDirectory = () => {
                   flex
                   items-center
                   gap-[10px]
-                  bg-white
                   rounded-full
-                  px-[6px]
-                  pr-[18px]
-                  py-[6px]
-                  shadow-[0_2px_10px_rgba(0,0,0,0.04)]
                   border
                   border-[#F0F0F0]
+                  bg-white
+                  px-[6px]
+                  py-[6px]
+                  pr-[18px]
+                  shadow-[0_2px_10px_rgba(0,0,0,0.04)]
                 "
               >
                 <span
                   className="
-                    w-[34px]
-                    h-[34px]
-                    rounded-full
-                    bg-[#E8F0FE]
                     flex
+                    h-[34px]
+                    w-[34px]
+                    shrink-0
                     items-center
                     justify-center
-                    shrink-0
+                    rounded-full
+                    bg-[#E8F0FE]
                   "
                 >
                   <BarChart3
@@ -1084,8 +1219,8 @@ const PartnerDirectory = () => {
                 <span
                   className="
                     text-[14px]
-                    text-[#222222]
                     font-normal
+                    text-[#222222]
                   "
                 >
                   Insights
@@ -1103,26 +1238,26 @@ const PartnerDirectory = () => {
                   flex
                   items-center
                   gap-[10px]
-                  bg-white
                   rounded-full
-                  px-[6px]
-                  pr-[18px]
-                  py-[6px]
-                  shadow-[0_2px_10px_rgba(0,0,0,0.04)]
                   border
                   border-[#F0F0F0]
+                  bg-white
+                  px-[6px]
+                  py-[6px]
+                  pr-[18px]
+                  shadow-[0_2px_10px_rgba(0,0,0,0.04)]
                 "
               >
                 <span
                   className="
-                    w-[34px]
-                    h-[34px]
-                    rounded-full
-                    bg-[#E8F0FE]
                     flex
+                    h-[34px]
+                    w-[34px]
+                    shrink-0
                     items-center
                     justify-center
-                    shrink-0
+                    rounded-full
+                    bg-[#E8F0FE]
                   "
                 >
                   <Star
@@ -1136,8 +1271,8 @@ const PartnerDirectory = () => {
                 <span
                   className="
                     text-[14px]
-                    text-[#222222]
                     font-normal
+                    text-[#222222]
                   "
                 >
                   Shared Expertise
@@ -1164,20 +1299,20 @@ const PartnerDirectory = () => {
             }}
             className="
               hidden
-              lg:block
               w-[45%]
+              pl-[30px]
               text-left
-              pl-[40px]
+              lg:block
             "
           >
             <h2
               className="
                 text-[25px]
                 font-semibold
-                text-[#34434B]
+                uppercase
                 leading-[1.48]
                 tracking-[0.01em]
-                uppercase
+                text-[#34434B]
               "
             >
               A Stronger
@@ -1198,24 +1333,24 @@ const PartnerDirectory = () => {
         ref={filterBarRef}
         variants={fadeUpVariants}
         className="
-          bg-white
           scroll-mt-[20px]
+          bg-white
         "
       >
         <div
-          className="
-            max-w-[1680px]
+          className={`
             mx-auto
-            px-[20px]
-            lg:px-0
-            py-[31px]
             flex
+            ${PAGE_MAX_WIDTH}
             flex-col
-            lg:flex-row
             items-stretch
-            lg:items-center
             gap-[20px]
-          "
+            px-6
+            py-[31px]
+            lg:flex-row
+            lg:items-center
+            lg:px-0
+          `}
         >
           {/* SEARCH */}
 
@@ -1223,8 +1358,8 @@ const PartnerDirectory = () => {
             id="partner-search-bar"
             className="
               relative
+              min-w-0
               flex-1
-              lg:max-w-[970px]
               scroll-mt-[20px]
             "
           >
@@ -1243,25 +1378,29 @@ const PartnerDirectory = () => {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) =>
+                setSearchQuery(
+                  e.target.value,
+                )
+              }
               placeholder="Search members by name, industry or keyword..."
               className="
-                w-full
                 h-[44px]
-                pl-[50px]
-                pr-[20px]
+                w-full
                 rounded-full
-                bg-[#F8F9FA]
                 border
                 border-transparent
+                bg-[#F8F9FA]
+                pl-[50px]
+                pr-[20px]
                 text-[14px]
                 font-normal
                 text-[#444444]
-                placeholder:text-[#7D9CE3]
                 outline-none
-                focus:bg-white
-                focus:border-[#D7E0F6]
+                placeholder:text-[#7D9CE3]
                 transition-all
+                focus:border-[#D7E0F6]
+                focus:bg-white
               "
             />
           </div>
@@ -1272,51 +1411,62 @@ const PartnerDirectory = () => {
             className="
               relative
               w-full
-              lg:w-[240px]
               shrink-0
+              lg:w-[240px]
             "
           >
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) =>
+                setCategory(
+                  e.target.value,
+                )
+              }
               className="
-                appearance-none
-                w-full
                 h-[44px]
-                px-[20px]
-                pr-[45px]
+                w-full
+                cursor-pointer
+                appearance-none
                 rounded-full
-                bg-white
                 border
                 border-[#E8E8E8]
+                bg-white
+                px-[20px]
+                pr-[45px]
                 text-[14px]
                 font-normal
                 text-[#7895D8]
                 outline-none
-                cursor-pointer
-                focus:border-[#B9C7E8]
                 transition-colors
+                focus:border-[#B9C7E8]
               "
             >
-              <option value="All Categories">All Categories</option>
+              <option value="All Categories">
+                All Categories
+              </option>
 
-              {categories.map((item, index) => (
-                <option key={`${item}-${index}`} value={item}>
-                  {item}
-                </option>
-              ))}
+              {categories.map(
+                (item, index) => (
+                  <option
+                    key={`${item}-${index}`}
+                    value={item}
+                  >
+                    {item}
+                  </option>
+                ),
+              )}
             </select>
 
             <ChevronDown
               size={18}
               strokeWidth={2}
               className="
+                pointer-events-none
                 absolute
                 right-[18px]
                 top-1/2
                 -translate-y-1/2
                 text-[#111111]
-                pointer-events-none
               "
             />
           </div>
@@ -1327,49 +1477,58 @@ const PartnerDirectory = () => {
             className="
               relative
               w-full
-              lg:w-[240px]
               shrink-0
+              lg:w-[240px]
             "
           >
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) =>
+                setSortBy(
+                  e.target.value,
+                )
+              }
               className="
-                appearance-none
-                w-full
                 h-[44px]
-                px-[20px]
-                pr-[45px]
+                w-full
+                cursor-pointer
+                appearance-none
                 rounded-full
-                bg-white
                 border
                 border-[#E8E8E8]
+                bg-white
+                px-[20px]
+                pr-[45px]
                 text-[14px]
                 font-normal
                 text-[#7895D8]
                 outline-none
-                cursor-pointer
-                focus:border-[#B9C7E8]
                 transition-colors
+                focus:border-[#B9C7E8]
               "
             >
-              {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {sortOptions.map(
+                (option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ),
+              )}
             </select>
 
             <ChevronDown
               size={18}
               strokeWidth={2}
               className="
+                pointer-events-none
                 absolute
                 right-[18px]
                 top-1/2
                 -translate-y-1/2
                 text-[#111111]
-                pointer-events-none
               "
             />
           </div>
@@ -1381,14 +1540,15 @@ const PartnerDirectory = () => {
       ======================================================================= */}
 
       <main
-        className="
-          max-w-[1665px]
+        className={`
           mx-auto
-          px-[20px]
-          lg:px-0
+          w-full
+          ${PAGE_MAX_WIDTH}
+          px-6
           pt-[17px]
-          pb-[80px]
-        "
+          pb-[110px]
+          lg:px-0
+        `}
       >
         {isError ? (
           <motion.div
@@ -1404,8 +1564,8 @@ const PartnerDirectory = () => {
               duration: 0.4,
             }}
             className="
-              text-center
               py-[100px]
+              text-center
               text-[14px]
               font-normal
               text-[#999999]
@@ -1438,10 +1598,10 @@ const PartnerDirectory = () => {
                     -top-[6px]
                     left-0
                     right-0
+                    z-20
                     h-[2px]
                     overflow-hidden
                     rounded-full
-                    z-20
                   "
                 >
                   <motion.div
@@ -1480,73 +1640,90 @@ const PartnerDirectory = () => {
               className={`
                 grid
                 grid-cols-1
-                sm:grid-cols-2
-                lg:grid-cols-3
                 gap-[20px]
                 transition-[filter,opacity]
                 duration-300
                 ease-out
+                sm:grid-cols-2
+                lg:grid-cols-3
 
-                ${isFetching ? "opacity-70 blur-[1px]" : "opacity-100 blur-0"}
+                ${
+                  isFetching
+                    ? "blur-[1px] opacity-70"
+                    : "blur-0 opacity-100"
+                }
               `}
             >
               <AnimatePresence mode="popLayout">
-                {filteredPartners.map((partner) => (
-                  <PartnerCard key={partner.id} partner={partner} />
-                ))}
+                {filteredPartners.map(
+                  (partner) => (
+                    <PartnerCard
+                      key={partner.id}
+                      partner={partner}
+                    />
+                  ),
+                )}
               </AnimatePresence>
             </motion.div>
 
             {/* NO RESULTS */}
 
             <AnimatePresence>
-              {!isError && filteredPartners.length === 0 && (
-                <motion.div
-                  initial={{
-                    opacity: 0,
-                    scale: 0.98,
-                    y: 8,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    scale: 0.98,
-                  }}
-                  transition={{
-                    duration: 0.3,
-                  }}
-                  className="
-                      text-center
+              {!isError &&
+                filteredPartners.length ===
+                  0 && (
+                  <motion.div
+                    initial={{
+                      opacity: 0,
+                      scale: 0.98,
+                      y: 8,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      y: 0,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.98,
+                    }}
+                    transition={{
+                      duration: 0.3,
+                    }}
+                    className="
                       py-[100px]
+                      text-center
                       text-[14px]
                       font-normal
                       text-[#999999]
                     "
-                >
-                  No members found matching your search.
-                </motion.div>
-              )}
+                  >
+                    No members found matching
+                    your search.
+                  </motion.div>
+                )}
             </AnimatePresence>
 
             {/* PAGINATION */}
 
-            {totalRecords > 0 && lastPage > 1 && (
-              <Pagination
-                currentPage={apiCurrentPage}
-                lastPage={lastPage}
-                onPageChange={handlePageChange}
-                isFetching={isFetching}
-              />
-            )}
+            {totalRecords > 0 &&
+              lastPage > 1 && (
+                <Pagination
+                  currentPage={
+                    apiCurrentPage
+                  }
+                  lastPage={lastPage}
+                  onPageChange={
+                    handlePageChange
+                  }
+                  isFetching={isFetching}
+                />
+              )}
 
             {/* PAGE INFO */}
 
             {totalRecords > 0 && (
-              <div className="text-center mt-[16px]">
+              <div className="mt-[16px] text-center">
                 <span
                   className="
                     text-[13px]
@@ -1554,13 +1731,19 @@ const PartnerDirectory = () => {
                     text-[#999999]
                   "
                 >
-                  Page {apiCurrentPage} of {lastPage} · {totalRecords} members
+                  Page {apiCurrentPage} of{" "}
+                  {lastPage} · {totalRecords}{" "}
+                  members
                 </span>
               </div>
             )}
           </div>
         )}
       </main>
+
+      {/* EXTRA BOTTOM SPACE */}
+
+      <div className="h-[30px] w-full" />
     </motion.div>
   );
 };

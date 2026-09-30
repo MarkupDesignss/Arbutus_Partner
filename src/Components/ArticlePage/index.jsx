@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 /* =========================================================
    COLORS
 ========================================================= */
+
 const COLORS = {
   primary: "#0B4D8C",
   primaryDark: "#083B6B",
@@ -25,81 +26,126 @@ const FALLBACK_IMAGE =
 /* =========================================================
    HELPERS
 ========================================================= */
+
 function normalizeUrl(value) {
   if (!value) return "";
+
   const url = String(value).trim();
+
   const markdownMatch = url.match(/\((https?:\/\/[^)]+)\)/);
+
   if (markdownMatch?.[1]) {
     return markdownMatch[1];
   }
+
   return url;
 }
 
 function getPostExternalUrl(post, type = "format") {
   if (!post) return "";
+
   if (type === "source") {
-    return normalizeUrl(post.source_url) || normalizeUrl(post.format_url) || "";
+    return (
+      normalizeUrl(post.source_url) ||
+      normalizeUrl(post.format_url) ||
+      ""
+    );
   }
+
   return normalizeUrl(post.format_url) || normalizeUrl(post.source_url) || "";
 }
 
 /* =========================================================
    ANIMATIONS
 ========================================================= */
+
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: {
+    opacity: 0,
+    y: 24,
+  },
+
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
   },
 };
 
 const fadeIn = {
-  hidden: { opacity: 0 },
+  hidden: {
+    opacity: 0,
+  },
+
   show: {
     opacity: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
   },
 };
 
 const staggerParent = {
   hidden: {},
+
   show: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
+    },
   },
 };
 
 const staggerChild = {
-  hidden: { opacity: 0, y: 18 },
+  hidden: {
+    opacity: 0,
+    y: 18,
+  },
+
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.45, ease: "easeOut" },
+    transition: {
+      duration: 0.45,
+      ease: "easeOut",
+    },
   },
 };
 
 /* =========================================================
    SKELETON LOADERS
+   SAME SPACING AS INSIGHT PAGE
 ========================================================= */
+
 function SkeletonBlock({ className = "" }) {
-  return <div className={`animate-pulse rounded bg-[#E9EDF2] ${className}`} />;
+  return (
+    <div
+      className={`animate-pulse rounded bg-[#E9EDF2] ${className}`}
+    />
+  );
 }
 
 function SkeletonArticleRow() {
   return (
-    <div className="flex items-stretch gap-[17px]">
-      <SkeletonBlock className="h-[163px] w-[203px] shrink-0" />
-      <div className="min-w-0 flex-1 space-y-3 pt-1">
-        <SkeletonBlock className="h-4 w-[97%]" />
-        <SkeletonBlock className="h-4 w-[92%]" />
-        <SkeletonBlock className="h-4 w-[88%]" />
-        <SkeletonBlock className="h-4 w-[62%]" />
-        <div className="flex items-center gap-3 pt-3">
+    <div className="flex items-stretch gap-[15px]">
+      <SkeletonBlock className="h-[147px] w-[183px] shrink-0" />
+
+      <div className="min-w-0 flex-1 space-y-3 pt-[1px]">
+        <SkeletonBlock className="h-[15px] w-[96%]" />
+        <SkeletonBlock className="h-[15px] w-[87%]" />
+        <SkeletonBlock className="h-[15px] w-[82%]" />
+        <SkeletonBlock className="h-[15px] w-[62%]" />
+
+        <div className="flex items-center gap-4 pt-2">
           <SkeletonBlock className="h-3 w-20" />
           <SkeletonBlock className="h-5 w-24" />
         </div>
-        <SkeletonBlock className="h-3 w-[58%]" />
+
+        <SkeletonBlock className="h-3 w-[55%]" />
       </div>
     </div>
   );
@@ -107,13 +153,15 @@ function SkeletonArticleRow() {
 
 function SkeletonSideArticle() {
   return (
-    <div className="flex gap-[17px]">
-      <SkeletonBlock className="h-[139px] w-[203px] shrink-0" />
-      <div className="min-w-0 flex-1 space-y-3 pt-1">
-        <SkeletonBlock className="h-4 w-[95%]" />
-        <SkeletonBlock className="h-4 w-[80%]" />
+    <div className="flex gap-[15px]">
+      <SkeletonBlock className="h-[126px] w-[183px] shrink-0" />
+
+      <div className="min-w-0 flex-1 space-y-3 pt-[1px]">
+        <SkeletonBlock className="h-[15px] w-[95%]" />
+        <SkeletonBlock className="h-[15px] w-[80%]" />
         <SkeletonBlock className="h-3 w-[45%]" />
-        <div className="flex items-center gap-3 pt-2">
+
+        <div className="flex items-center gap-4 pt-2">
           <SkeletonBlock className="h-3 w-20" />
           <SkeletonBlock className="h-5 w-24" />
         </div>
@@ -124,22 +172,27 @@ function SkeletonSideArticle() {
 
 function SkeletonMembers() {
   return (
-    <section className="mt-[80px]">
+    <section className="mt-20">
       <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
-        <SkeletonBlock className="h-7 w-28" />
+        <SkeletonBlock className="h-6 w-28" />
         <SkeletonBlock className="h-4 w-16" />
       </div>
+
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className={`px-0 py-5 sm:px-6 ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"} ${index === 0 ? "sm:pl-0" : ""}`}
+            className={`px-0 py-5 sm:px-6 ${
+              index > 0
+                ? "lg:border-l lg:border-[#E5E7EB]"
+                : "lg:pl-0"
+            } ${index === 0 ? "sm:pl-0" : ""}`}
           >
             <SkeletonBlock className="h-[50px] w-[140px]" />
+
             <div className="mt-8 space-y-2">
               <SkeletonBlock className="h-3 w-full" />
               <SkeletonBlock className="h-3 w-[90%]" />
-              <SkeletonBlock className="h-3 w-[80%]" />
             </div>
           </div>
         ))}
@@ -155,8 +208,6 @@ function SkeletonNewsletter() {
         <SkeletonBlock className="h-3 w-20 bg-white/30" />
         <SkeletonBlock className="mt-4 h-7 w-[80%] bg-white/30" />
         <SkeletonBlock className="mt-2 h-7 w-[60%] bg-white/30" />
-        <SkeletonBlock className="mt-4 h-3 w-full bg-white/20" />
-        <SkeletonBlock className="mt-2 h-3 w-[80%] bg-white/20" />
         <SkeletonBlock className="mt-5 h-12 w-full rounded-full bg-white/40" />
       </div>
     </aside>
@@ -166,30 +217,35 @@ function SkeletonNewsletter() {
 function PageSkeleton() {
   return (
     <div className="min-h-screen bg-white font-poppins">
-      <div className="mx-auto max-w-[1608px] px-5 pt-[42px] pb-10 lg:px-0">
-        <div className="grid gap-12 lg:grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-[112px]">
-          <div className="space-y-[35px]">
+      <div className="mx-auto max-w-[1455px] px-6 py-[42px] lg:px-0">
+        {/* SAME MAIN GRID AS INSIGHT */}
+        <div className="grid gap-[30px] lg:grid-cols-[5fr_6fr]">
+          {/* LEFT */}
+          <div className="space-y-[31px]">
             {Array.from({ length: 4 }).map((_, index) => (
               <SkeletonArticleRow key={index} />
             ))}
           </div>
+
+          {/* RIGHT */}
           <div>
-            <SkeletonBlock className="h-[43px] w-[72%]" />
-            <SkeletonBlock className="mt-6 h-5 w-full" />
-            <SkeletonBlock className="mt-2 h-5 w-[92%]" />
-            <div className="mt-4 flex items-center gap-3">
-              <SkeletonBlock className="h-4 w-20" />
-              <SkeletonBlock className="h-6 w-28" />
-            </div>
-            <SkeletonBlock className="mt-5 aspect-[2.28/1] w-full" />
-            <div className="mt-[46px] grid gap-[17px] md:grid-cols-2">
+            <SkeletonBlock className="h-[42px] w-[72%]" />
+
+            <SkeletonBlock className="mt-5 h-5 w-[98%]" />
+            <SkeletonBlock className="mt-2 h-5 w-[88%]" />
+            <SkeletonBlock className="mt-5 h-4 w-[42%]" />
+
+            <SkeletonBlock className="mt-5 aspect-[2.27/1] w-full" />
+
+            <div className="mt-[34px] grid gap-[17px] md:grid-cols-[1.05fr_1fr]">
               <div>
                 <SkeletonBlock className="h-9 w-[78%]" />
                 <SkeletonBlock className="mt-4 h-4 w-full" />
                 <SkeletonBlock className="mt-2 h-4 w-[90%]" />
                 <SkeletonBlock className="mt-6 h-[210px] w-full" />
               </div>
-              <div className="space-y-[35px]">
+
+              <div className="space-y-[31px]">
                 {Array.from({ length: 3 }).map((_, index) => (
                   <SkeletonSideArticle key={index} />
                 ))}
@@ -197,14 +253,20 @@ function PageSkeleton() {
             </div>
           </div>
         </div>
+
+        {/* MEMBERS */}
         <SkeletonMembers />
-        <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
+
+        {/* BOTTOM */}
+        <div className="mt-[56px] grid gap-[48px] lg:grid-cols-[1fr_1.6fr_1fr]">
           <div className="hidden lg:block" />
-          <div className="space-y-[35px]">
+
+          <div className="space-y-[31px]">
             {Array.from({ length: 3 }).map((_, index) => (
               <SkeletonArticleRow key={index} />
             ))}
           </div>
+
           <SkeletonNewsletter />
         </div>
       </div>
@@ -213,12 +275,16 @@ function PageSkeleton() {
 }
 
 /* =========================================================
-   IMAGE COMPONENT
+   IMAGE
 ========================================================= */
+
 function Thumb({ src, className = "", title = "" }) {
   const image = normalizeUrl(src) || FALLBACK_IMAGE;
+
   return (
-    <div className={`relative overflow-hidden bg-[#F4F6F8] ${className}`}>
+    <div
+      className={`relative overflow-hidden bg-[#F4F6F8] ${className}`}
+    >
       <img
         src={image}
         alt={title || "Article"}
@@ -235,15 +301,21 @@ function Thumb({ src, className = "", title = "" }) {
 /* =========================================================
    SOURCE INFO
 ========================================================= */
-function SourceInfo({ sourceLogo, sourceName, authorName }) {
+
+function SourceInfo({
+  sourceLogo,
+  sourceName,
+  authorName,
+}) {
   const logo = normalizeUrl(sourceLogo);
+
   if (logo) {
     return (
-      <div className="flex h-[24px] max-w-[170px] items-center overflow-hidden">
+      <div className="flex h-6 max-w-[170px] items-center overflow-hidden">
         <img
           src={logo}
           alt={sourceName || authorName || "Source"}
-          className="max-h-[24px] max-w-[145px] object-contain"
+          className="max-h-7 max-w-[145px] object-contain"
           onError={(event) => {
             event.currentTarget.style.display = "none";
           }}
@@ -251,6 +323,7 @@ function SourceInfo({ sourceLogo, sourceName, authorName }) {
       </div>
     );
   }
+
   return (
     <span className="max-w-[190px] truncate font-poppins text-[11px] font-semibold text-[#374151]">
       {sourceName || authorName || "Source"}
@@ -259,8 +332,9 @@ function SourceInfo({ sourceLogo, sourceName, authorName }) {
 }
 
 /* =========================================================
-   TAGS & DATE
+   TAGS
 ========================================================= */
+
 function getMediaLabel(mediaType) {
   const labels = {
     podcast: "Podcast",
@@ -268,7 +342,9 @@ function getMediaLabel(mediaType) {
     pdf: "PDF",
     video: "Video",
     article: "Article",
+    report: "Report",
   };
+
   return labels[String(mediaType || "").toLowerCase()] || null;
 }
 
@@ -280,19 +356,29 @@ function Tags({ post }) {
   ].filter(Boolean);
 
   return (
-    <p className="font-poppins text-[12px] font-medium leading-[18px] text-[#2A57C4]">
+    <p className="font-poppins text-[12px] leading-5 text-[#2A57C4]">
       {tags.map((tag, index) => (
         <React.Fragment key={`${tag}-${index}`}>
-          {index > 0 && <span className="mx-1 text-[#4B5563]">|</span>}
-          <span className="transition-colors hover:text-[#083B6B]">{tag}</span>
+          {index > 0 && (
+            <span className="mx-1 text-[#4B5563]">|</span>
+          )}
+
+          <span className="transition-colors hover:text-[#083B6B]">
+            {tag}
+          </span>
         </React.Fragment>
       ))}
     </p>
   );
 }
 
+/* =========================================================
+   DATE
+========================================================= */
+
 function formatDate(date) {
   if (!date) return "";
+
   try {
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
@@ -304,24 +390,32 @@ function formatDate(date) {
   }
 }
 
+/* =========================================================
+   META
+========================================================= */
+
 function Meta({ post }) {
   return (
     <div className="font-poppins">
       <div className="mt-[9px] flex flex-wrap items-center gap-[12px]">
-        <span className="font-poppins text-[12px] leading-[18px] text-[#9CA3AF]">
-          {post?.published_date_formatted || formatDate(post?.published_date)}
+        <span className="font-poppins text-[12px] leading-4 text-[#9CA3AF]">
+          {post?.published_date_formatted ||
+            formatDate(post?.published_date || post?.created_at)}
         </span>
+
         <SourceInfo
           sourceLogo={post?.source_logo}
           sourceName={post?.source_name}
           authorName={post?.author_name}
         />
+
         {post?.read_time ? (
-          <span className="font-poppins text-[11px] leading-[18px] text-[#9CA3AF]">
+          <span className="font-poppins text-[11px] leading-4 text-[#9CA3AF]">
             {post.read_time} min read
           </span>
         ) : null}
       </div>
+
       <div className="mt-[5px]">
         <Tags post={post} />
       </div>
@@ -330,16 +424,22 @@ function Meta({ post }) {
 }
 
 /* =========================================================
-   ARTICLE ROW (Left side & bottom lists) - POPPINS
+   ARTICLE ROW
+   SAME SIZE AS INSIGHT
 ========================================================= */
-function ArticleRow({ post, linkType = "format" }) {
+
+function ArticleRow({
+  post,
+  linkType = "format",
+}) {
   if (!post) return null;
+
   const externalUrl = getPostExternalUrl(post, linkType);
 
   return (
     <motion.article
       variants={staggerChild}
-      className="group flex items-stretch gap-[17px]"
+      className="group flex items-stretch gap-[15px]"
     >
       {/* IMAGE */}
       {externalUrl ? (
@@ -347,20 +447,20 @@ function ArticleRow({ post, linkType = "format" }) {
           href={externalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-[203px] min-w-[203px] shrink-0 self-stretch"
+          className="block w-[183px] min-w-[183px] shrink-0 self-stretch"
         >
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-[163px] min-h-[163px] w-[203px]"
+            className="h-[147px] min-h-[147px] w-full"
           />
         </a>
       ) : (
-        <div className="block w-[203px] min-w-[203px] shrink-0 self-stretch">
+        <div className="block w-[183px] min-w-[183px] shrink-0 self-stretch">
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-[163px] min-h-[163px] w-[203px]"
+            className="h-[147px] min-h-[147px] w-full"
           />
         </div>
       )}
@@ -372,18 +472,18 @@ function ArticleRow({ post, linkType = "format" }) {
             href={externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-poppins block text-[13px] leading-[20px] tracking-[-0.003em] text-[#111111] underline decoration-[#777777] underline-offset-[2px] transition-colors hover:text-[#0B4D8C]"
+            className="font-poppins block text-[13.5px] leading-[19px] tracking-[-0.005em] text-[#111111] underline decoration-[#9CA3AF] underline-offset-[2px] transition-colors hover:text-[#0B4D8C]"
           >
             {post.title}
           </a>
         ) : (
-          <div className="font-poppins block text-[13px] leading-[20px] tracking-[-0.003em] text-[#111111]">
+          <div className="font-poppins block text-[13.5px] leading-[19px] tracking-[-0.005em] text-[#111111]">
             {post.title}
           </div>
         )}
 
         {post.excerpt ? (
-          <p className="mt-[8px] line-clamp-3 font-poppins text-[11px] leading-[18px] text-[#6B7280]">
+          <p className="mt-2 line-clamp-3 font-poppins text-[12px] leading-[19px] text-[#6B7280]">
             {post.excerpt}
           </p>
         ) : null}
@@ -395,16 +495,19 @@ function ArticleRow({ post, linkType = "format" }) {
 }
 
 /* =========================================================
-   SMALL SIDE ARTICLE (Right side stack) - ROBOTO
+   SIDE ARTICLE
+   SAME SIZE AS INSIGHT
 ========================================================= */
+
 function SideArticle({ post }) {
   if (!post) return null;
+
   const externalUrl = getPostExternalUrl(post, "format");
 
   return (
     <motion.article
       variants={staggerChild}
-      className="group flex items-start gap-[17px]"
+      className="group flex items-start gap-[15px]"
     >
       {/* IMAGE */}
       {externalUrl ? (
@@ -412,20 +515,20 @@ function SideArticle({ post }) {
           href={externalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-[203px] min-w-[203px] shrink-0"
+          className="block w-[183px] min-w-[183px] shrink-0"
         >
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-[139px] min-h-[139px] w-[203px]"
+            className="h-[126px] min-h-[126px] w-full"
           />
         </a>
       ) : (
-        <div className="block w-[203px] min-w-[203px] shrink-0">
+        <div className="block w-[183px] min-w-[183px] shrink-0">
           <Thumb
             src={post.image_url}
             title={post.title}
-            className="h-[139px] min-h-[139px] w-[203px]"
+            className="h-[126px] min-h-[126px] w-full"
           />
         </div>
       )}
@@ -437,18 +540,18 @@ function SideArticle({ post }) {
             href={externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="roboto-heading block text-[12px] leading-[19px] text-[#111111] transition-colors hover:text-[#0B4D8C]"
+            className="roboto-heading block text-[12.5px] leading-[19px] text-[#111111] transition-colors hover:text-[#0B4D8C]"
           >
             {post.title}
           </a>
         ) : (
-          <div className="roboto-heading block text-[12px] leading-[19px] text-[#111111]">
+          <div className="roboto-heading block text-[12.5px] leading-[19px] text-[#111111]">
             {post.title}
           </div>
         )}
 
         {post.excerpt ? (
-          <p className="mt-[7px] line-clamp-2 font-poppins text-[10.5px] leading-[17px] text-[#6B7280]">
+          <p className="mt-2 line-clamp-2 font-poppins text-[11px] leading-[17px] text-[#6B7280]">
             {post.excerpt}
           </p>
         ) : null}
@@ -460,10 +563,12 @@ function SideArticle({ post }) {
 }
 
 /* =========================================================
-   MEMBER LOGO & SECTION - ROBOTO
+   MEMBER LOGO
 ========================================================= */
+
 function MemberLogo({ member }) {
   const logo = normalizeUrl(member?.logo_url);
+
   if (logo) {
     return (
       <div className="flex h-[50px] items-center">
@@ -478,6 +583,7 @@ function MemberLogo({ member }) {
       </div>
     );
   }
+
   return (
     <div className="roboto-heading flex h-[50px] items-center text-2xl text-[#111827]">
       {member?.name}
@@ -485,26 +591,35 @@ function MemberLogo({ member }) {
   );
 }
 
+/* =========================================================
+   MEMBERS
+========================================================= */
+
 function MembersSection({ members = [] }) {
   if (!members.length) return null;
 
   return (
     <motion.section
-      className="mt-[80px] font-poppins"
+      className="mt-20 font-poppins"
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{
+        once: true,
+        amount: 0.15,
+      }}
     >
       <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-4">
-        <h2 className="roboto-heading text-[26px] leading-[32px] text-[#111827]">
+        <h2 className="roboto-heading text-xl text-[#111827] md:text-2xl">
           Members
         </h2>
+
         <Link
           to="/PartnerDirectory"
           className="flex items-center gap-1.5 font-poppins text-[12px] font-semibold tracking-wide text-[#0B4D8C] transition-colors hover:text-[#083B6B]"
         >
           View All
+
           <svg
             viewBox="0 0 24 24"
             className="h-4 w-4"
@@ -524,15 +639,23 @@ function MembersSection({ members = [] }) {
         variants={staggerParent}
         initial="hidden"
         whileInView="show"
-        viewport={{ once: true, amount: 0.15 }}
+        viewport={{
+          once: true,
+          amount: 0.15,
+        }}
       >
         {members.map((member, index) => {
           const websiteUrl = normalizeUrl(member?.website_url);
+
           return (
             <motion.div
               key={member.id || member.name || index}
               variants={staggerChild}
-              className={`px-0 py-5 sm:px-6 ${index > 0 ? "lg:border-l lg:border-[#E5E7EB]" : "lg:pl-0"} ${index === 0 ? "sm:pl-0" : ""}`}
+              className={`px-0 py-5 sm:px-6 ${
+                index > 0
+                  ? "lg:border-l lg:border-[#E5E7EB]"
+                  : "lg:pl-0"
+              } ${index === 0 ? "sm:pl-0" : ""}`}
             >
               {websiteUrl ? (
                 <a
@@ -548,6 +671,7 @@ function MembersSection({ members = [] }) {
                   <MemberLogo member={member} />
                 </div>
               )}
+
               <p className="mt-8 max-w-xs font-poppins text-[14px] leading-6 text-[#4B5563]">
                 {member.description}
               </p>
@@ -560,14 +684,18 @@ function MembersSection({ members = [] }) {
 }
 
 /* =========================================================
-   NEWSLETTER - ROBOTO
+   NEWSLETTER
 ========================================================= */
+
 function Newsletter() {
   const [email, setEmail] = useState("");
-  const [sendSubscribe, { isLoading }] = useSendSubscribeMutation();
+
+  const [sendSubscribe, { isLoading }] =
+    useSendSubscribeMutation();
 
   const handleSubscribe = async () => {
     const trimmedEmail = email.trim();
+
     if (!trimmedEmail) {
       Swal.fire({
         icon: "error",
@@ -575,10 +703,12 @@ function Newsletter() {
         text: "Please enter your email address.",
         confirmButtonColor: COLORS.primary,
       });
+
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailRegex.test(trimmedEmail)) {
       Swal.fire({
         icon: "warning",
@@ -586,11 +716,15 @@ function Newsletter() {
         text: "Please enter a valid email address.",
         confirmButtonColor: COLORS.primary,
       });
+
       return;
     }
 
     try {
-      const res = await sendSubscribe({ email: trimmedEmail }).unwrap();
+      const res = await sendSubscribe({
+        email: trimmedEmail,
+      }).unwrap();
+
       Swal.fire({
         icon: "success",
         title: "Subscribed Successfully",
@@ -599,6 +733,7 @@ function Newsletter() {
           "Your email address has been subscribed successfully!",
         confirmButtonColor: COLORS.primary,
       });
+
       setEmail("");
     } catch (error) {
       const apiMessage =
@@ -606,6 +741,7 @@ function Newsletter() {
         error?.data?.message ||
         error?.message ||
         "Something went wrong. Please try again.";
+
       Swal.fire({
         icon: "error",
         title: "Subscription Failed",
@@ -628,19 +764,27 @@ function Newsletter() {
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{
+        once: true,
+        amount: 0.2,
+      }}
     >
       <div
         className="rounded-3xl p-6 text-white"
-        style={{ backgroundColor: COLORS.primary }}
+        style={{
+          backgroundColor: COLORS.primary,
+        }}
       >
         <p className="font-poppins text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
           Newsletter
         </p>
+
         <h3 className="roboto-heading mt-3 text-2xl leading-tight tracking-tight md:text-3xl">
           Insights For
-          <br />A Brighter Tomorrow
+          <br />
+          A Brighter Tomorrow
         </h3>
+
         <p className="mt-4 font-poppins text-[14px] leading-6 text-blue-50">
           Receive the latest perspectives on wealth, legacy and family offices.
         </p>
@@ -655,6 +799,7 @@ function Newsletter() {
             disabled={isLoading}
             className="min-w-0 flex-1 bg-transparent font-poppins text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF] disabled:cursor-not-allowed disabled:opacity-60"
           />
+
           <button
             type="button"
             aria-label="Subscribe"
@@ -685,10 +830,12 @@ function Newsletter() {
 }
 
 /* =========================================================
-   HERO CONTENT (Main Article) - ROBOTO
+   HERO CONTENT
 ========================================================= */
+
 function HeroContent({ content }) {
   if (!content) return null;
+
   const paragraphs = String(content)
     .split(/\r?\n/)
     .map((item) => item.trim())
@@ -703,7 +850,10 @@ function HeroContent({ content }) {
       variants={staggerParent}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{
+        once: true,
+        amount: 0.2,
+      }}
     >
       {paragraphs.map((paragraph, index) => (
         <motion.p
@@ -719,34 +869,61 @@ function HeroContent({ content }) {
 }
 
 /* =========================================================
-   MAIN PAGE COMPONENT
+   MAIN PAGE
 ========================================================= */
+
 export default function ArticlePage() {
-  const { data: apiResponse, isLoading, isError } = useGetCommentaryPageQuery();
+  const {
+    data: apiResponse,
+    isLoading,
+    isError,
+  } = useGetCommentaryPageQuery();
 
   const POSTS_PER_LOAD = 5;
-  const [visibleMoreCount, setVisibleMoreCount] = useState(POSTS_PER_LOAD);
+
+  const [visibleMoreCount, setVisibleMoreCount] =
+    useState(POSTS_PER_LOAD);
 
   const pageData = apiResponse?.data;
+
   const hero = pageData?.hero || null;
+
   const leftPosts = Array.isArray(pageData?.left_posts)
     ? pageData.left_posts
     : [];
+
   const rightGrid = Array.isArray(pageData?.right_grid)
     ? pageData.right_grid
     : [];
-  const members = Array.isArray(pageData?.members) ? pageData.members : [];
+
+  const members = Array.isArray(pageData?.members)
+    ? pageData.members
+    : [];
+
   const morePosts = Array.isArray(pageData?.more_posts?.items)
     ? pageData.more_posts.items
     : [];
 
-  const visibleMorePosts = morePosts.slice(0, visibleMoreCount);
+  const visibleMorePosts = morePosts.slice(
+    0,
+    visibleMoreCount,
+  );
+
   const handleLoadMore = () => {
     setVisibleMoreCount((prev) =>
-      Math.min(prev + POSTS_PER_LOAD, morePosts.length),
+      Math.min(
+        prev + POSTS_PER_LOAD,
+        morePosts.length,
+      ),
     );
   };
-  const hasMorePosts = visibleMoreCount < morePosts.length;
+
+  const hasMorePosts =
+    visibleMoreCount < morePosts.length;
+
+  /* =========================================================
+     LOADING
+  ========================================================= */
 
   if (isLoading) {
     return (
@@ -755,6 +932,10 @@ export default function ArticlePage() {
       </div>
     );
   }
+
+  /* =========================================================
+     ERROR
+  ========================================================= */
 
   if (isError || !pageData) {
     return (
@@ -766,16 +947,27 @@ export default function ArticlePage() {
     );
   }
 
+  /* =========================================================
+     PAGE
+  ========================================================= */
+
   return (
     <div className="min-h-screen bg-white font-poppins text-[#111827]">
-      <div className="mx-auto max-w-[1608px] px-5 pt-[42px] pb-10 lg:px-0">
+      <div className="mx-auto max-w-[1455px] px-6 py-[42px] lg:px-0">
+
         {/* =================================================
             MAIN TOP GRID
+            SAME AS INSIGHT PAGE
         ================================================= */}
-        <div className="grid gap-12 lg:grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:gap-[112px]">
-          {/* LEFT ARTICLES - POPPINS */}
+
+        <div className="grid gap-[30px] lg:grid-cols-[5fr_6fr]">
+
+          {/* =================================================
+              LEFT ARTICLES
+          ================================================= */}
+
           <motion.div
-            className="space-y-[35px]"
+            className="space-y-[31px]"
             variants={staggerParent}
             initial="hidden"
             animate="show"
@@ -789,39 +981,58 @@ export default function ArticlePage() {
             ))}
           </motion.div>
 
-          {/* RIGHT FEATURED AREA - ROBOTO */}
-          <motion.div variants={fadeUp} initial="hidden" animate="show">
+          {/* =================================================
+              RIGHT FEATURED AREA
+          ================================================= */}
+
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+          >
             {hero ? (
               <>
-                {/* HERO TITLE - ROBOTO */}
+                {/* HERO TITLE */}
+
                 <motion.h1
                   variants={fadeUp}
-                  className="roboto-heading text-[34px] leading-[42px] tracking-[-0.025em] text-black md:text-[36px] md:leading-[43px]"
-                  style={{ color: COLORS.heading }}
+                  className="roboto-heading text-[34px] leading-[1.08] tracking-[-0.02em] text-black md:text-[36px]"
+                  style={{
+                    color: COLORS.heading,
+                  }}
                 >
                   {hero.title}
                 </motion.h1>
 
                 {/* HERO DESCRIPTION */}
+
                 {hero.excerpt ? (
                   <motion.p
                     variants={fadeIn}
-                    className="mt-[21px] max-w-full font-poppins text-[15px] leading-[24px] text-[#4B5563]"
+                    className="mt-[22px] max-w-[800px] font-poppins text-[15px] leading-[24px] text-[#4B5563]"
                   >
                     {hero.excerpt}
                   </motion.p>
                 ) : null}
 
-                {/* HERO META */}
-                <motion.div variants={fadeIn}>
+                {/* META */}
+
+                <motion.div
+                  variants={fadeIn}
+                  className="mt-[7px]"
+                >
                   <Meta post={hero} />
                 </motion.div>
 
                 {/* HERO IMAGE */}
+
                 {getPostExternalUrl(hero, "source") ? (
                   <motion.a
                     variants={fadeIn}
-                    href={getPostExternalUrl(hero, "source")}
+                    href={getPostExternalUrl(
+                      hero,
+                      "source",
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group block"
@@ -829,48 +1040,68 @@ export default function ArticlePage() {
                     <Thumb
                       src={hero.image_url}
                       title={hero.title}
-                      className="mt-[18px] aspect-[2.28/1] w-full"
+                      className="mt-[18px] aspect-[2.27/1] w-full"
                     />
                   </motion.a>
                 ) : (
-                  <motion.div variants={fadeIn} className="group block">
+                  <motion.div
+                    variants={fadeIn}
+                    className="group block"
+                  >
                     <Thumb
                       src={hero.image_url}
                       title={hero.title}
-                      className="mt-[18px] aspect-[2.28/1] w-full"
+                      className="mt-[18px] aspect-[2.27/1] w-full"
                     />
                   </motion.div>
                 )}
 
                 {/* HERO CONTENT */}
+
                 <HeroContent content={hero.content} />
               </>
             ) : null}
 
-            {/* SECONDARY GRID */}
+            {/* =================================================
+                SECONDARY GRID
+            ================================================= */}
+
             {rightGrid.length > 0 ? (
-              <div className="mt-[46px] grid gap-[17px] md:grid-cols-2">
-                {/* SECONDARY FEATURED CARD - ROBOTO */}
+              <div className="mt-[34px] grid gap-[17px] md:grid-cols-[1.05fr_1fr]">
+
+                {/* =================================================
+                    FEATURED SECOND CARD
+                ================================================= */}
+
                 {rightGrid[0] ? (
                   <motion.div
                     variants={fadeUp}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ once: true, amount: 0.2 }}
+                    viewport={{
+                      once: true,
+                      amount: 0.2,
+                    }}
                   >
-                    {getPostExternalUrl(rightGrid[0], "format") ? (
+                    {getPostExternalUrl(
+                      rightGrid[0],
+                      "format",
+                    ) ? (
                       <a
-                        href={getPostExternalUrl(rightGrid[0], "format")}
+                        href={getPostExternalUrl(
+                          rightGrid[0],
+                          "format",
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block"
                       >
-                        <h2 className="roboto-heading max-w-[430px] text-[29px] leading-[35px] tracking-[-0.02em] text-[#344B55] transition-colors hover:text-[#0B4D8C]">
+                        <h2 className="roboto-heading max-w-[420px] text-[29px] leading-[34px] tracking-[-0.02em] text-[#344B55] transition-colors hover:text-[#0B4D8C]">
                           {rightGrid[0].title}
                         </h2>
                       </a>
                     ) : (
-                      <h2 className="roboto-heading max-w-[430px] text-[29px] leading-[35px] tracking-[-0.02em] text-[#344B55]">
+                      <h2 className="roboto-heading max-w-[420px] text-[29px] leading-[34px] tracking-[-0.02em] text-[#344B55]">
                         {rightGrid[0].title}
                       </h2>
                     )}
@@ -883,9 +1114,15 @@ export default function ArticlePage() {
 
                     <Meta post={rightGrid[0]} />
 
-                    {getPostExternalUrl(rightGrid[0], "format") ? (
+                    {getPostExternalUrl(
+                      rightGrid[0],
+                      "format",
+                    ) ? (
                       <a
-                        href={getPostExternalUrl(rightGrid[0], "format")}
+                        href={getPostExternalUrl(
+                          rightGrid[0],
+                          "format",
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group block"
@@ -908,20 +1145,32 @@ export default function ArticlePage() {
                   </motion.div>
                 ) : null}
 
-                {/* RIGHT SIDE SMALL ARTICLES - ROBOTO */}
+                {/* =================================================
+                    SMALL SIDE ARTICLES
+                ================================================= */}
+
                 <motion.div
-                  className="space-y-[35px]"
+                  className="space-y-[31px]"
                   variants={staggerParent}
                   initial="hidden"
                   whileInView="show"
-                  viewport={{ once: true, amount: 0.15 }}
+                  viewport={{
+                    once: true,
+                    amount: 0.15,
+                  }}
                 >
-                  {rightGrid.slice(1, 4).map((post, index) => (
-                    <SideArticle
-                      key={post.id || post.slug || index}
-                      post={post}
-                    />
-                  ))}
+                  {rightGrid
+                    .slice(1, 4)
+                    .map((post, index) => (
+                      <SideArticle
+                        key={
+                          post.id ||
+                          post.slug ||
+                          index
+                        }
+                        post={post}
+                      />
+                    ))}
                 </motion.div>
               </div>
             ) : null}
@@ -929,34 +1178,58 @@ export default function ArticlePage() {
         </div>
 
         {/* =================================================
-            MEMBERS SECTION - ROBOTO
+            MEMBERS
         ================================================= */}
+
         <MembersSection members={members} />
 
         {/* =================================================
             MORE POSTS + NEWSLETTER
+            SAME AS INSIGHT PAGE
         ================================================= */}
-        <div className="mt-[56px] grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1fr)]">
+
+        <div className="mt-[56px] grid gap-[48px] lg:grid-cols-[1fr_1.6fr_1fr]">
           <div className="hidden lg:block" />
 
-          {/* MORE POSTS - POPPINS */}
+          {/* =================================================
+              MORE POSTS
+          ================================================= */}
+
           <div>
             {visibleMorePosts.length > 0 ? (
-              <div className="space-y-[35px]">
-                {visibleMorePosts.map((post, index) => (
-                  <motion.div
-                    key={post.id ?? `${post.slug}-${index}`}
-                    initial={{ opacity: 0, y: 18 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, ease: "easeOut" }}
-                  >
-                    <ArticleRow post={post} linkType="format" />
-                  </motion.div>
-                ))}
+              <div className="space-y-[31px]">
+                {visibleMorePosts.map(
+                  (post, index) => (
+                    <motion.div
+                      key={
+                        post.id ??
+                        `${post.slug}-${index}`
+                      }
+                      initial={{
+                        opacity: 0,
+                        y: 18,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      transition={{
+                        duration: 0.45,
+                        ease: "easeOut",
+                      }}
+                    >
+                      <ArticleRow
+                        post={post}
+                        linkType="format"
+                      />
+                    </motion.div>
+                  ),
+                )}
               </div>
             ) : null}
 
-            {/* LOAD MORE BUTTON */}
+            {/* LOAD MORE */}
+
             {hasMorePosts ? (
               <motion.div
                 className="mt-12 flex justify-center"
@@ -975,7 +1248,10 @@ export default function ArticlePage() {
             ) : null}
           </div>
 
-          {/* NEWSLETTER - ROBOTO */}
+          {/* =================================================
+              NEWSLETTER
+          ================================================= */}
+
           <Newsletter />
         </div>
       </div>
