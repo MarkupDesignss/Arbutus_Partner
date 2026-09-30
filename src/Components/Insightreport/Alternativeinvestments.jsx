@@ -844,9 +844,7 @@ export default function Alternativeinvestments() {
   if (isError) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-white font-poppins">
-        <div className="text-sm text-red-500">
-          Unable to load insight reports.
-        </div>
+       <PageSkeleton />
       </div>
     );
   }

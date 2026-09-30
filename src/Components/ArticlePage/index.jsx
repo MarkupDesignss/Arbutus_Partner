@@ -940,9 +940,7 @@ export default function ArticlePage() {
   if (isError || !pageData) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-white font-poppins">
-        <div className="font-poppins text-sm text-red-500">
-          Unable to load commentary content.
-        </div>
+         <PageSkeleton />
       </div>
     );
   }

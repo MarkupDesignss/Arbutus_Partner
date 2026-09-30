@@ -22,7 +22,7 @@ const alert = (icon, title, text) =>
   Swal.fire({ icon, title, text, confirmButtonColor: COLORS.primary });
 
 /* =========================================================
-   NEWSLETTER (wide band, the focal point of the footer)
+   NEWSLETTER CARD (sits beside the Tools column)
 ========================================================= */
 function Newsletter() {
   const [email, setEmail] = useState("");
@@ -74,27 +74,25 @@ function Newsletter() {
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="
-        relative overflow-hidden rounded-[28px] border border-white/15
+        relative h-full overflow-hidden rounded-2xl border border-white/15
         bg-gradient-to-br from-white/[0.14] to-white/[0.04]
-        p-6 shadow-[0_24px_60px_-20px_rgba(3,15,40,0.6)] backdrop-blur-md
-        sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-12 lg:p-10
+        p-6 shadow-[0_18px_40px_-20px_rgba(3,15,40,0.6)] backdrop-blur-md
+        sm:p-7
       "
     >
       {/* soft glow */}
-      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#7FB2FF]/25 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#7FB2FF]/25 blur-3xl" />
 
-      <div className="relative max-w-xl">
-        <h3 className="font-serif text-[28px] leading-[1.12] tracking-tight text-white sm:text-[34px] lg:text-[40px]">
+      <div className="relative">
+        <h3 className="font-serif text-[24px] leading-[1.15] tracking-tight text-white sm:text-[26px]">
           Insights for a brighter tomorrow
         </h3>
-        <p className="mt-3 max-w-md text-[14px] leading-6 text-white/75 sm:text-[15px]">
+        <p className="mt-3 text-[14px] leading-6 text-white/75">
           Get the latest perspectives on wealth, legacy and family offices,
           delivered to your inbox.
         </p>
-      </div>
 
-      <div className="relative mt-6 w-full lg:mt-0 lg:max-w-md">
-        <div className="flex h-14 w-full items-center rounded-full bg-white p-1.5 pl-5 shadow-lg ring-1 ring-white/40 transition focus-within:ring-4 focus-within:ring-[#7FB2FF]/50">
+        <div className="mt-5 flex h-14 w-full items-center rounded-full bg-white p-1.5 pl-5 shadow-lg ring-1 ring-white/40 transition focus-within:ring-4 focus-within:ring-[#7FB2FF]/50">
           <input
             type="email"
             value={email}
@@ -128,7 +126,6 @@ function Newsletter() {
             )}
           </button>
         </div>
-       
       </div>
     </motion.div>
   );
@@ -201,13 +198,10 @@ const Footer = () => {
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 pb-8 pt-12 sm:px-8 sm:pt-16">
-        {/* NEWSLETTER */}
-        <Newsletter />
-
         {/* MAIN GRID */}
-        <div className="mt-14 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-12 md:gap-x-8">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-12 md:gap-x-8">
           {/* BRAND + CONTACT */}
-          <div className="col-span-2 min-w-0 md:col-span-6 lg:col-span-5">
+          <div className="col-span-2 min-w-0 md:col-span-6 lg:col-span-4">
             <img
               src="/arbutus-web/assets/Footer/logo.png"
               alt="AltDB"
@@ -270,7 +264,7 @@ const Footer = () => {
           </div>
 
           {/* QUICK LINKS */}
-          <div className="col-span-1 md:col-span-3 lg:col-span-3 lg:col-start-7">
+          <div className="col-span-1 md:col-span-3 lg:col-span-2">
             <LinkColumn
               title="Quick Links"
               links={[
@@ -282,7 +276,7 @@ const Footer = () => {
           </div>
 
           {/* TOOLS */}
-          <div className="col-span-1 md:col-span-3 lg:col-span-3">
+          <div className="col-span-1 md:col-span-3 lg:col-span-2">
             <LinkColumn
               title="Tools"
               links={[
@@ -291,6 +285,11 @@ const Footer = () => {
                 { to: "/insightreports", label: "Insight Reports" },
               ]}
             />
+          </div>
+
+          {/* NEWSLETTER CARD (beside Tools) */}
+          <div className="col-span-2 md:col-span-12 lg:col-span-4">
+            <Newsletter />
           </div>
         </div>
 

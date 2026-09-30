@@ -156,7 +156,7 @@ const AlternativeInvesting = () => {
     "Alternative Investing Literacy – Terms and Definitions";
 
   return (
-    <section className="relative py-16 md:py-24 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden">
+    <section className="relative py-8 md:py-12 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden">
       {/* =====================================================
           DECORATIVE BACKGROUND
       ===================================================== */}

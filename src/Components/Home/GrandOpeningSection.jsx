@@ -190,7 +190,7 @@ const GrandOpeningSection = () => {
   }
 
   return (
-    <section className="w-full bg-gradient-to-b from-white to-gray-50 py-16 lg:py-24 roboto-regular overflow-hidden">
+    <section className="w-full bg-gradient-to-b from-white to-gray-50 py-8 lg:py-8 roboto-regular overflow-hidden">
       <div className="max-w-6xl mx-auto px-6" ref={ref}>
         <motion.div
           variants={containerVariants}

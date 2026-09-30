@@ -102,7 +102,7 @@ export default function TopFiveResults() {
           className="text-center text-2xl md:text-3xl font-bold mb-12 text-gray-800"
         >
           Latest Monthly "Top 5" Results as of Month / Year 
-          <span className="block text-sm font-medium text-[#2A57C4] mt-2">
+          <span className="block text-sm font-medium text-[#2A57C4] mt-2 mb-6">
             Sign up to view full details
           </span>
         </motion.h2>
