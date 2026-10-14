@@ -1,4 +1,9 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -11,7 +16,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+} from "framer-motion";
 
 import {
   useGetMemberPageQuery,
@@ -43,7 +51,9 @@ const cleanImageUrl = (url) => {
 
   const value = String(url).trim();
 
-  const markdownMatch = value.match(/\((https?:\/\/[^)]+)\)/);
+  const markdownMatch = value.match(
+    /\((https?:\/\/[^)]+)\)/,
+  );
 
   if (markdownMatch?.[1]) {
     return markdownMatch[1];
@@ -52,15 +62,36 @@ const cleanImageUrl = (url) => {
   return value;
 };
 
-const useDebouncedValue = (value, delay = 300) => {
-  const [debounced, setDebounced] = useState(value);
+const cleanWebsiteUrl = (url) => {
+  if (!url) return "";
+
+  const value = String(url).trim();
+
+  const markdownMatch = value.match(
+    /\((https?:\/\/[^)]+)\)/,
+  );
+
+  if (markdownMatch?.[1]) {
+    return markdownMatch[1];
+  }
+
+  return value;
+};
+
+const useDebouncedValue = (
+  value,
+  delay = 300,
+) => {
+  const [debounced, setDebounced] =
+    useState(value);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebounced(value);
     }, delay);
 
-    return () => clearTimeout(timer);
+    return () =>
+      clearTimeout(timer);
   }, [value, delay]);
 
   return debounced;
@@ -72,6 +103,7 @@ const useDebouncedValue = (value, delay = 300) => {
 
 const containerVariants = {
   hidden: {},
+
   visible: {
     transition: {
       staggerChildren: 0.06,
@@ -161,16 +193,23 @@ const heroImageVariants = {
 ============================================================================ */
 
 const PartnerCard = ({ partner }) => {
-  const hasWebsite = Boolean(partner?.website_url);
-  const hasCtaUrl = Boolean(partner?.cta_url);
-  const memberId = partner?.id;
+  const websiteUrl = cleanWebsiteUrl(
+    partner?.website_url,
+  );
+
+  const hasWebsite = Boolean(websiteUrl);
+
+  const hasCtaUrl = Boolean(
+    partner?.cta_url,
+  );
 
   const contactUrl = hasCtaUrl
     ? partner.cta_url
     : "/arbutus-web/Contactmain";
 
   const contactText =
-    partner?.cta_text || "Contact Member";
+    partner?.cta_text ||
+    "Contact Member";
 
   return (
     <motion.div
@@ -205,47 +244,115 @@ const PartnerCard = ({ partner }) => {
     >
       {/* ================================================================
           LOGO AREA
+          CLICK -> SAME WEBSITE URL
       ================================================================= */}
 
-      <div
-        className="
-          relative
-          flex
-          h-[108px]
-          shrink-0
-          items-center
-          justify-center
-          overflow-hidden
-          border-b
-          border-[#EBEBEB]
-          bg-[#F5F5F5]
-          px-[20px]
-        "
-      >
-        <motion.img
-          src={
-            cleanImageUrl(partner?.logo_url) ||
-            FALLBACK_CARD_IMAGE
-          }
-          alt={`${partner?.name || "Partner"} logo`}
-          initial={{ scale: 1 }}
-          whileHover={{ scale: 1.04 }}
-          transition={{
-            duration: 0.45,
-            ease: "easeOut",
-          }}
+      {hasWebsite ? (
+        <motion.a
+          href={websiteUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           className="
-            h-auto
-            w-auto
-            max-h-full
-            max-w-full
-            object-contain
+            relative
+            flex
+            h-[108px]
+            shrink-0
+            cursor-pointer
+            items-center
+            justify-center
+            overflow-hidden
+            border-b
+            border-[#EBEBEB]
+            bg-[#F5F5F5]
+            px-[20px]
           "
-          onError={(e) => {
-            e.currentTarget.src = FALLBACK_CARD_IMAGE;
-          }}
-        />
-      </div>
+          aria-label={`Visit ${partner?.name || "Partner"} website`}
+        >
+          <motion.img
+            src={
+              cleanImageUrl(
+                partner?.logo_url,
+              ) ||
+              FALLBACK_CARD_IMAGE
+            }
+            alt={`${
+              partner?.name ||
+              "Partner"
+            } logo`}
+            initial={{
+              scale: 1,
+            }}
+            whileHover={{
+              scale: 1.04,
+            }}
+            transition={{
+              duration: 0.45,
+              ease: "easeOut",
+            }}
+            className="
+              h-auto
+              w-auto
+              max-h-full
+              max-w-full
+              object-contain
+            "
+            onError={(e) => {
+              e.currentTarget.src =
+                FALLBACK_CARD_IMAGE;
+            }}
+          />
+        </motion.a>
+      ) : (
+        <div
+          className="
+            relative
+            flex
+            h-[108px]
+            shrink-0
+            items-center
+            justify-center
+            overflow-hidden
+            border-b
+            border-[#EBEBEB]
+            bg-[#F5F5F5]
+            px-[20px]
+          "
+        >
+          <motion.img
+            src={
+              cleanImageUrl(
+                partner?.logo_url,
+              ) ||
+              FALLBACK_CARD_IMAGE
+            }
+            alt={`${
+              partner?.name ||
+              "Partner"
+            } logo`}
+            initial={{
+              scale: 1,
+            }}
+            whileHover={{
+              scale: 1.04,
+            }}
+            transition={{
+              duration: 0.45,
+              ease: "easeOut",
+            }}
+            className="
+              h-auto
+              w-auto
+              max-h-full
+              max-w-full
+              object-contain
+            "
+            onError={(e) => {
+              e.currentTarget.src =
+                FALLBACK_CARD_IMAGE;
+            }}
+          />
+        </div>
+      )}
 
       {/* ================================================================
           CONTENT
@@ -271,7 +378,8 @@ const PartnerCard = ({ partner }) => {
             text-[#1D2B36]
           "
         >
-          {partner?.name || "Partner"}
+          {partner?.name ||
+            "Partner"}
         </h3>
 
         <p
@@ -293,8 +401,12 @@ const PartnerCard = ({ partner }) => {
         {/* CATEGORY */}
 
         <motion.span
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.2 }}
+          whileHover={{
+            scale: 1.02,
+          }}
+          transition={{
+            duration: 0.2,
+          }}
           className="
             mb-[20px]
             inline-flex
@@ -312,7 +424,8 @@ const PartnerCard = ({ partner }) => {
             text-[#1A56DB]
           "
         >
-          {partner?.category || "General"}
+          {partner?.category ||
+            "General"}
         </motion.span>
 
         {/* BUTTONS */}
@@ -327,12 +440,20 @@ const PartnerCard = ({ partner }) => {
               sm:grid-cols-2
             "
           >
-            {/* WEBSITE */}
+            {/* ============================================================
+                WEBSITE
+            ============================================================ */}
 
             <motion.a
-              href={hasWebsite ? partner.website_url : "#"}
+              href={
+                hasWebsite
+                  ? websiteUrl
+                  : "#"
+              }
               target={
-                hasWebsite ? "_blank" : undefined
+                hasWebsite
+                  ? "_blank"
+                  : undefined
               }
               rel={
                 hasWebsite
@@ -344,14 +465,19 @@ const PartnerCard = ({ partner }) => {
                   e.preventDefault();
                 }
               }}
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.988 }}
-              transition={{ duration: 0.18 }}
-              className="
+              whileHover={{
+                scale: 1.012,
+              }}
+              whileTap={{
+                scale: 0.988,
+              }}
+              transition={{
+                duration: 0.18,
+              }}
+              className={`
                 flex
                 h-[42px]
                 w-full
-                cursor-pointer
                 items-center
                 justify-center
                 gap-[6px]
@@ -365,7 +491,12 @@ const PartnerCard = ({ partner }) => {
                 transition-all
                 hover:border-[#B8C7E8]
                 hover:bg-[#F8FAFF]
-              "
+                ${
+                  hasWebsite
+                    ? "cursor-pointer"
+                    : "cursor-not-allowed opacity-50"
+                }
+              `}
             >
               <Link2
                 size={15}
@@ -373,24 +504,36 @@ const PartnerCard = ({ partner }) => {
                 className="shrink-0"
               />
 
-              <span>Website Link</span>
+              <span>
+                Website Link
+              </span>
             </motion.a>
 
-            {/* CONTACT */}
+            {/* ============================================================
+                CONTACT
+            ============================================================ */}
 
             <motion.a
               href={contactUrl}
               target={
-                hasCtaUrl ? "_blank" : undefined
+                hasCtaUrl
+                  ? "_blank"
+                  : undefined
               }
               rel={
                 hasCtaUrl
                   ? "noopener noreferrer"
                   : undefined
               }
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.988 }}
-              transition={{ duration: 0.18 }}
+              whileHover={{
+                scale: 1.012,
+              }}
+              whileTap={{
+                scale: 0.988,
+              }}
+              transition={{
+                duration: 0.18,
+              }}
               className="
                 flex
                 h-[42px]
@@ -417,51 +560,93 @@ const PartnerCard = ({ partner }) => {
                 className="shrink-0"
               />
 
-              <span>{contactText}</span>
+              <span>
+                {contactText}
+              </span>
             </motion.a>
           </div>
 
-          {/* READ MORE */}
+          {/* ============================================================
+              READ MORE
+              SAME WEBSITE URL
+              NO MEMBER ID ROUTE
+          ============================================================ */}
 
-          <Link
-            to={`/FieraRealEstate/${memberId}`}
-            className="block"
+          <motion.a
+            href={
+              hasWebsite
+                ? websiteUrl
+                : "#"
+            }
+            target={
+              hasWebsite
+                ? "_blank"
+                : undefined
+            }
+            rel={
+              hasWebsite
+                ? "noopener noreferrer"
+                : undefined
+            }
+            onClick={(e) => {
+              if (!hasWebsite) {
+                e.preventDefault();
+              }
+            }}
+            whileHover={{
+              scale: hasWebsite
+                ? 1.008
+                : 1,
+            }}
+            whileTap={{
+              scale: hasWebsite
+                ? 0.992
+                : 1,
+            }}
+            transition={{
+              duration: 0.18,
+            }}
+            className={`
+              flex
+              h-[42px]
+              w-full
+              items-center
+              justify-center
+              gap-[8px]
+              rounded-[8px]
+              bg-[#315DCC]
+              text-[13px]
+              font-normal
+              text-white
+              transition-colors
+              ${
+                hasWebsite
+                  ? "cursor-pointer hover:bg-[#2852B5]"
+                  : "cursor-not-allowed opacity-50"
+              }
+            `}
           >
-            <motion.div
-              whileHover={{ scale: 1.008 }}
-              whileTap={{ scale: 0.992 }}
-              transition={{ duration: 0.18 }}
-              className="
-                flex
-                h-[42px]
-                w-full
-                cursor-pointer
-                items-center
-                justify-center
-                gap-[8px]
-                rounded-[8px]
-                bg-[#315DCC]
-                text-[13px]
-                font-normal
-                text-white
-                transition-colors
-                hover:bg-[#2852B5]
-              "
-            >
-              <span>Read More</span>
+            <span>
+              Read More
+            </span>
 
-              <motion.span
-                className="flex items-center"
-                whileHover={{ x: 3 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ArrowRight
-                  size={16}
-                  strokeWidth={2}
-                />
-              </motion.span>
-            </motion.div>
-          </Link>
+            <motion.span
+              className="flex items-center"
+              whileHover={
+                hasWebsite
+                  ? { x: 3 }
+                  : undefined
+              }
+              transition={{
+                duration: 0.2,
+              }}
+            >
+              <ArrowRight
+                size={16}
+                strokeWidth={2}
+              />
+            </motion.span>
+          </motion.a>
         </div>
       </div>
     </motion.div>
@@ -472,7 +657,9 @@ const PartnerCard = ({ partner }) => {
    SKELETON CARD
 ============================================================================ */
 
-const SkeletonCard = ({ index = 0 }) => (
+const SkeletonCard = ({
+  index = 0,
+}) => (
   <motion.div
     initial={{
       opacity: 0,
@@ -539,7 +726,11 @@ const Pagination = ({
 
   const pages = [];
 
-  for (let i = 1; i <= lastPage; i++) {
+  for (
+    let i = 1;
+    i <= lastPage;
+    i++
+  ) {
     pages.push(i);
   }
 
@@ -550,10 +741,13 @@ const Pagination = ({
       <button
         type="button"
         onClick={() =>
-          onPageChange(currentPage - 1)
+          onPageChange(
+            currentPage - 1,
+          )
         }
         disabled={
-          currentPage === 1 || isFetching
+          currentPage === 1 ||
+          isFetching
         }
         className={`
           flex
@@ -571,7 +765,8 @@ const Pagination = ({
           duration-200
 
           ${
-            currentPage === 1 || isFetching
+            currentPage === 1 ||
+            isFetching
               ? "cursor-not-allowed opacity-40"
               : "cursor-pointer hover:border-[#cdd7ec] hover:bg-[#f6f8fd]"
           }
@@ -586,9 +781,13 @@ const Pagination = ({
         <motion.button
           key={page}
           type="button"
-          onClick={() => onPageChange(page)}
+          onClick={() =>
+            onPageChange(page)
+          }
           disabled={isFetching}
-          whileTap={{ scale: 0.96 }}
+          whileTap={{
+            scale: 0.96,
+          }}
           className={`
             flex
             h-[42px]
@@ -621,10 +820,13 @@ const Pagination = ({
       <button
         type="button"
         onClick={() =>
-          onPageChange(currentPage + 1)
+          onPageChange(
+            currentPage + 1,
+          )
         }
         disabled={
-          currentPage === lastPage || isFetching
+          currentPage === lastPage ||
+          isFetching
         }
         className={`
           flex
@@ -660,24 +862,39 @@ const Pagination = ({
 ============================================================================ */
 
 const PartnerDirectory = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const [category, setCategory] =
-    useState("All Categories");
-
-  const [sortBy, setSortBy] = useState("az");
-
-  const [currentPage, setCurrentPage] =
-    useState(1);
-
-  const filterBarRef = useRef(null);
-
-  const pendingScrollRef = useRef(false);
-
-  const debouncedSearch = useDebouncedValue(
+  const [
     searchQuery,
-    350,
+    setSearchQuery,
+  ] = useState("");
+
+  const [
+    category,
+    setCategory,
+  ] = useState(
+    "All Categories",
   );
+
+  const [
+    sortBy,
+    setSortBy,
+  ] = useState("az");
+
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(1);
+
+  const filterBarRef =
+    useRef(null);
+
+  const pendingScrollRef =
+    useRef(false);
+
+  const debouncedSearch =
+    useDebouncedValue(
+      searchQuery,
+      350,
+    );
 
   /* ==========================================================================
      API
@@ -688,31 +905,41 @@ const PartnerDirectory = () => {
     isLoading,
     isFetching,
     isError,
-  } = useGetMemberPageQuery({
-    page: currentPage,
-    per_page: 9,
-  });
+  } =
+    useGetMemberPageQuery({
+      page: currentPage,
+      per_page: 9,
+    });
 
   const {
     data: webBannerResponse,
-    isLoading: isBannerLoading,
-  } = useGetWebBannersQuery();
+    isLoading:
+      isBannerLoading,
+  } =
+    useGetWebBannersQuery();
 
   /* ==========================================================================
      BANNER DATA
   ========================================================================== */
 
-  const partnerDirectoryPage = useMemo(() => {
-    const pages = webBannerResponse?.data || [];
+  const partnerDirectoryPage =
+    useMemo(() => {
+      const pages =
+        webBannerResponse?.data ||
+        [];
 
-    return (
-      pages.find(
-        (item) =>
-          String(item?.slug || "").toLowerCase() ===
-          "partner-directory",
-      ) || null
-    );
-  }, [webBannerResponse]);
+      return (
+        pages.find(
+          (item) =>
+            String(
+              item?.slug || "",
+            ).toLowerCase() ===
+            "partner-directory",
+        ) || null
+      );
+    }, [
+      webBannerResponse,
+    ]);
 
   const heroLabel =
     partnerDirectoryPage?.label ||
@@ -725,19 +952,23 @@ const PartnerDirectory = () => {
   const heroImage =
     cleanImageUrl(
       partnerDirectoryPage?.banner_image,
-    ) || FALLBACK_HERO_IMAGE;
+    ) ||
+    FALLBACK_HERO_IMAGE;
 
   /* ==========================================================================
      DATA
   ========================================================================== */
 
-  const members = response?.data?.items || [];
+  const members =
+    response?.data?.items || [];
 
   const categories =
-    response?.data?.filters?.categories || [];
+    response?.data?.filters
+      ?.categories || [];
 
   const sortOptions =
-    response?.data?.filters?.sort_options || [
+    response?.data?.filters
+      ?.sort_options || [
       {
         value: "az",
         label: "Sort by A-Z",
@@ -753,7 +984,8 @@ const PartnerDirectory = () => {
     ];
 
   const pagination =
-    response?.data?.pagination || {};
+    response?.data?.pagination ||
+    {};
 
   const totalRecords = Number(
     pagination?.total || 0,
@@ -763,9 +995,11 @@ const PartnerDirectory = () => {
     pagination?.last_page || 1,
   );
 
-  const apiCurrentPage = Number(
-    pagination?.current_page || currentPage,
-  );
+  const apiCurrentPage =
+    Number(
+      pagination?.current_page ||
+        currentPage,
+    );
 
   /* ==========================================================================
      RESET PAGE WHEN FILTER CHANGES
@@ -773,69 +1007,99 @@ const PartnerDirectory = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, category, sortBy]);
+  }, [
+    debouncedSearch,
+    category,
+    sortBy,
+  ]);
 
   /* ==========================================================================
      FILTER + SORT
   ========================================================================== */
 
-  const filteredPartners = useMemo(() => {
-    const query = debouncedSearch
-      .toLowerCase()
-      .trim();
+  const filteredPartners =
+    useMemo(() => {
+      const query =
+        debouncedSearch
+          .toLowerCase()
+          .trim();
 
-    let data = [...members];
+      let data = [...members];
 
-    if (query) {
-      data = data.filter(
-        (p) =>
-          p?.name
-            ?.toLowerCase()
-            .includes(query) ||
-          p?.description
-            ?.toLowerCase()
-            .includes(query) ||
-          p?.category
-            ?.toLowerCase()
-            .includes(query),
-      );
-    }
+      if (query) {
+        data = data.filter(
+          (p) =>
+            p?.name
+              ?.toLowerCase()
+              .includes(
+                query,
+              ) ||
+            p?.description
+              ?.toLowerCase()
+              .includes(
+                query,
+              ) ||
+            p?.category
+              ?.toLowerCase()
+              .includes(
+                query,
+              ),
+        );
+      }
 
-    if (category !== "All Categories") {
-      data = data.filter(
-        (p) =>
-          p?.category?.toLowerCase() ===
-          category.toLowerCase(),
-      );
-    }
+      if (
+        category !==
+        "All Categories"
+      ) {
+        data = data.filter(
+          (p) =>
+            p?.category
+              ?.toLowerCase() ===
+            category.toLowerCase(),
+        );
+      }
 
-    if (sortBy === "az") {
-      data.sort((a, b) =>
-        (a?.name || "").localeCompare(
-          b?.name || "",
-        ),
-      );
-    } else if (sortBy === "za") {
-      data.sort((a, b) =>
-        (b?.name || "").localeCompare(
-          a?.name || "",
-        ),
-      );
-    } else if (sortBy === "order") {
-      data.sort(
-        (a, b) =>
-          Number(a?.display_order || 0) -
-          Number(b?.display_order || 0),
-      );
-    }
+      if (sortBy === "az") {
+        data.sort((a, b) =>
+          (
+            a?.name || ""
+          ).localeCompare(
+            b?.name || "",
+          ),
+        );
+      } else if (
+        sortBy === "za"
+      ) {
+        data.sort((a, b) =>
+          (
+            b?.name || ""
+          ).localeCompare(
+            a?.name || "",
+          ),
+        );
+      } else if (
+        sortBy === "order"
+      ) {
+        data.sort(
+          (a, b) =>
+            Number(
+              a?.display_order ||
+                0,
+            ) -
+            Number(
+              b?.display_order ||
+                0,
+            ),
+        );
+      }
 
-    return data;
-  }, [
-    members,
-    debouncedSearch,
-    category,
-    sortBy,
-  ]);
+      return data;
+    }, [
+      members,
+      debouncedSearch,
+      category,
+      sortBy,
+    ]);
 
   /* ==========================================================================
      PAGINATION SCROLL
@@ -851,28 +1115,39 @@ const PartnerDirectory = () => {
 
     pendingScrollRef.current = false;
 
-    const timer = setTimeout(() => {
-      const el = document.getElementById(
-        "partner-search-bar",
-      );
+    const timer = setTimeout(
+      () => {
+        const el =
+          document.getElementById(
+            "partner-search-bar",
+          );
 
-      if (el) {
-        const top =
-          el.getBoundingClientRect().top +
-          window.scrollY -
-          20;
+        if (el) {
+          const top =
+            el.getBoundingClientRect()
+              .top +
+            window.scrollY -
+            20;
 
-        window.scrollTo({
-          top: Math.max(top, 0),
-          behavior: "smooth",
-        });
-      }
-    }, 150);
+          window.scrollTo({
+            top: Math.max(
+              top,
+              0,
+            ),
+            behavior: "smooth",
+          });
+        }
+      },
+      150,
+    );
 
-    return () => clearTimeout(timer);
+    return () =>
+      clearTimeout(timer);
   }, [isFetching]);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (
+    page,
+  ) => {
     if (
       page < 1 ||
       page > lastPage ||
@@ -881,7 +1156,8 @@ const PartnerDirectory = () => {
       return;
     }
 
-    pendingScrollRef.current = true;
+    pendingScrollRef.current =
+      true;
 
     setCurrentPage(page);
   };
@@ -891,15 +1167,14 @@ const PartnerDirectory = () => {
   ========================================================================== */
 
   const isInitialLoading =
-    (isLoading || isBannerLoading) &&
+    (isLoading ||
+      isBannerLoading) &&
     members.length === 0;
 
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-white">
-        {/* ================================================================
-            HERO SKELETON
-        ================================================================= */}
+        {/* HERO SKELETON */}
 
         <section
           className="
@@ -941,9 +1216,7 @@ const PartnerDirectory = () => {
           </div>
         </section>
 
-        {/* ================================================================
-            FILTER SKELETON
-        ================================================================= */}
+        {/* FILTER SKELETON */}
 
         <section className="bg-white">
           <div
@@ -968,9 +1241,7 @@ const PartnerDirectory = () => {
           </div>
         </section>
 
-        {/* ================================================================
-            CARD SKELETON
-        ================================================================= */}
+        {/* CARD SKELETON */}
 
         <main
           className={`
@@ -983,14 +1254,14 @@ const PartnerDirectory = () => {
           `}
         >
           <div className="grid grid-cols-1 gap-[20px] sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 9 }).map(
-              (_, i) => (
-                <SkeletonCard
-                  key={i}
-                  index={i}
-                />
-              ),
-            )}
+            {Array.from({
+              length: 9,
+            }).map((_, i) => (
+              <SkeletonCard
+                key={i}
+                index={i}
+              />
+            ))}
           </div>
         </main>
       </div>
@@ -1005,7 +1276,9 @@ const PartnerDirectory = () => {
     <motion.div
       initial="hidden"
       animate="visible"
-      variants={containerVariants}
+      variants={
+        containerVariants
+      }
       className="
         min-h-screen
         bg-white
@@ -1013,9 +1286,9 @@ const PartnerDirectory = () => {
         text-[#273238]
       "
     >
-      {/* ======================================================================
+      {/* =========================================================================
           HERO
-      ======================================================================= */}
+      ========================================================================= */}
 
       <section
         className="
@@ -1033,7 +1306,9 @@ const PartnerDirectory = () => {
         <motion.div
           initial="hidden"
           animate="visible"
-          variants={heroImageVariants}
+          variants={
+            heroImageVariants
+          }
           className="
             absolute
             right-0
@@ -1106,7 +1381,9 @@ const PartnerDirectory = () => {
           {/* LEFT */}
 
           <motion.div
-            variants={fadeUpVariants}
+            variants={
+              fadeUpVariants
+            }
             className="
               w-full
               py-[28px]
@@ -1116,7 +1393,9 @@ const PartnerDirectory = () => {
             {/* LABEL */}
 
             <motion.div
-              variants={heroTextVariants}
+              variants={
+                heroTextVariants
+              }
               className="
                 mb-[18px]
                 flex
@@ -1149,7 +1428,9 @@ const PartnerDirectory = () => {
             {/* TITLE */}
 
             <motion.h1
-              variants={heroTextVariants}
+              variants={
+                heroTextVariants
+              }
               className="
                 mb-[20px]
                 max-w-[550px]
@@ -1168,7 +1449,9 @@ const PartnerDirectory = () => {
             {/* HERO PILLS */}
 
             <motion.div
-              variants={containerVariants}
+              variants={
+                containerVariants
+              }
               className="
                 flex
                 flex-wrap
@@ -1179,7 +1462,9 @@ const PartnerDirectory = () => {
               {/* INSIGHTS */}
 
               <motion.div
-                variants={fadeUpVariants}
+                variants={
+                  fadeUpVariants
+                }
                 whileHover={{
                   y: -2,
                 }}
@@ -1230,7 +1515,9 @@ const PartnerDirectory = () => {
               {/* SHARED EXPERTISE */}
 
               <motion.div
-                variants={fadeUpVariants}
+                variants={
+                  fadeUpVariants
+                }
                 whileHover={{
                   y: -2,
                 }}
@@ -1325,13 +1612,15 @@ const PartnerDirectory = () => {
         </div>
       </section>
 
-      {/* ======================================================================
+      {/* =========================================================================
           SEARCH + FILTER
-      ======================================================================= */}
+      ========================================================================= */}
 
       <motion.section
         ref={filterBarRef}
-        variants={fadeUpVariants}
+        variants={
+          fadeUpVariants
+        }
         className="
           scroll-mt-[20px]
           bg-white
@@ -1377,7 +1666,9 @@ const PartnerDirectory = () => {
 
             <input
               type="text"
-              value={searchQuery}
+              value={
+                searchQuery
+              }
               onChange={(e) =>
                 setSearchQuery(
                   e.target.value,
@@ -1446,7 +1737,10 @@ const PartnerDirectory = () => {
               </option>
 
               {categories.map(
-                (item, index) => (
+                (
+                  item,
+                  index,
+                ) => (
                   <option
                     key={`${item}-${index}`}
                     value={item}
@@ -1510,10 +1804,16 @@ const PartnerDirectory = () => {
               {sortOptions.map(
                 (option) => (
                   <option
-                    key={option.value}
-                    value={option.value}
+                    key={
+                      option.value
+                    }
+                    value={
+                      option.value
+                    }
                   >
-                    {option.label}
+                    {
+                      option.label
+                    }
                   </option>
                 ),
               )}
@@ -1535,9 +1835,9 @@ const PartnerDirectory = () => {
         </div>
       </motion.section>
 
-      {/* ======================================================================
+      {/* =========================================================================
           PARTNER GRID
-      ======================================================================= */}
+      ========================================================================= */}
 
       <main
         className={`
@@ -1571,7 +1871,9 @@ const PartnerDirectory = () => {
               text-[#999999]
             "
           >
-            Unable to load members. Please try again.
+            Unable to load
+            members. Please try
+            again.
           </motion.div>
         ) : (
           <div className="relative">
@@ -1634,7 +1936,9 @@ const PartnerDirectory = () => {
 
             <motion.div
               layout
-              variants={containerVariants}
+              variants={
+                containerVariants
+              }
               initial="hidden"
               animate="visible"
               className={`
@@ -1658,8 +1962,12 @@ const PartnerDirectory = () => {
                 {filteredPartners.map(
                   (partner) => (
                     <PartnerCard
-                      key={partner.id}
-                      partner={partner}
+                      key={
+                        partner.id
+                      }
+                      partner={
+                        partner
+                      }
                     />
                   ),
                 )}
@@ -1698,8 +2006,9 @@ const PartnerDirectory = () => {
                       text-[#999999]
                     "
                   >
-                    No members found matching
-                    your search.
+                    No members found
+                    matching your
+                    search.
                   </motion.div>
                 )}
             </AnimatePresence>
@@ -1712,11 +2021,15 @@ const PartnerDirectory = () => {
                   currentPage={
                     apiCurrentPage
                   }
-                  lastPage={lastPage}
+                  lastPage={
+                    lastPage
+                  }
                   onPageChange={
                     handlePageChange
                   }
-                  isFetching={isFetching}
+                  isFetching={
+                    isFetching
+                  }
                 />
               )}
 
@@ -1731,8 +2044,10 @@ const PartnerDirectory = () => {
                     text-[#999999]
                   "
                 >
-                  Page {apiCurrentPage} of{" "}
-                  {lastPage} · {totalRecords}{" "}
+                  Page{" "}
+                  {apiCurrentPage}{" "}
+                  of {lastPage} ·{" "}
+                  {totalRecords}{" "}
                   members
                 </span>
               </div>

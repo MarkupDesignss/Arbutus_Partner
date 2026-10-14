@@ -189,9 +189,10 @@ export const AnnualizedReturnCanvas = ({
     const effectiveYMin = Math.min(0, yMin);
     const effectiveYMax = Math.max(yMax, 0);
     const yRange = effectiveYMax - effectiveYMin || 1;
-    
+
     const toY = (val) => PADDING.top + chartH - ((val - effectiveYMin) / yRange) * chartH;
     const axisY = toY(0); // Y position of the x-axis (where y=0)
+    const chartBottomY = PADDING.top + chartH; // bottom of the plotting area
 
     const colW = chartW / n;
     const barW = colW * 0.42;
@@ -238,16 +239,19 @@ export const AnnualizedReturnCanvas = ({
       const q2Val = q.q2 != null ? q.q2 : 0;
 
       // Calculate Y positions relative to axis
-      const yMinPos = toY(Math.min(minVal, 0));
       const yMaxPos = toY(Math.max(maxVal, 0));
-      const yQ1Pos = toY(Math.min(q1Val, 0));
       const yQ3Pos = toY(Math.max(q3Val, 0));
       const yQ2Pos = toY(q2Val);
 
-      // Full range box - always starting from axis (y=0) going upward
+      // ✅ Bar bottom: normally the axis (y=0), but if the fund (red dot)
+      // is negative, the bar extends DOWN until the red dot.
+      const fundVal = Number(item.fund) || 0;
+      const bottomPos = fundVal < 0 ? toY(fundVal) : axisY;
+
+      // Full range box
       if (q.min != null && q.max != null) {
         const boxTop = yMaxPos;
-        const boxBottom = axisY; // Start from axis
+        const boxBottom = bottomPos;
         const boxHeight = boxBottom - boxTop;
 
         if (boxHeight > 0) {
@@ -267,10 +271,10 @@ export const AnnualizedReturnCanvas = ({
         }
       }
 
-      // IQR box - always starting from axis going upward
+      // IQR box
       if (q.q1 != null && q.q3 != null) {
         const boxTop = yQ3Pos;
-        const boxBottom = axisY; // Start from axis
+        const boxBottom = bottomPos;
         const boxHeight = boxBottom - boxTop;
 
         if (boxHeight > 0) {
@@ -303,12 +307,13 @@ export const AnnualizedReturnCanvas = ({
         fund: item.fund,
       });
 
-      // X axis label
+      // ✅ X axis label — placed at the bottom of the chart so it never
+      // overlaps with bars / red dots that go below zero.
       ctx.fillStyle = "#0f172a";
       ctx.font = "12px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      ctx.fillText(item.period, cx, axisY + 8);
+      ctx.fillText(item.period, cx, chartBottomY + 8);
     });
 
     // ── Mean connecting line ──────────────────────────────────────────

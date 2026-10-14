@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
+// Poppins font stack
+const POPPINS = "'Poppins', sans-serif";
+
 const AlternativeInvesting = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,10 +81,8 @@ const AlternativeInvesting = () => {
   const page = data?.data || null;
   const sections = page?.sections || [];
 
-  // First section = hero (main heading + hero image)
   const heroSection = sections[0] || null;
 
-  // Remaining sections = term cards
   const termData = sections.slice(1).map((section, index) => ({
     id: section?.id ?? index,
     term: section?.heading || `Term ${index + 1}`,
@@ -110,13 +111,16 @@ const AlternativeInvesting = () => {
   // =========================================================
   if (isLoading) {
     return (
-      <section className="relative py-16 md:py-24 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden">
+      <section
+        className="relative py-12 md:py-20 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden"
+        style={{ fontFamily: POPPINS }}
+      >
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
           <div className="animate-pulse">
-            <div className="h-4 w-48 bg-gray-200 mx-auto mb-6" />
+            <div className="h-4 w-48 bg-gray-200 mx-auto mb-5" />
             <div className="h-10 w-96 bg-gray-200 mx-auto mb-4" />
-            <div className="h-4 w-64 bg-gray-200 mx-auto mb-16" />
-            <div className="h-[280px] bg-gray-200 mb-12" />
+            <div className="h-4 w-64 bg-gray-200 mx-auto mb-14" />
+            <div className="h-[280px] bg-gray-200 mb-10" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="h-64 bg-gray-200" />
               <div className="h-64 bg-gray-200" />
@@ -132,9 +136,15 @@ const AlternativeInvesting = () => {
   // =========================================================
   if (isError || !page) {
     return (
-      <section className="relative py-16 md:py-24 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF]">
+      <section
+        className="relative py-12 md:py-20 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF]"
+        style={{ fontFamily: POPPINS }}
+      >
         <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-          <p className="text-gray-500 text-sm">
+          <p
+            className="text-gray-500 text-[13px]"
+            style={{ fontFamily: POPPINS, fontWeight: 400 }}
+          >
             Unable to load Alternative Investing content. Please try again
             later.
           </p>
@@ -156,7 +166,10 @@ const AlternativeInvesting = () => {
     "Alternative Investing Literacy – Terms and Definitions";
 
   return (
-    <section className="relative py-8 md:py-12 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden">
+    <section
+      className="relative py-8 md:py-12 bg-gradient-to-b from-white via-[#F8FAFF] to-[#EFF4FF] overflow-hidden"
+      style={{ fontFamily: POPPINS }}
+    >
       {/* =====================================================
           DECORATIVE BACKGROUND
       ===================================================== */}
@@ -174,17 +187,23 @@ const AlternativeInvesting = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 lg:mb-16"
+          className="text-center mb-10 lg:mb-14"
         >
-          <div className="inline-flex items-center gap-2 mb-4">
-            <span className="w-8 h-[2px] bg-[#2A57C4]" />
-            <span className="text-[11px] font-semibold text-[#2A57C4] uppercase tracking-[0.25em]">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <span className="w-7 h-[2px] bg-[#2A57C4]" />
+            <span
+              className="text-[10.5px] font-semibold text-[#2A57C4] uppercase"
+              style={{ fontFamily: POPPINS, fontWeight: 600, letterSpacing: "0.22em" }}
+            >
               Alternative Investing
             </span>
-            <span className="w-8 h-[2px] bg-[#2A57C4]" />
+            <span className="w-7 h-[2px] bg-[#2A57C4]" />
           </div>
 
-          <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold leading-tight text-gray-900">
+          <h2
+            className="text-[22px] md:text-[28px] lg:text-[32px] font-bold leading-tight text-gray-900 tracking-tight"
+            style={{ fontFamily: POPPINS, fontWeight: 700 }}
+          >
             {heroHeading.includes("–") ? (
               <>
                 {heroHeading.split("–")[0].trim()}
@@ -199,7 +218,10 @@ const AlternativeInvesting = () => {
             )}
           </h2>
 
-          <p className="mt-4 text-gray-500 text-sm md:text-base max-w-2xl mx-auto">
+          <p
+            className="mt-3 text-gray-500 text-[13px] md:text-[14px] max-w-2xl mx-auto leading-snug"
+            style={{ fontFamily: POPPINS, fontWeight: 400 }}
+          >
             A quick reference for the concepts that shape modern alternative
             portfolios.
           </p>
@@ -213,7 +235,7 @@ const AlternativeInvesting = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="relative mb-12 lg:mb-16"
+          className="relative mb-10 lg:mb-14"
         >
           <div className="relative overflow-hidden shadow-xl group">
             <img
@@ -230,10 +252,16 @@ const AlternativeInvesting = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
             <div className="absolute bottom-5 left-5 right-5 sm:bottom-7 sm:left-7 flex flex-col gap-1">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/80">
+              <span
+                className="text-[10px] font-semibold uppercase text-white/80"
+                style={{ fontFamily: POPPINS, fontWeight: 600, letterSpacing: "0.22em" }}
+              >
                 Knowledge Base
               </span>
-              <span className="text-white text-sm sm:text-base font-medium">
+              <span
+                className="text-white text-[13px] sm:text-[14px] font-medium"
+                style={{ fontFamily: POPPINS, fontWeight: 500 }}
+              >
                 Building fluency in alternatives, one term at a time.
               </span>
             </div>
@@ -241,9 +269,15 @@ const AlternativeInvesting = () => {
             <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-white/70" />
             <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-white/70" />
 
-            <div className="absolute top-4 right-4 bg-white shadow-lg px-3 py-1.5 flex items-center gap-2">
+            <div
+              className="absolute top-4 right-4 bg-white shadow-lg px-3 py-1.5 flex items-center gap-2"
+              style={{ fontFamily: POPPINS }}
+            >
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-semibold text-gray-700 uppercase tracking-wider">
+              <span
+                className="text-[10px] font-semibold text-gray-700 uppercase"
+                style={{ fontFamily: POPPINS, fontWeight: 600, letterSpacing: "0.06em" }}
+              >
                 Live Data
               </span>
             </div>
@@ -270,10 +304,11 @@ const AlternativeInvesting = () => {
                 <span
                   className="
                     absolute -top-8 -left-2
-                    text-[110px] md:text-[130px]
+                    text-[100px] md:text-[120px]
                     font-bold text-[#2A57C4]/[0.06]
                     leading-none select-none pointer-events-none
                   "
+                  style={{ fontFamily: POPPINS, fontWeight: 700 }}
                 >
                   {item.number}
                 </span>
@@ -283,7 +318,7 @@ const AlternativeInvesting = () => {
                     relative h-full flex flex-col
                     bg-white/90 backdrop-blur-sm
                     border border-gray-100
-                    p-6 md:p-8
+                    p-6 md:p-7
                     shadow-sm hover:shadow-xl
                     transition-all duration-300
                     group-hover:-translate-y-1
@@ -292,24 +327,28 @@ const AlternativeInvesting = () => {
                   <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#2A57C4] to-[#7C3AED]" />
 
                   <div className="pl-4 flex flex-col h-full">
-                    <div className="flex items-center gap-3 mb-4 flex-wrap">
+                    <div className="flex items-center gap-3 mb-3.5 flex-wrap">
                       <span
                         className="
-                          text-[10px] font-semibold uppercase tracking-[0.2em]
+                          text-[10px] font-semibold uppercase
                           text-[#2A57C4] bg-[#E6EDFF]
                           px-3 py-1
                         "
+                        style={{ fontFamily: POPPINS, fontWeight: 600, letterSpacing: "0.18em" }}
                       >
                         {item.label || "Term"} {item.number}
                       </span>
 
-                      <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+                      <h3
+                        className="text-[18px] md:text-[20px] font-bold text-gray-900 leading-tight"
+                        style={{ fontFamily: POPPINS, fontWeight: 700 }}
+                      >
                         {item.term}
                       </h3>
                     </div>
 
                     {item.image && (
-                      <div className="mb-4 overflow-hidden">
+                      <div className="mb-3.5 overflow-hidden">
                         <img
                           src={item.image}
                           alt={item.term}
@@ -321,32 +360,30 @@ const AlternativeInvesting = () => {
                       </div>
                     )}
 
-                    <div className="mb-5 flex-1">
-                      <span className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.2em] mb-1">
+                    <div className="mb-4 flex-1">
+                      <span
+                        className="block text-[10px] font-semibold text-gray-400 uppercase mb-1"
+                        style={{ fontFamily: POPPINS, fontWeight: 600, letterSpacing: "0.18em" }}
+                      >
                         Definition
                       </span>
-                      <div className="text-gray-700 text-[15px] leading-relaxed prose prose-sm max-w-none">
+                      <div
+                        className="text-gray-700 text-[13px] leading-relaxed prose prose-sm max-w-none prose-p:text-[13px] prose-p:mb-2 prose-p:last:mb-0"
+                        style={{ fontFamily: POPPINS, fontWeight: 400 }}
+                      >
                         {renderHTML(item.definition)}
                       </div>
                     </div>
-
-                    {stripHTML(item.definition) && (
-                      <div className="pt-4 border-t border-dashed border-gray-200 mt-auto">
-                        <span className="block text-[10px] font-semibold text-[#2A57C4] uppercase tracking-[0.2em] mb-1">
-                          Why it matters
-                        </span>
-                        <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
-                          {stripHTML(item.definition)}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
         ) : (
-          <div className="text-center text-gray-400 text-sm py-10">
+          <div
+            className="text-center text-gray-400 text-[13px] py-10"
+            style={{ fontFamily: POPPINS }}
+          >
             No terms available.
           </div>
         )}
@@ -361,11 +398,14 @@ const AlternativeInvesting = () => {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="flex items-center justify-center gap-3 pt-10"
         >
-          <span className="w-10 h-[2px] bg-[#2A57C4]" />
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.25em]">
+          <span className="w-9 h-[2px] bg-[#2A57C4]" />
+          <span
+            className="text-[10.5px] font-semibold text-gray-400 uppercase"
+            style={{ fontFamily: POPPINS, fontWeight: 600, letterSpacing: "0.22em" }}
+          >
             More terms coming soon
           </span>
-          <span className="w-10 h-[2px] bg-[#2A57C4]" />
+          <span className="w-9 h-[2px] bg-[#2A57C4]" />
         </motion.div>
       </div>
     </section>

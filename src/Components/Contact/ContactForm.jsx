@@ -10,10 +10,10 @@ export default function ContactForm() {
     lastName: "",
     phone: "",
     email: "",
+    subject: "",
     message: "",
   });
 
-  // errors will now store the message string instead of boolean
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
@@ -24,10 +24,11 @@ export default function ContactForm() {
     if (!formData.lastName.trim())
       newErrors.lastName = "Last name is required.";
     if (!formData.email.trim()) newErrors.email = "Email is required.";
+    if (!formData.subject)
+      newErrors.subject = "Please select an option.";
     if (!formData.message.trim()) newErrors.message = "Message is required.";
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -46,7 +47,6 @@ export default function ContactForm() {
   };
 
   const handleSubmit = async () => {
-    // Frontend validation first
     if (!validateForm()) return;
 
     const payload = {
@@ -54,6 +54,7 @@ export default function ContactForm() {
       lname: formData.lastName,
       mobile: formData.phone,
       email: formData.email,
+      subject: formData.subject,
       message: formData.message,
     };
 
@@ -67,12 +68,12 @@ export default function ContactForm() {
         confirmButtonColor: "#2A57C4",
       });
 
-      // reset
       setFormData({
         firstName: "",
         lastName: "",
         phone: "",
         email: "",
+        subject: "",
         message: "",
       });
       setErrors({});
@@ -82,19 +83,17 @@ export default function ContactForm() {
       if (apiErrors && typeof apiErrors === "object") {
         const fieldErrors = {};
 
-        // Map API field names -> form field names
         const fieldMap = {
           fname: "firstName",
           lname: "lastName",
           mobile: "phone",
           email: "email",
+          is_industry_professional: "subject",
           message: "message",
         };
 
         Object.keys(apiErrors).forEach((field) => {
           const formField = fieldMap[field] || field;
-
-          // Grab the first message from the array
           const message = Array.isArray(apiErrors[field])
             ? apiErrors[field][0]
             : apiErrors[field];
@@ -105,7 +104,6 @@ export default function ContactForm() {
         setErrors((prev) => ({ ...prev, ...fieldErrors }));
       }
 
-      // Only show a generic SweetAlert if there are NO field-level errors
       if (!apiErrors || Object.keys(apiErrors).length === 0) {
         Swal.fire({
           icon: "error",
@@ -119,7 +117,10 @@ export default function ContactForm() {
     }
   };
 
-  const wordCount = formData.message.trim().split(/\s+/).filter(Boolean).length;
+  const wordCount = formData.message
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
 
   const inputStyle = (field) =>
     `w-full px-4 py-3 rounded-xl outline-none transition-all text-sm bg-gray-50/50
@@ -135,12 +136,16 @@ export default function ContactForm() {
       <div className="w-full max-w-6xl bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/50 p-8 md:p-12">
         {/* Header */}
         <div className="mb-10 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-roboto">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 font-poppins">
             Get in Touch
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-            Have a question or want to work together? Fill out the form below
-            and we'll get back to you as soon as possible.
+
+          <p className="text-xs sm:text-sm text-gray-500 max-w-3xl mx-auto leading-relaxed mt-3 font-poppins">
+            Have a question, want to submit an article, or inform us of a
+            missing alternative investment fund?
+            <br className="hidden sm:block" />
+            Fill out the form below and we'll get back to you as soon as
+            possible.
           </p>
         </div>
 
@@ -186,7 +191,7 @@ export default function ContactForm() {
             </div>
           </div>
 
-          {/* Second Row - Updated to 2 columns instead of 3 */}
+          {/* Second Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Phone (Optional) */}
             <div>
@@ -228,10 +233,41 @@ export default function ContactForm() {
             </div>
           </div>
 
+          {/* Third Row - Industry Professional Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Are you an industry professional?{" "}
+              <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              className={`${inputStyle(
+                "subject"
+              )} cursor-pointer appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%236b7280%22 stroke-width=%222%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22/></svg>')] bg-[length:18px] bg-[right_1rem_center] bg-no-repeat pr-10 ${
+                formData.subject === ""
+                  ? "text-gray-400"
+                  : "text-gray-800"
+              }`}
+            >
+              <option value="" disabled>
+                Select an option
+              </option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+            {errors.subject && (
+              <p className="mt-1.5 text-xs text-red-500 font-medium">
+                {errors.subject}
+              </p>
+            )}
+          </div>
+
           {/* Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Write Your Message Here <span className="text-red-500">*</span>
+            How can we help?<span className="text-red-500">*</span>
             </label>
 
             <div className="relative">

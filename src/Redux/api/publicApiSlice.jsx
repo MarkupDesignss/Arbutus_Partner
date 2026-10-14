@@ -43,6 +43,10 @@ export const publicApiSlice = createApi({
       query: () => "/pages/trems_and_condition",
     }),
 
+    getDisClamer: builder.query({
+      query: () => "/pages/disclaimer",
+    }),
+
     // GET SUBSCRIBE PRICE
     getSubscribePrice: builder.query({
       query: () => "/subscriptions",
@@ -130,6 +134,8 @@ export const publicApiSlice = createApi({
     getatlsection: builder.query({
       query: () => "/home-fund-data",
     }),
+
+    
 
     // SEND MAIL
     SendMail: builder.mutation({
@@ -243,4 +249,5 @@ export const {
   useGetMemberPageQuery,
   useGetMemberDirectoryByIdQuery,
   useGetInsightReportsQuery,
+  useGetDisClamerQuery
 } = publicApiSlice;

@@ -26,6 +26,7 @@ import ArticlePage from "./Components/ArticlePage";
 import PartnerDirectory from "./Components/PartnerDirectory";
 import FieraRealEstate from "./Components/PartnerPage/FieraRealEstate";
 import AlternativeInvestmentsPage from "./Components/Insightreport/Alternativeinvestments";
+import Disclamer from "./Disclamer";
 
 const Navigater = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -65,6 +66,7 @@ const Navigater = () => {
         <Route path="/TremsandCondition" element={<TremsandCondition />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/Researchpage" element={<Researchpage />} />
+        <Route path="/Disclaimer" element={<Disclamer />} />
 
         {/* Partner Pages */}
         <Route path="/PartnerDirectory" element={<PartnerDirectory />} />

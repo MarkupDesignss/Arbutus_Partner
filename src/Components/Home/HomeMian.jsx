@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 
 import SEO from "../../SEO";
 
@@ -8,10 +8,18 @@ import AltDBScreener from "./AltDBScreener";
 import GrandOpeningSection from "./GrandOpeningSection";
 import TopFiveResults from "./TopFiveResults";
 import AlternativeInvesting from "./AlternativeInvesting";
-import SubscribeNewsletter from "./SubscribeNewsletter";
 import FourCard from "./FourCard";
 
 const HomeMian = () => {
+  const alternativeInvestingRef = useRef(null);
+
+  const scrollToAlternativeInvesting = () => {
+    alternativeInvestingRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
     <>
       <SEO
@@ -22,11 +30,13 @@ const HomeMian = () => {
 
       <div>
         <HomeHero />
-        <AltDBSection />
+        <AltDBSection onExploreClick={scrollToAlternativeInvesting} />
         <AltDBScreener />
         <GrandOpeningSection />
         <TopFiveResults />
-        <AlternativeInvesting />
+        <div ref={alternativeInvestingRef}>
+          <AlternativeInvesting />
+        </div>
         <FourCard />
         {/* <SubscribeNewsletter /> */}
       </div>

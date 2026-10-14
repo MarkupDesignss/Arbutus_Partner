@@ -1,8 +1,10 @@
-
 import React from "react";
 import { useGetWebBannersQuery } from "../../Redux/api/publicApiSlice";
 import { Link } from "react-router-dom";
 import BannerSkeleton from "../../Skeleton/Home/BannerSkeleton";
+
+// Poppins font stack
+const POPPINS = "'Poppins', sans-serif";
 
 const AltDatabaseHero = () => {
   const { data, isLoading, isError } = useGetWebBannersQuery();
@@ -23,8 +25,14 @@ const AltDatabaseHero = () => {
     return (
       <section
         className={`relative w-full ${bannerHeight} flex items-center justify-center`}
+        style={{ fontFamily: POPPINS }}
       >
-        <p className="text-red-500">Banner not found</p>
+        <p
+          className="text-red-500 text-[13px]"
+          style={{ fontFamily: POPPINS, fontWeight: 500 }}
+        >
+          Banner not found
+        </p>
       </section>
     );
   }
@@ -45,6 +53,7 @@ const AltDatabaseHero = () => {
       `}
       style={{
         backgroundImage: `url(${bannerImage})`,
+        fontFamily: POPPINS,
       }}
     >
       {/* Overlay */}
@@ -55,22 +64,27 @@ const AltDatabaseHero = () => {
         <h1
           className="
             text-center text-white
-            text-xl sm:text-2xl md:text-4xl lg:text-5xl
-            font-bold font-roboto
+            text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px]
+            font-bold tracking-tight leading-tight
           "
+          style={{ fontFamily: POPPINS, fontWeight: 700 }}
         >
           {pageTitle}
         </h1>
 
         <p
           className="
-            text-center text-white
-            mt-1 sm:mt-2
-            text-xs sm:text-sm md:text-base
-            font-roboto
+            text-center text-white/85
+            mt-1.5 sm:mt-2
+            text-[12px] sm:text-[13px] md:text-[14px]
           "
+          style={{ fontFamily: POPPINS, fontWeight: 400 }}
         >
-          <Link to="/" className="hover:underline">
+          <Link
+            to="/"
+            className="hover:underline underline-offset-4 transition-colors hover:text-white"
+            style={{ fontFamily: POPPINS, fontWeight: 400 }}
+          >
             Home
           </Link>{" "}
           / {pageTitle}

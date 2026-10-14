@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   useGetCommentaryPageQuery,
   useSendSubscribeMutation,
+  useGetFooterQuery,
 } from "../../Redux/api/publicApiSlice";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
@@ -52,7 +53,64 @@ function getPostExternalUrl(post, type = "format") {
     );
   }
 
-  return normalizeUrl(post.format_url) || normalizeUrl(post.source_url) || "";
+  return (
+    normalizeUrl(post.format_url) ||
+    normalizeUrl(post.source_url) ||
+    ""
+  );
+}
+
+/*
+  TITLE / WEBLINK URL
+  ---------------------------------------------------------
+  Weblink and title both use the same URL.
+*/
+function getPostTitleUrl(post) {
+  if (!post) return "";
+
+  return (
+    normalizeUrl(post.format_url) ||
+    normalizeUrl(post.source_url) ||
+    ""
+  );
+}
+
+/*
+  Parse API HTML for the newsletter card.
+  ---------------------------------------------------------
+  API returns e.g.:
+    "<h2>Newsletter Sign Up</h2> <p>We'll periodically send...</p>"
+
+  We extract:
+    - heading text  -> existing <h3>
+    - paragraph text -> existing <p>
+*/
+function parseNewsletterHtml(html) {
+  if (!html || typeof html !== "string") {
+    return { title: "", text: "" };
+  }
+
+  // If no HTML tags, treat the whole string as plain text
+  if (!/<[a-z][\s\S]*>/i.test(html)) {
+    return { title: "", text: html.trim() };
+  }
+
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    const headingEl = doc.querySelector("h1, h2, h3, h4, h5, h6");
+    const paraEls = doc.querySelectorAll("p");
+
+    const title = headingEl?.textContent?.trim() || "";
+    const text = Array.from(paraEls)
+      .map((p) => p.textContent.trim())
+      .filter(Boolean)
+      .join(" ");
+
+    return { title, text };
+  } catch {
+    return { title: "", text: "" };
+  }
 }
 
 /* =========================================================
@@ -118,7 +176,6 @@ const staggerChild = {
 
 /* =========================================================
    SKELETON LOADERS
-   SAME SPACING AS INSIGHT PAGE
 ========================================================= */
 
 function SkeletonBlock({ className = "" }) {
@@ -218,16 +275,13 @@ function PageSkeleton() {
   return (
     <div className="min-h-screen bg-white font-poppins">
       <div className="mx-auto max-w-[1455px] px-6 py-[42px] lg:px-0">
-        {/* SAME MAIN GRID AS INSIGHT */}
         <div className="grid gap-[30px] lg:grid-cols-[5fr_6fr]">
-          {/* LEFT */}
           <div className="space-y-[31px]">
             {Array.from({ length: 4 }).map((_, index) => (
               <SkeletonArticleRow key={index} />
             ))}
           </div>
 
-          {/* RIGHT */}
           <div>
             <SkeletonBlock className="h-[42px] w-[72%]" />
 
@@ -254,10 +308,8 @@ function PageSkeleton() {
           </div>
         </div>
 
-        {/* MEMBERS */}
         <SkeletonMembers />
 
-        {/* BOTTOM */}
         <div className="mt-[56px] grid gap-[48px] lg:grid-cols-[1fr_1.6fr_1fr]">
           <div className="hidden lg:block" />
 
@@ -333,6 +385,10 @@ function SourceInfo({
 
 /* =========================================================
    TAGS
+   ---------------------------------------------------------
+   IMPORTANT:
+   ONLY "Weblink" IS CLICKABLE.
+   It uses the SAME URL as the title.
 ========================================================= */
 
 function getMediaLabel(mediaType) {
@@ -345,27 +401,74 @@ function getMediaLabel(mediaType) {
     report: "Report",
   };
 
-  return labels[String(mediaType || "").toLowerCase()] || null;
+  return (
+    labels[String(mediaType || "").toLowerCase()] || null
+  );
 }
 
 function Tags({ post }) {
+  const category = post?.category?.name;
+  const mediaType = String(
+    post?.media_type || "",
+  ).toLowerCase();
+
+  const titleUrl = getPostTitleUrl(post);
+
   const tags = [
-    post?.category?.name,
-    getMediaLabel(post?.media_type),
-    "Commentary",
+    category
+      ? {
+          label: category,
+          type: "text",
+        }
+      : null,
+
+    mediaType === "weblink"
+      ? {
+          label: "Weblink",
+          type: "link",
+        }
+      : getMediaLabel(post?.media_type)
+        ? {
+            label: getMediaLabel(post?.media_type),
+            type: "text",
+          }
+        : null,
+
+    {
+      label: "Commentary",
+      type: "text",
+    },
   ].filter(Boolean);
 
   return (
     <p className="font-poppins text-[12px] leading-5 text-[#2A57C4]">
       {tags.map((tag, index) => (
-        <React.Fragment key={`${tag}-${index}`}>
+        <React.Fragment
+          key={`${tag.label}-${index}`}
+        >
           {index > 0 && (
-            <span className="mx-1 text-[#4B5563]">|</span>
+            <span className="mx-1 text-[#4B5563]">
+              |
+            </span>
           )}
 
-          <span className="transition-colors hover:text-[#083B6B]">
-            {tag}
-          </span>
+          {tag.type === "link" && titleUrl ? (
+            <a
+              href={titleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer transition-colors hover:text-[#083B6B] hover:underline hover:underline-offset-[3px]"
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              {tag.label}
+            </a>
+          ) : (
+            <span className="transition-colors hover:text-[#083B6B]">
+              {tag.label}
+            </span>
+          )}
         </React.Fragment>
       ))}
     </p>
@@ -400,7 +503,10 @@ function Meta({ post }) {
       <div className="mt-[9px] flex flex-wrap items-center gap-[12px]">
         <span className="font-poppins text-[12px] leading-4 text-[#9CA3AF]">
           {post?.published_date_formatted ||
-            formatDate(post?.published_date || post?.created_at)}
+            formatDate(
+              post?.published_date ||
+                post?.created_at,
+            )}
         </span>
 
         <SourceInfo
@@ -424,8 +530,42 @@ function Meta({ post }) {
 }
 
 /* =========================================================
+   ARTICLE TITLE
+   ---------------------------------------------------------
+   Same URL as Weblink tag.
+   Click => new tab.
+   Hover => underline.
+========================================================= */
+
+function ArticleTitle({
+  post,
+  className = "",
+  children,
+}) {
+  const titleUrl = getPostTitleUrl(post);
+
+  if (!titleUrl) {
+    return (
+      <div className={className}>
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={titleUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${className} hover:underline hover:underline-offset-[3px]`}
+    >
+      {children}
+    </a>
+  );
+}
+
+/* =========================================================
    ARTICLE ROW
-   SAME SIZE AS INSIGHT
 ========================================================= */
 
 function ArticleRow({
@@ -434,7 +574,10 @@ function ArticleRow({
 }) {
   if (!post) return null;
 
-  const externalUrl = getPostExternalUrl(post, linkType);
+  const externalUrl = getPostExternalUrl(
+    post,
+    linkType,
+  );
 
   return (
     <motion.article
@@ -467,20 +610,12 @@ function ArticleRow({
 
       {/* CONTENT */}
       <div className="min-w-0 flex-1 font-poppins">
-        {externalUrl ? (
-          <a
-            href={externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-poppins block text-[13.5px] leading-[19px] tracking-[-0.005em] text-[#111111] underline decoration-[#9CA3AF] underline-offset-[2px] transition-colors hover:text-[#0B4D8C]"
-          >
-            {post.title}
-          </a>
-        ) : (
-          <div className="font-poppins block text-[13.5px] leading-[19px] tracking-[-0.005em] text-[#111111]">
-            {post.title}
-          </div>
-        )}
+        <ArticleTitle
+          post={post}
+          className="font-poppins block text-[13.5px] leading-[19px] tracking-[-0.005em] text-[#111111] transition-colors hover:text-[#0B4D8C]"
+        >
+          {post.title}
+        </ArticleTitle>
 
         {post.excerpt ? (
           <p className="mt-2 line-clamp-3 font-poppins text-[12px] leading-[19px] text-[#6B7280]">
@@ -496,13 +631,15 @@ function ArticleRow({
 
 /* =========================================================
    SIDE ARTICLE
-   SAME SIZE AS INSIGHT
 ========================================================= */
 
 function SideArticle({ post }) {
   if (!post) return null;
 
-  const externalUrl = getPostExternalUrl(post, "format");
+  const externalUrl = getPostExternalUrl(
+    post,
+    "format",
+  );
 
   return (
     <motion.article
@@ -535,20 +672,12 @@ function SideArticle({ post }) {
 
       {/* CONTENT */}
       <div className="min-w-0 flex-1 font-poppins">
-        {externalUrl ? (
-          <a
-            href={externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="roboto-heading block text-[12.5px] leading-[19px] text-[#111111] transition-colors hover:text-[#0B4D8C]"
-          >
-            {post.title}
-          </a>
-        ) : (
-          <div className="roboto-heading block text-[12.5px] leading-[19px] text-[#111111]">
-            {post.title}
-          </div>
-        )}
+        <ArticleTitle
+          post={post}
+          className="roboto-heading block text-[12.5px] leading-[19px] text-[#111111] transition-colors hover:text-[#0B4D8C]"
+        >
+          {post.title}
+        </ArticleTitle>
 
         {post.excerpt ? (
           <p className="mt-2 line-clamp-2 font-poppins text-[11px] leading-[17px] text-[#6B7280]">
@@ -567,7 +696,9 @@ function SideArticle({ post }) {
 ========================================================= */
 
 function MemberLogo({ member }) {
-  const logo = normalizeUrl(member?.logo_url);
+  const logo = normalizeUrl(
+    member?.logo_url,
+  );
 
   if (logo) {
     return (
@@ -577,7 +708,8 @@ function MemberLogo({ member }) {
           alt={member?.name || "Member"}
           className="max-h-[45px] max-w-[170px] object-contain object-left"
           onError={(event) => {
-            event.currentTarget.style.display = "none";
+            event.currentTarget.style.display =
+              "none";
           }}
         />
       </div>
@@ -645,17 +777,27 @@ function MembersSection({ members = [] }) {
         }}
       >
         {members.map((member, index) => {
-          const websiteUrl = normalizeUrl(member?.website_url);
+          const websiteUrl = normalizeUrl(
+            member?.website_url,
+          );
 
           return (
             <motion.div
-              key={member.id || member.name || index}
+              key={
+                member.id ||
+                member.name ||
+                index
+              }
               variants={staggerChild}
               className={`px-0 py-5 sm:px-6 ${
                 index > 0
                   ? "lg:border-l lg:border-[#E5E7EB]"
                   : "lg:pl-0"
-              } ${index === 0 ? "sm:pl-0" : ""}`}
+              } ${
+                index === 0
+                  ? "sm:pl-0"
+                  : ""
+              }`}
             >
               {websiteUrl ? (
                 <a
@@ -664,11 +806,15 @@ function MembersSection({ members = [] }) {
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <MemberLogo member={member} />
+                  <MemberLogo
+                    member={member}
+                  />
                 </a>
               ) : (
                 <div className="block">
-                  <MemberLogo member={member} />
+                  <MemberLogo
+                    member={member}
+                  />
                 </div>
               )}
 
@@ -685,13 +831,37 @@ function MembersSection({ members = [] }) {
 
 /* =========================================================
    NEWSLETTER
+   ---------------------------------------------------------
+   Dynamic content from Footer API:
+     footer["Newsletter Sign Up"]
+   UI stays exactly the same as before.
 ========================================================= */
 
 function Newsletter() {
   const [email, setEmail] = useState("");
 
-  const [sendSubscribe, { isLoading }] =
-    useSendSubscribeMutation();
+  const [
+    sendSubscribe,
+    { isLoading },
+  ] = useSendSubscribeMutation();
+
+  const { data: footerRes } = useGetFooterQuery();
+
+  const footer = footerRes?.data || {};
+
+  const {
+    title: apiTitle,
+    text: apiText,
+  } = parseNewsletterHtml(
+    footer["Newsletter Sign Up"],
+  );
+
+  const headingText =
+    apiTitle || "Insights For A Brighter Tomorrow";
+
+  const descriptionText =
+    apiText ||
+    "Receive the latest perspectives on wealth, legacy and family offices.";
 
   const handleSubscribe = async () => {
     const trimmedEmail = email.trim();
@@ -707,7 +877,8 @@ function Newsletter() {
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(trimmedEmail)) {
       Swal.fire({
@@ -721,9 +892,10 @@ function Newsletter() {
     }
 
     try {
-      const res = await sendSubscribe({
-        email: trimmedEmail,
-      }).unwrap();
+      const res =
+        await sendSubscribe({
+          email: trimmedEmail,
+        }).unwrap();
 
       Swal.fire({
         icon: "success",
@@ -731,7 +903,8 @@ function Newsletter() {
         text:
           res?.message ||
           "Your email address has been subscribed successfully!",
-        confirmButtonColor: COLORS.primary,
+        confirmButtonColor:
+          COLORS.primary,
       });
 
       setEmail("");
@@ -746,13 +919,17 @@ function Newsletter() {
         icon: "error",
         title: "Subscription Failed",
         text: apiMessage,
-        confirmButtonColor: COLORS.primary,
+        confirmButtonColor:
+          COLORS.primary,
       });
     }
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === "Enter" && !isLoading) {
+    if (
+      event.key === "Enter" &&
+      !isLoading
+    ) {
       event.preventDefault();
       handleSubscribe();
     }
@@ -772,28 +949,29 @@ function Newsletter() {
       <div
         className="rounded-3xl p-6 text-white"
         style={{
-          backgroundColor: COLORS.primary,
+          backgroundColor:
+            COLORS.primary,
         }}
       >
-        <p className="font-poppins text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
-          Newsletter
-        </p>
+      
 
+        {/* Dynamic heading from API */}
         <h3 className="roboto-heading mt-3 text-2xl leading-tight tracking-tight md:text-3xl">
-          Insights For
-          <br />
-          A Brighter Tomorrow
+          {headingText}
         </h3>
 
+        {/* Dynamic description from API */}
         <p className="mt-4 font-poppins text-[14px] leading-6 text-blue-50">
-          Receive the latest perspectives on wealth, legacy and family offices.
+          {descriptionText}
         </p>
 
         <div className="mt-5 flex items-center rounded-full bg-white p-1.5 pl-4">
           <input
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
             onKeyDown={handleKeyDown}
             placeholder="Enter your email address"
             disabled={isLoading}
@@ -855,15 +1033,17 @@ function HeroContent({ content }) {
         amount: 0.2,
       }}
     >
-      {paragraphs.map((paragraph, index) => (
-        <motion.p
-          key={`${paragraph}-${index}`}
-          variants={staggerChild}
-          className="mb-3 font-poppins text-[14px] leading-7 text-[#4B5563]"
-        >
-          {paragraph}
-        </motion.p>
-      ))}
+      {paragraphs.map(
+        (paragraph, index) => (
+          <motion.p
+            key={`${paragraph}-${index}`}
+            variants={staggerChild}
+            className="mb-3 font-poppins text-[14px] leading-7 text-[#4B5563]"
+          >
+            {paragraph}
+          </motion.p>
+        ),
+      )}
     </motion.div>
   );
 }
@@ -881,33 +1061,44 @@ export default function ArticlePage() {
 
   const POSTS_PER_LOAD = 5;
 
-  const [visibleMoreCount, setVisibleMoreCount] =
-    useState(POSTS_PER_LOAD);
+  const [
+    visibleMoreCount,
+    setVisibleMoreCount,
+  ] = useState(POSTS_PER_LOAD);
 
   const pageData = apiResponse?.data;
 
   const hero = pageData?.hero || null;
 
-  const leftPosts = Array.isArray(pageData?.left_posts)
+  const leftPosts = Array.isArray(
+    pageData?.left_posts,
+  )
     ? pageData.left_posts
     : [];
 
-  const rightGrid = Array.isArray(pageData?.right_grid)
+  const rightGrid = Array.isArray(
+    pageData?.right_grid,
+  )
     ? pageData.right_grid
     : [];
 
-  const members = Array.isArray(pageData?.members)
+  const members = Array.isArray(
+    pageData?.members,
+  )
     ? pageData.members
     : [];
 
-  const morePosts = Array.isArray(pageData?.more_posts?.items)
+  const morePosts = Array.isArray(
+    pageData?.more_posts?.items,
+  )
     ? pageData.more_posts.items
     : [];
 
-  const visibleMorePosts = morePosts.slice(
-    0,
-    visibleMoreCount,
-  );
+  const visibleMorePosts =
+    morePosts.slice(
+      0,
+      visibleMoreCount,
+    );
 
   const handleLoadMore = () => {
     setVisibleMoreCount((prev) =>
@@ -919,7 +1110,8 @@ export default function ArticlePage() {
   };
 
   const hasMorePosts =
-    visibleMoreCount < morePosts.length;
+    visibleMoreCount <
+    morePosts.length;
 
   /* =========================================================
      LOADING
@@ -940,7 +1132,7 @@ export default function ArticlePage() {
   if (isError || !pageData) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-white font-poppins">
-         <PageSkeleton />
+        <PageSkeleton />
       </div>
     );
   }
@@ -955,7 +1147,6 @@ export default function ArticlePage() {
 
         {/* =================================================
             MAIN TOP GRID
-            SAME AS INSIGHT PAGE
         ================================================= */}
 
         <div className="grid gap-[30px] lg:grid-cols-[5fr_6fr]">
@@ -970,13 +1161,19 @@ export default function ArticlePage() {
             initial="hidden"
             animate="show"
           >
-            {leftPosts.map((post, index) => (
-              <ArticleRow
-                key={post.id || post.slug || index}
-                post={post}
-                linkType="format"
-              />
-            ))}
+            {leftPosts.map(
+              (post, index) => (
+                <ArticleRow
+                  key={
+                    post.id ||
+                    post.slug ||
+                    index
+                  }
+                  post={post}
+                  linkType="format"
+                />
+              ),
+            )}
           </motion.div>
 
           {/* =================================================
@@ -992,15 +1189,14 @@ export default function ArticlePage() {
               <>
                 {/* HERO TITLE */}
 
-                <motion.h1
-                  variants={fadeUp}
-                  className="roboto-heading text-[34px] leading-[1.08] tracking-[-0.02em] text-black md:text-[36px]"
-                  style={{
-                    color: COLORS.heading,
-                  }}
-                >
-                  {hero.title}
-                </motion.h1>
+                <motion.div variants={fadeUp}>
+                  <ArticleTitle
+                    post={hero}
+                    className="roboto-heading block text-[34px] leading-[1.08] tracking-[-0.02em] text-black transition-colors hover:text-[#0B4D8C] md:text-[36px]"
+                  >
+                    {hero.title}
+                  </ArticleTitle>
+                </motion.div>
 
                 {/* HERO DESCRIPTION */}
 
@@ -1024,7 +1220,10 @@ export default function ArticlePage() {
 
                 {/* HERO IMAGE */}
 
-                {getPostExternalUrl(hero, "source") ? (
+                {getPostExternalUrl(
+                  hero,
+                  "source",
+                ) ? (
                   <motion.a
                     variants={fadeIn}
                     href={getPostExternalUrl(
@@ -1056,7 +1255,9 @@ export default function ArticlePage() {
 
                 {/* HERO CONTENT */}
 
-                <HeroContent content={hero.content} />
+                <HeroContent
+                  content={hero.content}
+                />
               </>
             ) : null}
 
@@ -1067,9 +1268,7 @@ export default function ArticlePage() {
             {rightGrid.length > 0 ? (
               <div className="mt-[34px] grid gap-[17px] md:grid-cols-[1.05fr_1fr]">
 
-                {/* =================================================
-                    FEATURED SECOND CARD
-                ================================================= */}
+                {/* FEATURED SECOND CARD */}
 
                 {rightGrid[0] ? (
                   <motion.div
@@ -1081,36 +1280,28 @@ export default function ArticlePage() {
                       amount: 0.2,
                     }}
                   >
-                    {getPostExternalUrl(
-                      rightGrid[0],
-                      "format",
-                    ) ? (
-                      <a
-                        href={getPostExternalUrl(
-                          rightGrid[0],
-                          "format",
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block"
-                      >
-                        <h2 className="roboto-heading max-w-[420px] text-[29px] leading-[34px] tracking-[-0.02em] text-[#344B55] transition-colors hover:text-[#0B4D8C]">
-                          {rightGrid[0].title}
-                        </h2>
-                      </a>
-                    ) : (
-                      <h2 className="roboto-heading max-w-[420px] text-[29px] leading-[34px] tracking-[-0.02em] text-[#344B55]">
-                        {rightGrid[0].title}
-                      </h2>
-                    )}
+                    <ArticleTitle
+                      post={rightGrid[0]}
+                      className="roboto-heading block max-w-[420px] text-[29px] leading-[34px] tracking-[-0.02em] text-[#344B55] transition-colors hover:text-[#0B4D8C]"
+                    >
+                      {rightGrid[0].title}
+                    </ArticleTitle>
 
-                    {rightGrid[0].excerpt ? (
+                    {rightGrid[0]
+                      .excerpt ? (
                       <p className="mt-[13px] max-w-[430px] font-poppins text-[14px] leading-[26px] text-[#4B5563]">
-                        {rightGrid[0].excerpt}
+                        {
+                          rightGrid[0]
+                            .excerpt
+                        }
                       </p>
                     ) : null}
 
-                    <Meta post={rightGrid[0]} />
+                    <Meta
+                      post={
+                        rightGrid[0]
+                      }
+                    />
 
                     {getPostExternalUrl(
                       rightGrid[0],
@@ -1126,16 +1317,28 @@ export default function ArticlePage() {
                         className="group block"
                       >
                         <Thumb
-                          src={rightGrid[0].image_url}
-                          title={rightGrid[0].title}
+                          src={
+                            rightGrid[0]
+                              .image_url
+                          }
+                          title={
+                            rightGrid[0]
+                              .title
+                          }
                           className="mt-[18px] aspect-[1.9/1] w-full"
                         />
                       </a>
                     ) : (
                       <div className="group block">
                         <Thumb
-                          src={rightGrid[0].image_url}
-                          title={rightGrid[0].title}
+                          src={
+                            rightGrid[0]
+                              .image_url
+                          }
+                          title={
+                            rightGrid[0]
+                              .title
+                          }
                           className="mt-[18px] aspect-[1.9/1] w-full"
                         />
                       </div>
@@ -1143,13 +1346,13 @@ export default function ArticlePage() {
                   </motion.div>
                 ) : null}
 
-                {/* =================================================
-                    SMALL SIDE ARTICLES
-                ================================================= */}
+                {/* SMALL SIDE ARTICLES */}
 
                 <motion.div
                   className="space-y-[31px]"
-                  variants={staggerParent}
+                  variants={
+                    staggerParent
+                  }
                   initial="hidden"
                   whileInView="show"
                   viewport={{
@@ -1159,16 +1362,21 @@ export default function ArticlePage() {
                 >
                   {rightGrid
                     .slice(1, 4)
-                    .map((post, index) => (
-                      <SideArticle
-                        key={
-                          post.id ||
-                          post.slug ||
-                          index
-                        }
-                        post={post}
-                      />
-                    ))}
+                    .map(
+                      (
+                        post,
+                        index,
+                      ) => (
+                        <SideArticle
+                          key={
+                            post.id ||
+                            post.slug ||
+                            index
+                          }
+                          post={post}
+                        />
+                      ),
+                    )}
                 </motion.div>
               </div>
             ) : null}
@@ -1179,25 +1387,28 @@ export default function ArticlePage() {
             MEMBERS
         ================================================= */}
 
-        <MembersSection members={members} />
+        <MembersSection
+          members={members}
+        />
 
         {/* =================================================
             MORE POSTS + NEWSLETTER
-            SAME AS INSIGHT PAGE
         ================================================= */}
 
         <div className="mt-[56px] grid gap-[48px] lg:grid-cols-[1fr_1.6fr_1fr]">
           <div className="hidden lg:block" />
 
-          {/* =================================================
-              MORE POSTS
-          ================================================= */}
+          {/* MORE POSTS */}
 
           <div>
-            {visibleMorePosts.length > 0 ? (
+            {visibleMorePosts.length >
+            0 ? (
               <div className="space-y-[31px]">
                 {visibleMorePosts.map(
-                  (post, index) => (
+                  (
+                    post,
+                    index,
+                  ) => (
                     <motion.div
                       key={
                         post.id ??
@@ -1237,7 +1448,9 @@ export default function ArticlePage() {
               >
                 <button
                   type="button"
-                  onClick={handleLoadMore}
+                  onClick={
+                    handleLoadMore
+                  }
                   className="cursor-pointer rounded-full border border-[#D1D5DB] px-8 py-2.5 font-poppins text-[13px] font-semibold tracking-wide text-[#0B4D8C] transition-all duration-300 hover:border-[#0B4D8C] hover:bg-[#F5F8FC] active:scale-[0.98]"
                 >
                   LOAD MORE
@@ -1246,9 +1459,7 @@ export default function ArticlePage() {
             ) : null}
           </div>
 
-          {/* =================================================
-              NEWSLETTER
-          ================================================= */}
+          {/* NEWSLETTER */}
 
           <Newsletter />
         </div>

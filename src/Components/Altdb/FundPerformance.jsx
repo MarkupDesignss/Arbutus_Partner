@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScatterChart,
   Scatter,
@@ -10,7 +10,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useGetFundGraphDataQuery } from "../../Redux/api/publicApiSlice";
-import { AnnualizedReturnCanvas, ScatterDot } from "./Graphpopus";
+import { AnnualizedReturnCanvas, ScatterDot, ScatterTooltip } from "./Graphpopus";
 
 export default function FundPerformance({ fund, printableMode = false }) {
   const [sortConfig, setSortConfig] = useState({
@@ -151,11 +151,11 @@ export default function FundPerformance({ fund, printableMode = false }) {
   // Sort bar data for table display
   const sortedBarData = useMemo(() => {
     if (!sortConfig.key) return barData;
-    
+
     const sorted = [...barData];
     sorted.sort((a, b) => {
       let aVal, bVal;
-      
+
       if (sortConfig.key === 'period') {
         aVal = a.period;
         bVal = b.period;
@@ -170,14 +170,14 @@ export default function FundPerformance({ fund, printableMode = false }) {
       }
 
       if (typeof aVal === 'string') {
-        return sortConfig.direction === 'asc' 
+        return sortConfig.direction === 'asc'
           ? aVal.localeCompare(bVal)
           : bVal.localeCompare(aVal);
       }
-      
+
       return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
     });
-    
+
     return sorted;
   }, [barData, sortConfig]);
 
@@ -509,7 +509,7 @@ export default function FundPerformance({ fund, printableMode = false }) {
                         dy: 80,
                       }}
                     />
-                    <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<ScatterChart />} />
+                    <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<ScatterTooltip />} />
                     {refX != null && (
                       <ReferenceLine
                         x={refX}

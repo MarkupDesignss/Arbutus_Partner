@@ -114,7 +114,7 @@ const Login = ({ isOpen, onClose }) => {
               className="mt-1 w-4 h-4 accent-blue-600"
             />
             <p className="text-xs">
-              By Clicking On Proceed, You Have Read And Agree To The Altidb
+            By Clicking on Proceed, You Have Read And Agree To The AltDB
             </p>
           </div>
 

@@ -31,7 +31,7 @@ const XIcon = ({ size = 12, strokeWidth = 1.8, className = "" }) => (
 );
 
 /* =========================================================
-   ICON MAP
+   ICON MAP (for fallback only)
 ========================================================= */
 
 const ICON_STYLES = [
@@ -59,31 +59,37 @@ const ICON_STYLES = [
 const normalizeUrl = (url) => {
   if (!url) return "#";
 
+  const value = String(url).trim();
+
   if (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("mailto:") ||
-    url.startsWith("tel:")
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("mailto:") ||
+    value.startsWith("tel:")
   ) {
-    return url;
+    return value;
   }
 
-  return `https://${url}`;
+  return `https://${value}`;
 };
 
 const getWebsiteLink = (socialLinks = {}) => {
-  return (
+  return normalizeUrl(
     socialLinks?.website ||
-    socialLinks?.website_url ||
-    socialLinks?.web_url ||
-    socialLinks?.url ||
-    socialLinks?.web ||
-    "#"
+      socialLinks?.website_url ||
+      socialLinks?.web_url ||
+      socialLinks?.url ||
+      socialLinks?.web ||
+      ""
   );
 };
 
-const getContactLink = (socialLinks = {}) => {
+const getContactLink = (socialLinks = {}, perspective = {}) => {
   const contact =
+    perspective?.cta_url ||
+    perspective?.cta_link ||
+    perspective?.contact_url ||
+    perspective?.contact_link ||
     socialLinks?.contact ||
     socialLinks?.contact_url ||
     socialLinks?.contact_link;
@@ -98,7 +104,7 @@ const getContactLink = (socialLinks = {}) => {
     return `mailto:${email}`;
   }
 
-  return "#";
+  return "https://peartreecanada.com/contact-us/";
 };
 
 const getTwitterLink = (socialLinks = {}) => {
@@ -106,7 +112,8 @@ const getTwitterLink = (socialLinks = {}) => {
     socialLinks?.twitter ||
       socialLinks?.twitter_url ||
       socialLinks?.x ||
-      socialLinks?.x_url,
+      socialLinks?.x_url ||
+      ""
   );
 };
 
@@ -115,7 +122,8 @@ const getLinkedinLink = (socialLinks = {}) => {
     socialLinks?.linkedin ||
       socialLinks?.linkedin_url ||
       socialLinks?.linkedIn ||
-      socialLinks?.linkedIn_url,
+      socialLinks?.linkedIn_url ||
+      ""
   );
 };
 
@@ -125,12 +133,14 @@ const getLinkedinLink = (socialLinks = {}) => {
 
 const ActionButton = ({ icon: Icon, children, href = "#" }) => {
   const isDisabled = !href || href === "#";
+  const isMail = href?.startsWith("mailto:");
+  const isTel = href?.startsWith("tel:");
 
   return (
     <a
       href={isDisabled ? undefined : href}
-      target={href?.startsWith("mailto:") ? undefined : "_blank"}
-      rel={href?.startsWith("mailto:") ? undefined : "noreferrer"}
+      target={isDisabled || isMail || isTel ? undefined : "_blank"}
+      rel={isDisabled || isMail || isTel ? undefined : "noopener noreferrer"}
       onClick={(e) => {
         if (isDisabled) {
           e.preventDefault();
@@ -164,17 +174,25 @@ const ActionButton = ({ icon: Icon, children, href = "#" }) => {
       `}
     >
       <Icon size={12} strokeWidth={1.8} className="shrink-0" />
-
       <span>{children}</span>
     </a>
   );
 };
 
 /* =========================================================
-   FEATURE CARD
+   FEATURE CARD (DYNAMIC ICON SUPPORT)
 ========================================================= */
 
-const FeatureCard = ({ icon: Icon, color, bg, title, text }) => {
+const FeatureCard = ({
+  icon: Icon,
+  iconUrl,
+  color,
+  bg,
+  title,
+  text,
+}) => {
+  const hasCustomIcon = Boolean(iconUrl);
+
   return (
     <div className="flex flex-col items-start text-left h-full">
       <div
@@ -188,9 +206,21 @@ const FeatureCard = ({ icon: Icon, color, bg, title, text }) => {
           justify-center
           mb-5
           ${color}
+          overflow-hidden
         `}
       >
-        <Icon size={22} strokeWidth={1.75} />
+        {hasCustomIcon ? (
+          <img
+            src={iconUrl}
+            alt={title || "icon"}
+            className="w-10 h-10 object-contain"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        ) : (
+          <Icon size={22} strokeWidth={1.75} />
+        )}
       </div>
 
       <h3
@@ -221,7 +251,7 @@ const FeatureCard = ({ icon: Icon, color, bg, title, text }) => {
 };
 
 /* =========================================================
-   ARTICLE CARD (UPDATED: Clickable using format_url)
+   ARTICLE CARD
 ========================================================= */
 
 const ArticleCard = ({ article }) => {
@@ -231,6 +261,7 @@ const ArticleCard = ({ article }) => {
     title,
     published_date_formatted,
     source_name,
+    source_logo,
     category,
     media_type,
     insight_topic,
@@ -240,9 +271,9 @@ const ArticleCard = ({ article }) => {
   const isBadge = media_type === "pdf";
   const displayTags = [category?.name, insight_topic?.name].filter(Boolean);
 
-  // Determine the link URL (fallback to # if not provided)
   const linkUrl = format_url || "#";
   const isExternal = linkUrl.startsWith("http");
+  const hasSourceLogo = Boolean(source_logo);
 
   return (
     <a
@@ -252,7 +283,7 @@ const ArticleCard = ({ article }) => {
       className="block group"
     >
       <article className="flex items-start gap-4 min-w-0 bg-white p-2 -m-2 rounded-lg transition-colors duration-200 group-hover:bg-[#F8FAFC]">
-        {/* IMAGE WITH OVERLAY BADGE */}
+        {/* IMAGE */}
         <div className="relative w-[135px] h-[90px] shrink-0 overflow-hidden bg-[#f2f4f5] rounded-[4px]">
           {image_url ? (
             <img
@@ -284,13 +315,18 @@ const ArticleCard = ({ article }) => {
             className="
               poppins-medium
               text-[#3d454b]
-              transition-colors duration-200 group-hover:text-[#245aa8] group-hover:underline decoration-[#245aa8]/30 underline-offset-2
+              transition-colors
+              duration-200
+              group-hover:text-[#245aa8]
+              group-hover:underline
+              decoration-[#245aa8]/30
+              underline-offset-2
             "
           >
             {title}
           </h4>
 
-          {/* META INFO */}
+          {/* META */}
           <div className="flex items-center gap-x-2 mt-2">
             {published_date_formatted && (
               <span className="text-[11px] sm:text-[12px] poppins-medium text-[#8b9298] whitespace-nowrap">
@@ -298,8 +334,17 @@ const ArticleCard = ({ article }) => {
               </span>
             )}
 
-            {source_name &&
-              (isBadge ? (
+            {hasSourceLogo ? (
+              <img
+                src={source_logo}
+                alt={source_name || "Source"}
+                className="h-[18px] w-auto object-contain shrink-0"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            ) : source_name ? (
+              isBadge ? (
                 <span className="inline-flex items-center px-2 py-[3px] rounded-[2px] bg-[#123c5a] text-white text-[9px] poppins-semibold tracking-wide whitespace-nowrap">
                   {source_name}
                 </span>
@@ -307,7 +352,8 @@ const ArticleCard = ({ article }) => {
                 <span className="text-[10px] sm:text-[11px] poppins-medium text-[#d71920] whitespace-nowrap">
                   {source_name}
                 </span>
-              ))}
+              )
+            ) : null}
           </div>
 
           {/* TAGS */}
@@ -317,6 +363,7 @@ const ArticleCard = ({ article }) => {
                 <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
                   {tag}
                 </span>
+
                 {index < displayTags.length - 1 && (
                   <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
                     |
@@ -354,13 +401,7 @@ const ArticlesSection = ({ posts = [] }) => {
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
         {/* HEADING */}
         <div className="flex items-center gap-3 mb-9">
-          <h3
-            className="
-              text-[20px]
-              poppins-semibold
-              text-[#222b31]
-            "
-          >
+          <h3 className="text-[20px] poppins-semibold text-[#222b31]">
             Articles
           </h3>
 
@@ -426,11 +467,13 @@ const HeroSection = ({
   logoUrl,
   bannerUrl,
   socialLinks,
+  perspective,
 }) => {
-  const websiteLink = getWebsiteLink(socialLinks);
   const twitterLink = getTwitterLink(socialLinks);
   const linkedinLink = getLinkedinLink(socialLinks);
-  const contactLink = "https://peartreecanada.com/contact-us/";
+
+  // SAME CTA URL FOR CONTACT US
+  const contactLink = getContactLink(socialLinks, perspective);
 
   return (
     <header
@@ -498,7 +541,7 @@ const HeroSection = ({
               </div>
             )}
 
-            {/* MEMBER TAGLINE */}
+            {/* TAGLINE */}
             {tagline && (
               <span
                 className="
@@ -599,30 +642,26 @@ const HeroSection = ({
             {/* BUTTONS */}
             <div
               className="
-                grid
-                grid-cols-2
+                flex
+                flex-wrap
+                items-center
                 gap-x-2.5
                 gap-y-2.5
                 w-fit
               "
             >
-              <ActionButton
-                icon={Link2}
-                href={websiteLink !== "#" ? normalizeUrl(websiteLink) : "#"}
-              >
-                Website Link
-              </ActionButton>
-
-              <ActionButton icon={Mail} href={contactLink}>
-                Contact Member
-              </ActionButton>
-
+              {/* TWITTER */}
               <ActionButton icon={XIcon} href={twitterLink}>
                 Twitter
               </ActionButton>
 
+              {/* LINKEDIN */}
               <ActionButton icon={Linkedin} href={linkedinLink}>
                 LinkedIn
+              </ActionButton>
+
+              <ActionButton icon={Mail} href={contactLink}>
+                Contact Us
               </ActionButton>
             </div>
           </div>
@@ -633,7 +672,7 @@ const HeroSection = ({
 };
 
 /* =========================================================
-   EXPERTISE SECTION
+   EXPERTISE SECTION (DYNAMIC ICON FROM API)
 ========================================================= */
 
 const ExpertiseSection = ({ expertises = [] }) => {
@@ -649,6 +688,9 @@ const ExpertiseSection = ({ expertises = [] }) => {
             const isSecond = index % 3 === 1;
             const isThird = index % 3 === 2;
 
+            /* ✅ DYNAMIC ICON FROM API */
+            const apiIcon = item?.icon || item?.icon_url || null;
+
             return (
               <div
                 key={item?.id || `expertise-${index}`}
@@ -661,6 +703,7 @@ const ExpertiseSection = ({ expertises = [] }) => {
               >
                 <FeatureCard
                   icon={style.icon}
+                  iconUrl={apiIcon}
                   color={style.color}
                   bg={style.bg}
                   title={item?.title || item?.name || ""}
@@ -679,16 +722,24 @@ const ExpertiseSection = ({ expertises = [] }) => {
    PERSPECTIVE SECTION
 ========================================================= */
 
-const PerspectiveSection = ({ perspective }) => {
+const PerspectiveSection = ({ perspective = {}, socialLinks = {} }) => {
   if (!perspective || !perspective.title) {
     return null;
   }
 
-  const ctaUrl = "https://peartreecanada.com/contact-us/";
+  // SAME CONTACT / CTA URL
+  const ctaUrl = getContactLink(socialLinks, perspective);
+
   const images = perspective?.images || [];
-  const titleWords = perspective?.title ? perspective.title.split(" ") : [];
+
+  const titleWords = perspective?.title
+    ? perspective.title.split(" ")
+    : [];
+
   const firstTwoWords = titleWords.slice(0, 2).join(" ");
   const remainingWords = titleWords.slice(2).join(" ");
+
+  const isExternal = ctaUrl.startsWith("http");
 
   return (
     <section className="bg-white pb-20 pt-10">
@@ -697,19 +748,26 @@ const PerspectiveSection = ({ perspective }) => {
           {/* LEFT: IMAGE */}
           <div className="lg:col-span-1 lg:pr-8">
             {images.length > 0 ? (
-              <div className="w-[400px] h-auto overflow-hidden bg-[#eef1f3] rounded-[4px]">
+              <div className="w-[400px] max-w-full h-auto overflow-hidden bg-[#eef1f3] rounded-[4px]">
                 <img
                   src={images[0]}
                   alt="Perspective"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
+                  className="
+                    w-full
+                    h-full
+                    object-cover
+                    transition-transform
+                    duration-500
+                    hover:scale-[1.02]
+                  "
                 />
               </div>
             ) : (
-              <div className="w-full h-[250px] bg-[#eef1f3] rounded-[4px]"></div>
+              <div className="w-full h-[250px] bg-[#eef1f3] rounded-[4px]" />
             )}
           </div>
 
-          {/* RIGHT: TEXT CONTENT */}
+          {/* RIGHT: TEXT */}
           <div className="lg:col-span-2">
             <div>
               {/* LABEL */}
@@ -717,13 +775,27 @@ const PerspectiveSection = ({ perspective }) => {
                 <span className="text-[10px] sm:text-[11px] poppins-semibold uppercase tracking-[0.08em] text-[#56646d]">
                   {perspective?.label || "Our Perspective"}
                 </span>
+
                 <div className="w-10 h-px bg-[#dce1e4]" />
               </div>
 
               {/* TITLE */}
               <h2
-                style={{ width: "400px", lineHeight: "36px" }}
-                className="text-[28px] sm:text-[32px] lg:text-[30px] poppins-semibold leading-[1.15] tracking-[-0.01em] text-[#3c4d56] mb-5 uppercase"
+                style={{
+                  width: "400px",
+                  lineHeight: "36px",
+                }}
+                className="
+                  text-[28px]
+                  sm:text-[32px]
+                  lg:text-[30px]
+                  poppins-semibold
+                  leading-[1.15]
+                  tracking-[-0.01em]
+                  text-[#3c4d56]
+                  mb-5
+                  uppercase
+                "
               >
                 {firstTwoWords}
                 <br />
@@ -732,20 +804,57 @@ const PerspectiveSection = ({ perspective }) => {
 
               {/* DESCRIPTION */}
               {perspective?.description && (
-                <p className="text-[11px] sm:text-[12px] lg:text-[13px] poppins-medium leading-[1.65] text-[#5e696f] mt-2 mb-6">
+                <p
+                  className="
+                    text-[11px]
+                    sm:text-[12px]
+                    lg:text-[13px]
+                    poppins-medium
+                    leading-[1.65]
+                    text-[#5e696f]
+                    mt-2
+                    mb-6
+                  "
+                >
                   {perspective.description}
                 </p>
               )}
 
-              {/* CTA */}
+              {/* CONTACT / CTA */}
               <div>
                 <a
                   href={ctaUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2.5 h-[34px] px-4 border border-[#dfe5ea] rounded-[3px] bg-white text-[10px] sm:text-[11px] poppins-medium text-[#2c65a5] hover:bg-[#f8fafc] hover:border-[#cdd7df] transition-all"
+                  target={
+                    isExternal && !ctaUrl.startsWith("mailto:")
+                      ? "_blank"
+                      : undefined
+                  }
+                  rel={
+                    isExternal && !ctaUrl.startsWith("mailto:")
+                      ? "noopener noreferrer"
+                      : undefined
+                  }
+                  className="
+                    inline-flex
+                    items-center
+                    gap-2.5
+                    h-[34px]
+                    px-4
+                    border
+                    border-[#dfe5ea]
+                    rounded-[3px]
+                    bg-white
+                    text-[10px]
+                    sm:text-[11px]
+                    poppins-medium
+                    text-[#2c65a5]
+                    hover:bg-[#f8fafc]
+                    hover:border-[#cdd7df]
+                    transition-all
+                  "
                 >
-                  {perspective?.cta_text || "Learn More About Our Approach"}
+                  {perspective?.cta_text || "Contact Us"}
+
                   <ArrowRight size={12} strokeWidth={1.8} />
                 </a>
               </div>
@@ -861,11 +970,15 @@ const FieraRealEstate = () => {
           logoUrl={logo_url}
           bannerUrl={banner_url}
           socialLinks={social_links}
+          perspective={perspective}
         />
 
         <ExpertiseSection expertises={expertises} />
 
-        <PerspectiveSection perspective={perspective} />
+        <PerspectiveSection
+          perspective={perspective}
+          socialLinks={social_links}
+        />
 
         <ArticlesSection posts={posts} />
       </div>

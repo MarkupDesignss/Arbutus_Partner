@@ -10,6 +10,9 @@ import {
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 
+// Poppins font stack
+const POPPINS = "'Poppins', sans-serif";
+
 export default function PricingPlan() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -95,9 +98,17 @@ export default function PricingPlan() {
   // =========================================================
   // PERIOD TEXT
   // =========================================================
-  const getPeriodText = (plan) => {
+  const getPeriodText = (plan, index) => {
     if (String(plan.name).toLowerCase() === "free") {
       return "Free";
+    }
+
+    if (index === 1) {
+      return "Free";
+    }
+
+    if (index === 2) {
+      return "Subscription";
     }
 
     return billingCycle === "monthly" ? "Per Month" : "Per Year";
@@ -143,18 +154,13 @@ export default function PricingPlan() {
         const mapped = arr.map((s) => {
           const todayNow = new Date();
 
-          const endDate = s.end_date
-            ? new Date(s.end_date)
-            : null;
+          const endDate = s.end_date ? new Date(s.end_date) : null;
 
-          const isExpired = endDate
-            ? endDate < todayNow
-            : false;
+          const isExpired = endDate ? endDate < todayNow : false;
 
           return {
             id: Number(s.subscription_id),
-            planType:
-              normalizePlanType(s.plan_type) || "monthly",
+            planType: normalizePlanType(s.plan_type) || "monthly",
             purchasedAt: s.start_date
               ? new Date(s.start_date).toISOString()
               : new Date().toISOString(),
@@ -176,10 +182,7 @@ export default function PricingPlan() {
           if (!existing) {
             map.set(key, item);
           } else {
-            if (
-              new Date(item.purchasedAt) >
-              new Date(existing.purchasedAt)
-            ) {
+            if (new Date(item.purchasedAt) > new Date(existing.purchasedAt)) {
               map.set(key, item);
             }
           }
@@ -236,12 +239,9 @@ export default function PricingPlan() {
 
     const subscriptionId = Number(subscriptionIdRaw);
 
-    const planType =
-      normalizePlanType(planTypeRaw) || "monthly";
+    const planType = normalizePlanType(planTypeRaw) || "monthly";
 
-    const matchedPlan = plans.find(
-      (p) => Number(p.id) === subscriptionId
-    );
+    const matchedPlan = plans.find((p) => Number(p.id) === subscriptionId);
 
     if (!matchedPlan) {
       Swal.fire(
@@ -277,9 +277,7 @@ export default function PricingPlan() {
     }
 
     const priceKey =
-      planType === "monthly"
-        ? "monthly_price"
-        : "yearly_price";
+      planType === "monthly" ? "monthly_price" : "yearly_price";
 
     const priceValue = matchedPlan[priceKey];
 
@@ -333,8 +331,7 @@ export default function PricingPlan() {
     purchasedThisCycle,
     expiredThisCycle
   ) => {
-    const isFree =
-      String(plan.name).toLowerCase() === "free";
+    const isFree = String(plan.name).toLowerCase() === "free";
 
     // ================= GUEST =================
     if (!isLoggedIn) {
@@ -343,25 +340,25 @@ export default function PricingPlan() {
           label: "Current Plan",
           disabled: true,
           className:
-            "w-full h-[42px] border border-gray-300 rounded-lg text-gray-500 bg-gray-50 cursor-not-allowed opacity-70 text-sm font-medium",
+            "w-full h-[42px] border border-gray-300 rounded-lg text-gray-500 bg-gray-50 cursor-not-allowed opacity-70 text-[13px] font-medium",
         };
       }
 
       if (index === 1) {
         return {
-          label: "Sign In",
+          label: "Sign up",
           disabled: false,
           onClick: () => setShowLogin(true),
           className:
-            "w-full h-[42px] bg-[#2A57C4] cursor-pointer text-white rounded-lg hover:bg-[#1e46a8] transition-all duration-300 flex items-center justify-center font-semibold text-sm shadow-sm",
+            "w-full h-[42px] bg-[#2A57C4] cursor-pointer text-white rounded-lg hover:bg-[#1e46a8] transition-all duration-300 flex items-center justify-center font-semibold text-[13px] shadow-sm",
         };
       }
 
       return {
-        label: "Coming Soon",
+        label: "Under Construction",
         disabled: true,
         className:
-          "w-full h-[42px] rounded-lg bg-gray-300 text-gray-600 cursor-not-allowed flex items-center justify-center font-medium text-sm",
+          "w-full h-[42px] rounded-lg bg-gray-300 text-gray-600 cursor-not-allowed flex items-center justify-center font-medium text-[13px]",
       };
     }
 
@@ -371,7 +368,7 @@ export default function PricingPlan() {
         label: "Free Plan",
         disabled: true,
         className:
-          "w-full h-[42px] border border-gray-300 rounded-lg text-gray-500 bg-gray-50 cursor-not-allowed opacity-70 text-sm font-medium",
+          "w-full h-[42px] border border-gray-300 rounded-lg text-gray-500 bg-gray-50 cursor-not-allowed opacity-70 text-[13px] font-medium",
       };
     }
 
@@ -380,7 +377,7 @@ export default function PricingPlan() {
         label: `Active (${billingCycle})`,
         disabled: true,
         className:
-          "w-full h-[42px] bg-teal-700 text-white rounded-lg cursor-not-allowed flex items-center justify-center font-semibold text-sm",
+          "w-full h-[42px] bg-teal-700 text-white rounded-lg cursor-not-allowed flex items-center justify-center font-semibold text-[13px]",
       };
     }
 
@@ -389,17 +386,15 @@ export default function PricingPlan() {
         label: "Current Plan",
         disabled: true,
         className:
-          "w-full h-[42px] bg-[#2A57C4] text-white rounded-lg cursor-not-allowed flex items-center justify-center font-semibold text-sm",
+          "w-full h-[42px] bg-[#2A57C4] text-white rounded-lg cursor-not-allowed flex items-center justify-center font-semibold text-[13px]",
       };
     }
 
     return {
-      label: expiredThisCycle
-        ? "Coming Soon"
-        : "Coming Soon",
+      label: expiredThisCycle ? "Coming Soon" : "Coming Soon",
       disabled: true,
       className:
-        "w-full h-[42px] rounded-lg bg-gray-300 text-gray-600 cursor-not-allowed flex items-center justify-center font-medium text-sm",
+        "w-full h-[42px] rounded-lg bg-gray-300 text-gray-600 cursor-not-allowed flex items-center justify-center font-medium text-[13px]",
     };
   };
 
@@ -414,20 +409,31 @@ export default function PricingPlan() {
   // UI
   // =========================================================
   return (
-    <div className="min-h-screen w-full bg-white px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-7">
+    <div
+      className="min-h-screen w-full bg-white px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-7"
+      style={{ fontFamily: POPPINS }}
+    >
       <div className="w-full max-w-7xl mx-auto">
-
         {/* =====================================================
             HEADER
         ====================================================== */}
-        <div className="text-center mb-7 sm:mb-8 lg:mb-9">
-
-          <span className="inline-flex items-center justify-center rounded-full bg-[#2A57C4]/10 px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#2A57C4] mb-3">
-            Membership Plans
+        <div className="text-center mb-6 sm:mb-7 lg:mb-8">
+          <span
+            className="inline-flex items-center justify-center rounded-full bg-[#2A57C4]/10 px-3.5 py-1 text-[10.5px] sm:text-[11px] font-semibold text-[#2A57C4] mb-3 uppercase"
+            style={{
+              fontFamily: POPPINS,
+              fontWeight: 600,
+              letterSpacing: "0.18em",
+            }}
+          >
+            Access Choices
           </span>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-[42px] leading-tight font-bold tracking-tight text-gray-900 roboto-bold">
-            TBD
+          <h1
+            className="text-[22px] sm:text-[26px] lg:text-[32px] leading-tight font-bold tracking-tight text-gray-900 mb-2 sm:mb-3 poppins"
+            style={{ fontFamily: POPPINS, fontWeight: 700 }}
+          >
+            Three Ways to engage with AltDB
           </h1>
         </div>
 
@@ -466,16 +472,21 @@ export default function PricingPlan() {
             PRICING AREA
         ====================================================== */}
         <div className="relative">
-
           {/* EMPTY STATE */}
           {plans.length === 0 && (
             <div className="w-full text-center py-10">
               <div className="max-w-md mx-auto rounded-xl border border-gray-200 bg-white px-6 py-8 shadow-sm">
-                <p className="text-base font-semibold text-gray-700">
+                <p
+                  className="text-[15px] font-semibold text-gray-700"
+                  style={{ fontFamily: POPPINS, fontWeight: 600 }}
+                >
                   No plans available.
                 </p>
 
-                <p className="text-sm text-gray-500 mt-1">
+                <p
+                  className="text-[12px] text-gray-500 mt-1.5"
+                  style={{ fontFamily: POPPINS, fontWeight: 400 }}
+                >
                   Please check again later.
                 </p>
               </div>
@@ -486,7 +497,10 @@ export default function PricingPlan() {
           {isSubsLoading && (
             <div className="absolute inset-0 rounded-2xl bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-30">
               <div className="bg-white rounded-lg shadow-lg px-5 py-3">
-                <span className="text-gray-700 text-sm font-medium animate-pulse">
+                <span
+                  className="text-gray-700 text-[13px] font-medium animate-pulse"
+                  style={{ fontFamily: POPPINS, fontWeight: 500 }}
+                >
                   Loading your subscription...
                 </span>
               </div>
@@ -497,28 +511,22 @@ export default function PricingPlan() {
               CARDS
           ====================================================== */}
           <div className="w-full max-w-[1120px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
-
             {plans.map((plan, index) => {
-              const features = normalizeFeatures(
-                plan.features
-              );
+              const features = normalizeFeatures(plan.features);
 
               const isPopular =
                 String(plan.is_popular) === "1" ||
                 plan.is_popular === 1 ||
                 plan.is_popular === true;
 
-              const purchasedThisCycle =
-                isPurchasedForCurrentCycle(plan.id);
+              const purchasedThisCycle = isPurchasedForCurrentCycle(plan.id);
 
-              const expiredThisCycle =
-                purchasedPlans.some(
-                  (p) =>
-                    Number(p.id) === Number(plan.id) &&
-                    normalizePlanType(p.planType) ===
-                      billingCycle &&
-                    p.isExpired
-                );
+              const expiredThisCycle = purchasedPlans.some(
+                (p) =>
+                  Number(p.id) === Number(plan.id) &&
+                  normalizePlanType(p.planType) === billingCycle &&
+                  p.isExpired
+              );
 
               const btn = getPlanButtonConfig(
                 plan,
@@ -527,8 +535,7 @@ export default function PricingPlan() {
                 expiredThisCycle
               );
 
-              const isFree =
-                String(plan.name).toLowerCase() === "free";
+              const isFree = String(plan.name).toLowerCase() === "free";
 
               return (
                 <div
@@ -554,7 +561,10 @@ export default function PricingPlan() {
                   ================================================== */}
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
-                      <span className="inline-flex items-center justify-center bg-[#2A57C4] text-white text-xs sm:text-sm font-semibold px-5 py-1.5 rounded-full shadow-md">
+                      <span
+                        className="inline-flex items-center justify-center bg-[#2A57C4] text-white text-[11px] sm:text-[12px] font-semibold px-4 py-1.5 rounded-full shadow-md"
+                        style={{ fontFamily: POPPINS, fontWeight: 600 }}
+                      >
                         3 Levels
                       </span>
                     </div>
@@ -564,24 +574,31 @@ export default function PricingPlan() {
                       CARD CONTENT
                   ================================================== */}
                   <div className="p-5 sm:p-5 lg:p-6">
-
                     {/* PLAN NAME */}
                     <div className="flex items-start justify-between gap-3 mb-3">
-
                       <div className="min-w-0">
-                        <h3 className="text-xl sm:text-[23px] lg:text-[25px] leading-tight font-bold text-gray-900">
+                        <h3
+                          className="text-[18px] sm:text-[20px] lg:text-[22px] leading-tight font-bold text-gray-900"
+                          style={{ fontFamily: POPPINS, fontWeight: 700 }}
+                        >
                           {plan.name}
                         </h3>
 
                         {plan.title && (
-                          <p className="text-gray-500 text-xs sm:text-sm mt-1.5 leading-5 line-clamp-2">
+                          <p
+                            className="text-gray-500 text-[11.5px] sm:text-[12px] mt-1.5 leading-5 line-clamp-2"
+                            style={{ fontFamily: POPPINS, fontWeight: 400 }}
+                          >
                             {plan.title}
                           </p>
                         )}
                       </div>
 
                       {isFree && (
-                        <span className="shrink-0 rounded-full bg-gray-100 text-gray-600 px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold">
+                        <span
+                          className="shrink-0 rounded-full bg-gray-100 text-gray-600 px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold"
+                          style={{ fontFamily: POPPINS, fontWeight: 600 }}
+                        >
                           Basic
                         </span>
                       )}
@@ -589,46 +606,54 @@ export default function PricingPlan() {
 
                     {/* PRICE */}
                     <div className="pt-3 pb-3.5 border-b border-gray-100">
-
                       <div className="flex items-end gap-2">
-                        <span className="text-3xl sm:text-[30px] lg:text-[35px] leading-none font-semibold text-gray-900">
+                        <span
+                          className="text-[26px] sm:text-[28px] lg:text-[32px] leading-none font-bold text-gray-900"
+                          style={{ fontFamily: POPPINS, fontWeight: 700 }}
+                        >
                           {getPrice(plan)}
                         </span>
                       </div>
 
-                      <p className="text-gray-500 text-xs sm:text-sm mt-1.5">
-                        {getPeriodText(plan)}
+                      <p
+                        className="text-gray-500 text-[11.5px] sm:text-[12px] mt-1.5"
+                        style={{ fontFamily: POPPINS, fontWeight: 400 }}
+                      >
+                        {getPeriodText(plan, index)}
                       </p>
                     </div>
 
                     {/* FEATURES */}
                     <div className="pt-3.5">
-
-                      <p className="text-sm font-bold text-gray-900 mb-3">
+                      <p
+                        className="text-[13px] font-bold text-gray-900 mb-3"
+                        style={{ fontFamily: POPPINS, fontWeight: 700 }}
+                      >
                         What's included
                       </p>
 
                       <ul className="space-y-2.5">
-                        {features.slice(0, 3).map(
-                          (feature, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-2.5"
-                            >
-                              <span className="shrink-0 w-[18px] h-[18px] mt-[1px] rounded-full bg-green-50 flex items-center justify-center">
-                                <img
-                                  src="/arbutus-web/assets/Levels/correct.png"
-                                  alt="tick"
-                                  className="w-3 h-3 object-contain"
-                                />
-                              </span>
+                        {features.slice(0, 3).map((feature, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2.5"
+                          >
+                            <span className="shrink-0 w-[17px] h-[17px] mt-[1px] rounded-full bg-green-50 flex items-center justify-center">
+                              <img
+                                src="/arbutus-web/assets/Levels/correct.png"
+                                alt="tick"
+                                className="w-3 h-3 object-contain"
+                              />
+                            </span>
 
-                              <span className="text-xs sm:text-[13px] lg:text-sm leading-5 text-gray-600">
-                                {feature}
-                              </span>
-                            </li>
-                          )
-                        )}
+                            <span
+                              className="text-[11.5px] sm:text-[12px] lg:text-[12.5px] leading-5 text-gray-600"
+                              style={{ fontFamily: POPPINS, fontWeight: 400 }}
+                            >
+                              {feature}
+                            </span>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </div>
@@ -637,7 +662,6 @@ export default function PricingPlan() {
                       BUTTON
                   ================================================== */}
                   <div className="px-5 sm:px-5 lg:px-6 pb-5 sm:pb-5 lg:pb-6">
-
                     <button
                       disabled={btn.disabled}
                       onClick={btn.onClick}
@@ -646,6 +670,7 @@ export default function PricingPlan() {
                           ? "hover:scale-[1.01] active:scale-[0.99]"
                           : ""
                       }`}
+                      style={{ fontFamily: POPPINS, fontWeight: 600 }}
                     >
                       {loadingPlanId === plan.id
                         ? "Processing..."
@@ -653,7 +678,10 @@ export default function PricingPlan() {
                     </button>
 
                     {purchasedThisCycle && (
-                      <p className="text-center text-[11px] text-teal-700 font-medium mt-2">
+                      <p
+                        className="text-center text-[11px] text-teal-700 font-medium mt-2"
+                        style={{ fontFamily: POPPINS, fontWeight: 500 }}
+                      >
                         Your current subscription is active.
                       </p>
                     )}
@@ -668,14 +696,18 @@ export default function PricingPlan() {
             CONTACT
         ====================================================== */}
         <div className="text-center mt-5 sm:mt-6">
-          <div className="inline-flex items-center justify-center gap-1 text-sm">
-            <span className="text-gray-500">
+          <div className="inline-flex items-center justify-center gap-1 text-[13px]">
+            <span
+              className="text-gray-500"
+              style={{ fontFamily: POPPINS, fontWeight: 400 }}
+            >
               Facing an issue?
             </span>
 
             <Link
               to="/Contactmain"
               className="text-[#2A57C4] font-semibold underline underline-offset-4 hover:text-[#1e46a8] transition"
+              style={{ fontFamily: POPPINS, fontWeight: 600 }}
             >
               Contact us
             </Link>

@@ -357,7 +357,7 @@ export default function Header({ onUserClick }) {
                 src={logoUrl}
                 alt="AltDB"
                 className="
-                  h-8 sm:h-9 lg:h-10
+                  h-10 sm:h-12 lg:h-14
                   w-auto object-contain
                   transition-transform duration-200
                   group-hover:scale-[1.02]

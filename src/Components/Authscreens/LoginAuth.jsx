@@ -4,7 +4,14 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { X } from "lucide-react";
+import {
+  X,
+
+  ShieldCheck,
+  ArrowLeft,
+  Loader2,
+  ChevronDown,
+} from "lucide-react";
 import Swal from "sweetalert2";
 import { useDispatch } from "react-redux";
 
@@ -20,6 +27,52 @@ import {
 
 import TremsandCondition from "../../TremsandCondition";
 import Privacypolicy from "../../Privacypolicy";
+import Disclamer from "../../Disclamer";
+
+// =========================
+// SHARED STYLES
+// =========================
+const inputBase =
+  "w-full rounded-xl border border-gray-300 bg-gray-50/60 py-3 px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#2A57C4] focus:bg-white focus:ring-4 focus:ring-[#2A57C4]/15";
+
+const labelBase = "mb-1.5 block text-sm font-medium text-gray-700";
+
+const primaryBtn =
+  "flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#2A57C4] py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#2A57C4]/25 transition hover:bg-[#2249a6] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#2A57C4]/30 disabled:cursor-not-allowed disabled:opacity-60";
+
+// Small wrapper: label + input (icons removed)
+const Field = ({ label, required, children }) => (
+  <div>
+    <label className={labelBase}>
+      {label}
+      {required && <span className="ml-0.5 text-red-500">*</span>}
+    </label>
+    <div className="relative">{children}</div>
+  </div>
+);
+
+// Popup wrapper for Terms / Privacy / Disclaimer
+const LegalPopup = ({ onClose, label, children }) => (
+  <div
+    className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm"
+    onClick={onClose}
+  >
+    <div
+      className="relative my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="sticky right-3 top-3 z-10 ml-auto mr-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition hover:bg-gray-100 hover:text-black"
+        aria-label={label}
+      >
+        <X size={20} />
+      </button>
+      {children}
+    </div>
+  </div>
+);
 
 const LoginAuth = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
@@ -30,9 +83,13 @@ const LoginAuth = ({ isOpen, onClose }) => {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // Terms & Privacy popup states
+  // Industry professional dropdown
+  const [industry_professional, setindustry_professional] = useState("");
+
+  // Terms, Privacy & Disclaimer popup states
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -48,19 +105,19 @@ const LoginAuth = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     const style = document.createElement("style");
-  
+
     style.innerHTML = `
       .swal2-container {
         z-index: 999999 !important;
       }
-  
+
       .swal2-popup {
         z-index: 999999 !important;
       }
     `;
-  
+
     document.head.appendChild(style);
-  
+
     return () => {
       document.head.removeChild(style);
     };
@@ -84,6 +141,7 @@ const LoginAuth = ({ isOpen, onClose }) => {
         otp: otpCode,
         firstName,
         lastName,
+        industry_professional, 
       }).unwrap();
 
       dispatch(
@@ -118,6 +176,7 @@ const LoginAuth = ({ isOpen, onClose }) => {
     email,
     firstName,
     lastName,
+    industry_professional, // ✅ dependency
     isVerifying,
     verifyOtp,
     dispatch,
@@ -149,8 +208,10 @@ const LoginAuth = ({ isOpen, onClose }) => {
       setEmail("");
       setAgreed(false);
       setOtp(["", "", "", ""]);
+      setindustry_professional("");
       setShowTerms(false);
       setShowPrivacy(false);
+      setShowDisclaimer(false);
     }
   }, [isOpen]);
 
@@ -211,7 +272,7 @@ const LoginAuth = ({ isOpen, onClose }) => {
   // SEND OTP
   // =========================
   const handleContinue = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[A-Za-z\s]{2,50}$/;
 
     if (!firstName.trim()) {
@@ -252,6 +313,15 @@ const LoginAuth = ({ isOpen, onClose }) => {
       return;
     }
 
+    if (!industry_professional) {
+      Swal.fire(
+        "Error",
+        "Please select whether you are an industry professional",
+        "error"
+      );
+      return;
+    }
+
     if (!agreed) {
       Swal.fire("Error", "Please accept terms & conditions", "error");
       return;
@@ -262,6 +332,7 @@ const LoginAuth = ({ isOpen, onClose }) => {
         email,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        industry_professional, // ✅ "yes" / "no" bhej rahe hain
       }).unwrap();
 
       dispatch(setAuthEmail(res.email));
@@ -288,131 +359,201 @@ const LoginAuth = ({ isOpen, onClose }) => {
   // =========================
   if (!isOpen) return null;
 
+  const verifying = isVerifyingOtp || isVerifying;
+
   return (
     <>
       {/* =========================
           LOGIN MODAL
       ========================= */}
-      <div className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/50 p-4">
-        <div className="relative flex w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl max-h-[90vh]">
-          {/* LEFT IMAGE */}
-          <div className="hidden w-1/2 md:block">
+      <div className="fixed inset-0 z-[9990] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        <div className="relative flex max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+          {/* LEFT IMAGE PANEL */}
+          <div className="relative hidden w-1/2 md:block">
             <img
               src="/arbutus-web/assets/Home/login.png"
               alt="Business meeting"
               className="h-full w-full object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0f2a6b]/90 via-[#0f2a6b]/30 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-8 text-white">
+              <h3 className="mb-2 text-2xl font-semibold leading-snug">
+                Smarter alternative investment insights
+              </h3>
+              <p className="max-w-sm text-sm leading-6 text-white/80">
+                Sign in to unlock freemium features and explore AltDB's
+                data, tools and research.
+              </p>
+            </div>
           </div>
 
-          {/* RIGHT FORM */}
-          <div className="relative flex w-full flex-col justify-center overflow-y-auto p-6 sm:p-8 md:w-1/2 md:p-12">
+          {/* RIGHT FORM PANEL */}
+          <div className="relative flex w-full flex-col justify-center overflow-y-auto p-6 sm:p-8 md:w-1/2 md:p-10">
             {/* CLOSE BUTTON */}
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-5 top-5 z-10 cursor-pointer text-gray-700 transition hover:text-black"
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-black"
               aria-label="Close"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
+
+            {/* STEP INDICATOR */}
+            <div className="mb-6 flex items-center gap-2" aria-hidden="true">
+              <span className="h-1.5 w-10 rounded-full bg-[#2A57C4]" />
+              <span
+                className={`h-1.5 w-10 rounded-full transition ${
+                  step === 2 ? "bg-[#2A57C4]" : "bg-gray-200"
+                }`}
+              />
+              <span className="ml-2 text-xs text-gray-500">
+                Step {step} of 2
+              </span>
+            </div>
 
             {/* =========================
                 STEP 1
             ========================= */}
             {step === 1 && (
               <>
-                <h2 className="mb-5 pr-8 text-xl font-semibold md:text-2xl">
-                  Share Your Details To Get Access To Fremium Features
+                <h2 className="mb-1 pr-8 text-2xl font-semibold text-gray-900">
+                  Get access to freemium features
                 </h2>
+                <p className="mb-6 text-sm text-gray-500">
+                  Share a few details and we'll send a one-time code to your
+                  email.
+                </p>
 
                 {/* FIRST NAME + LAST NAME */}
                 <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      First Name<span className="text-red-500">*</span>
-                    </label>
+                  <Field label="First name" required>
                     <input
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Enter First Name"
-                      className="w-full rounded-lg border-2 border-[#ACACAC] px-4 py-3 outline-none transition focus:border-[#2A57C4]"
+                      placeholder="Enter first name"
+                      className={inputBase}
                     />
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Last Name
-                    </label>
+                  <Field label="Last name">
                     <input
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Enter Last Name"
-                      className="w-full rounded-lg border-2 border-[#ACACAC] px-4 py-3 outline-none transition focus:border-[#2A57C4]"
+                      placeholder="Enter last name"
+                      className={inputBase}
                     />
-                  </div>
+                  </Field>
                 </div>
 
                 {/* EMAIL */}
-                <div className="mb-6">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Email ID<span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter Your Email ID"
-                    className="w-full rounded-lg border-2 border-[#ACACAC] px-4 py-3 outline-none transition focus:border-[#2A57C4]"
-                  />
+                <div className="mb-4">
+                  <Field label="Email ID" required>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@company.com"
+                      className={inputBase}
+                    />
+                  </Field>
                 </div>
+
+                {/* ARE YOU AN INDUSTRY PROFESSIONAL? */}
+                <div className="mb-5">
+                  <Field
+                    label="Are you an industry professional?"
+                    required
+                  >
+                    <select
+                      value={industry_professional}
+                      onChange={(e) =>
+                        setindustry_professional(e.target.value)
+                      }
+                      className={`${inputBase} cursor-pointer appearance-none pr-10 ${
+                        industry_professional ? "" : "text-gray-400"
+                      }`}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                    <ChevronDown
+                      size={18}
+                      className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                  </Field>
+                </div>
+
+                {/* AGREEMENT */}
+                <label className="mb-5 flex cursor-pointer items-start gap-2.5 rounded-xl bg-gray-50 p-3">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[#2A57C4]"
+                  />
+                  <span className="text-xs leading-5 text-gray-600">
+                    I have read and agree to the AltDB{" "}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowTerms(false);
+                        setShowPrivacy(false);
+                        setShowDisclaimer(true);
+                      }}
+                      className="cursor-pointer font-medium text-[#2A57C4] hover:underline"
+                    >
+                      Disclaimer
+                    </button>
+                    ,{" "}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowPrivacy(false);
+                        setShowDisclaimer(false);
+                        setShowTerms(true);
+                      }}
+                      className="cursor-pointer font-medium text-[#2A57C4] hover:underline"
+                    >
+                      Terms of Use
+                    </button>{" "}
+                    &amp;{" "}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowTerms(false);
+                        setShowDisclaimer(false);
+                        setShowPrivacy(true);
+                      }}
+                      className="cursor-pointer font-medium text-[#2A57C4] hover:underline"
+                    >
+                      Privacy Policy
+                    </button>
+                    .
+                  </span>
+                </label>
 
                 <button
                   type="button"
                   onClick={handleContinue}
                   disabled={isSendingOtp}
-                  className="mb-4 w-full cursor-pointer rounded-lg bg-[#2A57C4] py-3.5 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={primaryBtn}
                 >
-                  {isSendingOtp ? "Sending..." : "Continue"}
+                  {isSendingOtp ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Sending OTP...
+                    </>
+                  ) : (
+                    "Continue"
+                  )}
                 </button>
-
-                <div className="mb-5 flex items-start gap-2">
-                  <input
-                    type="checkbox"
-                    checked={agreed}
-                    onChange={(e) => setAgreed(e.target.checked)}
-                    className="mt-1 h-4 w-4 accent-blue-600"
-                  />
-                  <p className="text-xs leading-5 text-gray-600">
-                    By Clicking On Proceed, You Have Read And Agree To The Altidb
-                  </p>
-                </div>
-
-                {/* TERMS + PRIVACY */}
-                <div className="flex flex-wrap items-center justify-center gap-1 text-center text-xs">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPrivacy(false);
-                      setShowTerms(true);
-                    }}
-                    className="cursor-pointer font-medium text-[#2A57C4] hover:underline"
-                  >
-                    Terms Of Use
-                  </button>
-                  <span>&</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowTerms(false);
-                      setShowPrivacy(true);
-                    }}
-                    className="cursor-pointer font-medium text-[#2A57C4] hover:underline"
-                  >
-                    Privacy Policy
-                  </button>
-                </div>
               </>
             )}
 
@@ -421,21 +562,28 @@ const LoginAuth = ({ isOpen, onClose }) => {
             ========================= */}
             {step === 2 && (
               <>
-                <h2 className="mb-3 pr-8 text-xl font-semibold md:text-2xl">
-                  Verify Your Email
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2A57C4]/10 text-[#2A57C4]">
+                  <ShieldCheck size={28} />
+                </div>
+
+                <h2 className="mb-1 pr-8 text-2xl font-semibold text-gray-900">
+                  Verify your email
                 </h2>
 
-                <p className="mb-6 text-sm text-gray-600">
-                  We've sent a 4-digit OTP to <strong>{email}</strong>
+                <p className="mb-7 text-sm text-gray-500">
+                  We've sent a 4-digit OTP to{" "}
+                  <strong className="break-all font-semibold text-gray-800">
+                    {email}
+                  </strong>
                 </p>
 
                 <div className="mb-6">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Enter OTP<span className="text-red-500">*</span>
+                  <label className={`${labelBase} text-center`}>
+                    Enter OTP<span className="ml-0.5 text-red-500">*</span>
                   </label>
 
                   <div
-                    className="flex justify-center gap-2 sm:gap-3"
+                    className="flex justify-center gap-3"
                     onPaste={handleOtpPaste}
                   >
                     {otp.map((digit, index) => (
@@ -444,18 +592,23 @@ const LoginAuth = ({ isOpen, onClose }) => {
                         ref={otpRefs[index]}
                         type="text"
                         inputMode="numeric"
+                        autoComplete="one-time-code"
                         maxLength={1}
                         value={digit}
                         onChange={(e) =>
                           handleOtpChange(index, e.target.value)
                         }
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        className="h-12 w-12 rounded-lg border-2 border-[#ACACAC] text-center text-xl font-semibold outline-none transition focus:border-[#2A57C4] sm:h-14 sm:w-14"
+                        className={`h-14 w-14 rounded-xl border-2 text-center text-2xl font-semibold text-gray-900 outline-none transition focus:border-[#2A57C4] focus:ring-4 focus:ring-[#2A57C4]/15 sm:h-16 sm:w-16 ${
+                          digit
+                            ? "border-[#2A57C4] bg-[#2A57C4]/5"
+                            : "border-gray-300 bg-gray-50/60"
+                        }`}
                       />
                     ))}
                   </div>
 
-                  <p className="mt-2 text-center text-xs text-gray-500">
+                  <p className="mt-3 text-center text-xs text-gray-500">
                     You can copy and paste the OTP directly
                   </p>
                 </div>
@@ -463,12 +616,17 @@ const LoginAuth = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={handleVerifyOtp}
-                  disabled={isVerifyingOtp || isVerifying}
-                  className="mb-4 w-full cursor-pointer rounded-lg bg-[#2A57C4] py-3.5 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={verifying}
+                  className={`${primaryBtn} mb-4`}
                 >
-                  {isVerifyingOtp || isVerifying
-                    ? "Verifying..."
-                    : "Verify OTP"}
+                  {verifying ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Verify OTP"
+                  )}
                 </button>
 
                 <div className="text-center">
@@ -478,9 +636,10 @@ const LoginAuth = ({ isOpen, onClose }) => {
                       setStep(1);
                       setOtp(["", "", "", ""]);
                     }}
-                    className="text-sm text-[#2A57C4] hover:underline"
+                    className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-[#2A57C4] hover:underline"
                   >
-                    Change Email
+                    <ArrowLeft size={16} />
+                    Change email
                   </button>
                 </div>
               </>
@@ -493,60 +652,42 @@ const LoginAuth = ({ isOpen, onClose }) => {
           TERMS POPUP
       ========================= */}
       {showTerms && (
-        <div
-          className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/70 p-4"
-          onClick={() => setShowTerms(false)}
-        >
-          <div
-            className="relative my-8 w-full max-w-4xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* X CLOSE BUTTON — TOP RIGHT */}
-            <button
-              type="button"
-              onClick={() => setShowTerms(false)}
-              className="sticky top-3 right-3 z-10 ml-auto mr-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition hover:bg-gray-100 hover:text-black"
-              aria-label="Close Terms"
-            >
-              <X size={20} />
-            </button>
-
-            <TremsandCondition
-              isOpen={true}
-              onClose={() => setShowTerms(false)}
-            />
-          </div>
-        </div>
+        <LegalPopup onClose={() => setShowTerms(false)} label="Close Terms">
+          <TremsandCondition
+            isOpen={true}
+            onClose={() => setShowTerms(false)}
+          />
+        </LegalPopup>
       )}
 
       {/* =========================
           PRIVACY POPUP
       ========================= */}
       {showPrivacy && (
-        <div
-          className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/70 p-4"
-          onClick={() => setShowPrivacy(false)}
+        <LegalPopup
+          onClose={() => setShowPrivacy(false)}
+          label="Close Privacy Policy"
         >
-          <div
-            className="relative my-8 w-full max-w-4xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* X CLOSE BUTTON — TOP RIGHT */}
-            <button
-              type="button"
-              onClick={() => setShowPrivacy(false)}
-              className="sticky top-3 right-3 z-10 ml-auto mr-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition hover:bg-gray-100 hover:text-black"
-              aria-label="Close Privacy Policy"
-            >
-              <X size={20} />
-            </button>
+          <Privacypolicy
+            isOpen={true}
+            onClose={() => setShowPrivacy(false)}
+          />
+        </LegalPopup>
+      )}
 
-            <Privacypolicy
-              isOpen={true}
-              onClose={() => setShowPrivacy(false)}
-            />
-          </div>
-        </div>
+      {/* =========================
+          DISCLAIMER POPUP
+      ========================= */}
+      {showDisclaimer && (
+        <LegalPopup
+          onClose={() => setShowDisclaimer(false)}
+          label="Close Disclaimer"
+        >
+          <Disclamer
+            isOpen={true}
+            onClose={() => setShowDisclaimer(false)}
+          />
+        </LegalPopup>
       )}
     </>
   );
