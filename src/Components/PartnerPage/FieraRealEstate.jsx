@@ -1,23 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
+
 import {
-  Home,
-  Share2,
-  Settings,
-  MapPin,
   ArrowRight,
+  MapPin,
   Linkedin,
-  Link2,
   Mail,
+  Globe2,
+  BriefcaseBusiness,
+  Users,
+  ChartNoAxesCombined,
+  ExternalLink,
 } from "lucide-react";
 
 import { useGetMemberDirectoryByIdQuery } from "../../Redux/api/publicApiSlice";
 
 /* =========================================================
-   X (TWITTER) ICON
+   CONFIGURATION
 ========================================================= */
 
-const XIcon = ({ size = 12, strokeWidth = 1.8, className = "" }) => (
+// Set true only if the website navbar is position: fixed.
+const NAVBAR_IS_FIXED = false;
+const NAVBAR_HEIGHT = 64;
+
+// Original fallback URL preserved.
+const DEFAULT_CONTACT_URL = "https://peartreecanada.com/contact-us/";
+
+/* =========================================================
+   X / TWITTER ICON
+========================================================= */
+
+const XIcon = ({ size = 16, className = "" }) => (
   <svg
     width={size}
     height={size}
@@ -31,156 +44,482 @@ const XIcon = ({ size = 12, strokeWidth = 1.8, className = "" }) => (
 );
 
 /* =========================================================
-   ICON MAP (for fallback only)
-========================================================= */
-
-const ICON_STYLES = [
-  {
-    icon: Home,
-    color: "text-lime-700",
-    bg: "bg-lime-50",
-  },
-  {
-    icon: Share2,
-    color: "text-sky-600",
-    bg: "bg-sky-50",
-  },
-  {
-    icon: Settings,
-    color: "text-teal-600",
-    bg: "bg-teal-50",
-  },
-];
-
-/* =========================================================
    HELPERS
 ========================================================= */
 
-const normalizeUrl = (url) => {
-  if (!url) return "#";
-
-  const value = String(url).trim();
-
-  if (
-    value.startsWith("http://") ||
-    value.startsWith("https://") ||
-    value.startsWith("mailto:") ||
-    value.startsWith("tel:")
-  ) {
-    return value;
+const safeLink = (value) => {
+  if (!value || typeof value !== "string") {
+    return null;
   }
 
-  return `https://${value}`;
+  const url = value.trim();
+
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(url)) {
+    return url;
+  }
+
+  if (/^(?!javascript:)[\w.-]+\.[a-z]{2,}(?:[/?#].*)?$/i.test(url)) {
+    return `https://${url}`;
+  }
+
+  if (url.startsWith("/") && !url.startsWith("//")) {
+    return url;
+  }
+
+  return null;
 };
 
-const getWebsiteLink = (socialLinks = {}) => {
-  return normalizeUrl(
-    socialLinks?.website ||
-      socialLinks?.website_url ||
-      socialLinks?.web_url ||
-      socialLinks?.url ||
-      socialLinks?.web ||
-      ""
-  );
+const socialLink = (social = {}, keys = []) => {
+  const value = keys.map((key) => social?.[key]).find(Boolean);
+
+  return safeLink(value);
 };
 
-const getContactLink = (socialLinks = {}, perspective = {}) => {
+const getDisplayText = (value) => {
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+
+  return value?.name || value?.title || "";
+};
+
+const getContactLink = (social = {}, perspective = {}) => {
   const contact =
     perspective?.cta_url ||
     perspective?.cta_link ||
     perspective?.contact_url ||
     perspective?.contact_link ||
-    socialLinks?.contact ||
-    socialLinks?.contact_url ||
-    socialLinks?.contact_link;
-
-  const email = socialLinks?.email || socialLinks?.contact_email;
+    social?.contact ||
+    social?.contact_url ||
+    social?.contact_link;
 
   if (contact) {
-    return normalizeUrl(contact);
+    return safeLink(contact) || DEFAULT_CONTACT_URL;
   }
+
+  const email = social?.email || social?.contact_email;
 
   if (email) {
     return `mailto:${email}`;
   }
 
-  return "https://peartreecanada.com/contact-us/";
+  return DEFAULT_CONTACT_URL;
 };
 
-const getTwitterLink = (socialLinks = {}) => {
-  return normalizeUrl(
-    socialLinks?.twitter ||
-      socialLinks?.twitter_url ||
-      socialLinks?.x ||
-      socialLinks?.x_url ||
-      ""
-  );
-};
+const getExternalProps = (href) => {
+  if (/^https?:\/\//i.test(href || "")) {
+    return {
+      target: "_blank",
+      rel: "noopener noreferrer",
+    };
+  }
 
-const getLinkedinLink = (socialLinks = {}) => {
-  return normalizeUrl(
-    socialLinks?.linkedin ||
-      socialLinks?.linkedin_url ||
-      socialLinks?.linkedIn ||
-      socialLinks?.linkedIn_url ||
-      ""
-  );
+  return {};
 };
 
 /* =========================================================
    ACTION BUTTON
 ========================================================= */
 
-const ActionButton = ({ icon: Icon, children, href = "#" }) => {
-  const isDisabled = !href || href === "#";
-  const isMail = href?.startsWith("mailto:");
-  const isTel = href?.startsWith("tel:");
+const ActionButton = ({ icon: Icon, href, children, primary = false }) => {
+  if (!href) return null;
 
   return (
     <a
-      href={isDisabled ? undefined : href}
-      target={isDisabled || isMail || isTel ? undefined : "_blank"}
-      rel={isDisabled || isMail || isTel ? undefined : "noopener noreferrer"}
-      onClick={(e) => {
-        if (isDisabled) {
-          e.preventDefault();
-        }
-      }}
+      href={href}
+      {...getExternalProps(href)}
       className={`
         group
-        h-[36px]
-        min-w-[140px]
-        px-4
-        flex
+        inline-flex
+        min-h-[44px]
         items-center
         justify-center
         gap-2
-        rounded-[4px]
-        border
-        border-[#dce4eb]
-        bg-white
-        text-[#245aa8]
-        text-[10px]
-        sm:text-[11px]
-        poppins-medium
-        tracking-[0.01em]
+        rounded-lg
+        px-4
+        py-2.5
+        text-[12px]
+        font-semibold
         transition-all
         duration-200
+        hover:-translate-y-0.5
         ${
-          isDisabled
-            ? "opacity-60 cursor-default"
-            : "hover:bg-[#f6f9fc] hover:border-[#c7d4df]"
+          primary
+            ? `
+              bg-[#3478e8]
+              text-white
+              shadow-md
+              shadow-blue-950/15
+              hover:bg-[#2465d4]
+            `
+            : `
+              border
+              border-white/35
+              bg-white/10
+              text-white
+              hover:bg-white/20
+            `
         }
       `}
     >
-      <Icon size={12} strokeWidth={1.8} className="shrink-0" />
+      {Icon && <Icon size={15} className="shrink-0" />}
+
       <span>{children}</span>
+
+      {primary && <ArrowRight size={14} />}
     </a>
   );
 };
 
 /* =========================================================
-   FEATURE CARD (DYNAMIC ICON SUPPORT)
+   HERO SECTION
+   FULL WIDTH IMAGE - NO GREY SIDE GAPS
+========================================================= */
+
+const HeroSection = ({
+  name,
+  tagline,
+  category,
+  location,
+  description,
+  logoUrl,
+  bannerUrl,
+  socialLinks = {},
+  perspective = {},
+}) => {
+  const twitterLink = socialLink(socialLinks, [
+    "twitter",
+    "twitter_url",
+    "x",
+    "x_url",
+  ]);
+
+  const linkedinLink = socialLink(socialLinks, [
+    "linkedin",
+    "linkedin_url",
+    "linkedIn",
+    "linkedIn_url",
+  ]);
+
+  const contactUrl = getContactLink(socialLinks, perspective);
+
+  return (
+    <section className="w-full overflow-hidden bg-[#102640]">
+      <div
+        className="
+          grid
+          w-full
+          grid-cols-1
+          lg:grid-cols-[42%_58%]
+        "
+      >
+        {/* =========================================
+            RIGHT BANNER IMAGE
+            FULL COVER - GAP FREE
+        ========================================= */}
+
+        <div
+          className="
+            relative
+            order-1
+            h-[340px]
+            w-full
+            min-w-0
+            overflow-hidden
+            bg-[#dce7f2]
+            sm:h-[450px]
+            lg:order-2
+            lg:h-[650px]
+            xl:h-[690px]
+          "
+        >
+          {bannerUrl ? (
+            <img
+              src={bannerUrl}
+              alt={`${name || "Member"} banner`}
+              className="
+                absolute
+                inset-0
+                block
+                h-full
+                w-full
+                object-cover
+                object-top
+              "
+              loading="eager"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-[#7290b2]">
+              <Globe2 size={75} strokeWidth={1} />
+            </div>
+          )}
+        </div>
+
+        {/* =========================================
+            LEFT CONTENT PANEL
+        ========================================= */}
+
+        <div
+          className="
+            relative
+            order-2
+            flex
+            min-w-0
+            items-center
+            bg-[#102640]
+            px-6
+            py-12
+            sm:px-10
+            sm:py-16
+            lg:order-1
+            lg:min-h-[650px]
+            lg:px-10
+            lg:py-16
+            xl:min-h-[690px]
+            xl:px-14
+          "
+        >
+          {/* SUBTLE BACKGROUND DESIGN */}
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              right-0
+              top-0
+              h-[350px]
+              w-[350px]
+              rounded-full
+              bg-blue-500/5
+              blur-3xl
+            "
+          />
+
+          <div className="relative z-10 w-full max-w-[610px]">
+            {/* LOGO + TAGLINE */}
+
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              {logoUrl && (
+                <div
+                  className="
+                    flex
+                    min-h-[58px]
+                    max-w-[210px]
+                    items-center
+                    justify-center
+                    rounded-lg
+                    bg-white
+                    px-4
+                    py-2
+                    shadow-md
+                  "
+                >
+                  <img
+                    src={logoUrl}
+                    alt={`${name || "Member"} logo`}
+                    className="
+                      max-h-[47px]
+                      max-w-[175px]
+                      object-contain
+                    "
+                  />
+                </div>
+              )}
+
+              {tagline && (
+                <span
+                  className="
+                    rounded-full
+                    border
+                    border-white/30
+                    bg-white/10
+                    px-4
+                    py-2
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-[0.12em]
+                    text-white/90
+                  "
+                >
+                  {tagline}
+                </span>
+              )}
+            </div>
+
+            {/* BLUE LINE */}
+
+            <div
+              className="
+                mb-6
+                h-[3px]
+                w-12
+                rounded-full
+                bg-[#7bb2ff]
+              "
+            />
+
+            {/* COMPANY NAME */}
+
+            <h1
+              className="
+                max-w-[620px]
+                break-words
+                text-[30px]
+                font-bold
+                leading-[1.16]
+                tracking-[-0.025em]
+                text-white
+                sm:text-[35px]
+                lg:text-[38px]
+                xl:text-[42px]
+              "
+            >
+              {name}
+            </h1>
+
+            {/* CATEGORY + LOCATION */}
+
+            {(category || location) && (
+              <div
+                className="
+                  mt-6
+                  flex
+                  flex-wrap
+                  items-center
+                  gap-x-5
+                  gap-y-3
+                  text-[12px]
+                  font-medium
+                  text-blue-100
+                "
+              >
+                {category && (
+                  <span className="inline-flex items-center gap-2">
+                    <BriefcaseBusiness size={15} />
+
+                    {getDisplayText(category)}
+                  </span>
+                )}
+
+                {location && (
+                  <span className="inline-flex items-center gap-2">
+                    <MapPin size={15} />
+
+                    {getDisplayText(location)}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* DESCRIPTION */}
+
+            {description && (
+              <p
+                className="
+                  mt-6
+                  max-w-[540px]
+                  text-[13px]
+                  font-normal
+                  leading-[1.9]
+                  text-[#d4dfeb]
+                  sm:text-[14px]
+                "
+              >
+                {description}
+              </p>
+            )}
+
+            {/* TWITTER + LINKEDIN + CONTACT */}
+
+            <div
+              className="
+                mt-8
+                flex
+                flex-wrap
+                items-center
+                gap-3
+              "
+            >
+              <ActionButton href={twitterLink} icon={XIcon}>
+                Twitter
+              </ActionButton>
+
+              <ActionButton href={linkedinLink} icon={Linkedin}>
+                LinkedIn
+              </ActionButton>
+
+              <ActionButton href={contactUrl} icon={Mail} primary>
+                Contact Us
+              </ActionButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* =========================================================
+   FEATURE ICON STYLES
+========================================================= */
+
+const ICON_STYLES = [
+  {
+    icon: BriefcaseBusiness,
+    color: "text-[#245fc8]",
+    bg: "bg-[#eaf2ff]",
+  },
+  {
+    icon: Users,
+    color: "text-[#128a91]",
+    bg: "bg-[#e7f8f8]",
+  },
+  {
+    icon: ChartNoAxesCombined,
+    color: "text-[#6c59c7]",
+    bg: "bg-[#f0edff]",
+  },
+];
+
+/* =========================================================
+   FEATURE ICON
+========================================================= */
+
+const FeatureIcon = ({ iconUrl, Icon, color, bg }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  return (
+    <div
+      className={`
+        mb-6
+        flex
+        h-14
+        w-14
+        items-center
+        justify-center
+        overflow-hidden
+        rounded-2xl
+        ${bg}
+        ${color}
+      `}
+    >
+      {iconUrl && !imageFailed ? (
+        <img
+          src={iconUrl}
+          alt=""
+          className="h-11 w-11 object-contain"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <Icon size={25} strokeWidth={1.7} />
+      )}
+    </div>
+  );
+};
+
+/* =========================================================
+   FEATURE CARD
 ========================================================= */
 
 const FeatureCard = ({
@@ -189,48 +528,37 @@ const FeatureCard = ({
   color,
   bg,
   title,
-  text,
+  description,
 }) => {
-  const hasCustomIcon = Boolean(iconUrl);
-
   return (
-    <div className="flex flex-col items-start text-left h-full">
-      <div
-        className={`
-          w-12
-          h-12
-          rounded-full
-          ${bg}
-          flex
-          items-center
-          justify-center
-          mb-5
-          ${color}
-          overflow-hidden
-        `}
-      >
-        {hasCustomIcon ? (
-          <img
-            src={iconUrl}
-            alt={title || "icon"}
-            className="w-10 h-10 object-contain"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        ) : (
-          <Icon size={22} strokeWidth={1.75} />
-        )}
-      </div>
+    <article
+      className="
+        group
+        h-full
+        rounded-2xl
+        border
+        border-[#e5ebf4]
+        bg-white
+        p-7
+        shadow-[0_10px_40px_rgba(23,51,86,0.04)]
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:border-blue-200
+        hover:shadow-[0_18px_50px_rgba(23,51,86,0.10)]
+        sm:p-8
+      "
+    >
+      <FeatureIcon iconUrl={iconUrl} Icon={Icon} color={color} bg={bg} />
 
       <h3
         className="
-          text-sm
-          poppins-semibold
-          tracking-wider
+          text-[15px]
+          font-bold
           uppercase
-          text-gray-900
-          mb-3
+          leading-6
+          tracking-[0.025em]
+          text-[#162b43]
         "
       >
         {title}
@@ -238,15 +566,282 @@ const FeatureCard = ({
 
       <p
         className="
-          text-sm
-          poppins-medium
-          text-gray-500
-          leading-relaxed
+          mt-3
+          text-[14px]
+          leading-[1.85]
+          text-[#637389]
         "
       >
-        {text}
+        {description}
       </p>
-    </div>
+
+      <div
+        className="
+          mt-7
+          h-[2px]
+          w-10
+          bg-[#5d92ee]
+          transition-all
+          group-hover:w-20
+        "
+      />
+    </article>
+  );
+};
+
+/* =========================================================
+   EXPERTISE SECTION
+========================================================= */
+
+const ExpertiseSection = ({ expertises = [] }) => {
+  if (!Array.isArray(expertises) || !expertises.length) {
+    return null;
+  }
+
+  return (
+    <section
+      className="
+        bg-[#f5f8fc]
+        py-16
+        sm:py-20
+        lg:py-24
+      "
+    >
+      <div
+        className="
+          mx-auto
+          max-w-[1320px]
+          px-5
+          sm:px-8
+          lg:px-12
+        "
+      >
+        {/* SECTION HEADING */}
+
+        <div className="mb-10">
+          <span
+            className="
+              text-xs
+              font-bold
+              uppercase
+              tracking-[0.2em]
+              text-[#3169cf]
+            "
+          >
+            What Sets Us Apart
+          </span>
+
+          <h2
+            className="
+              mt-3
+              text-3xl
+              font-bold
+              tracking-tight
+              text-[#142941]
+              sm:text-4xl
+            "
+          >
+            Expertise &amp; Opportunities
+          </h2>
+
+          <p
+            className="
+              mt-3
+              max-w-2xl
+              text-sm
+              leading-7
+              text-slate-500
+              sm:text-base
+            "
+          >
+            Explore the strengths, strategies and opportunities within our
+            partner network.
+          </p>
+        </div>
+
+        {/* DYNAMIC CARDS */}
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-5
+            md:grid-cols-2
+            lg:grid-cols-3
+          "
+        >
+          {expertises.map((item, index) => {
+            const style = ICON_STYLES[index % ICON_STYLES.length];
+
+            const apiIcon = item?.icon_url || item?.icon || null;
+
+            return (
+              <FeatureCard
+                key={item?.id || index}
+                icon={style.icon}
+                iconUrl={apiIcon}
+                color={style.color}
+                bg={style.bg}
+                title={item?.title || item?.name || ""}
+                description={item?.description || item?.text || ""}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* =========================================================
+   PERSPECTIVE SECTION
+========================================================= */
+
+const PerspectiveSection = ({ perspective = {}, socialLinks = {} }) => {
+  if (!perspective?.title) {
+    return null;
+  }
+
+  const images = Array.isArray(perspective?.images) ? perspective.images : [];
+
+  const image = images[0] || null;
+
+  const ctaUrl = getContactLink(socialLinks, perspective);
+
+  return (
+    <section
+      className="
+        bg-white
+        py-16
+        sm:py-20
+        lg:py-24
+      "
+    >
+      <div
+        className="
+          mx-auto
+          grid
+          max-w-[1320px]
+          grid-cols-1
+          items-center
+          gap-10
+          px-5
+          sm:px-8
+          lg:grid-cols-2
+          lg:gap-16
+          lg:px-12
+        "
+      >
+        {/* LEFT IMAGE */}
+
+        <div
+          className="
+            relative
+            overflow-hidden
+            rounded-3xl
+            bg-[#e8eff8]
+            shadow-[0_20px_55px_rgba(25,48,76,0.12)]
+          "
+        >
+          <div className="aspect-[5/4]">
+            {image ? (
+              <img
+                src={image}
+                alt={perspective.title}
+                className="
+                  h-full
+                  w-full
+                  object-cover
+                "
+              />
+            ) : (
+              <div
+                className="
+                  flex
+                  h-full
+                  items-center
+                  justify-center
+                  text-[#6a8ebd]
+                "
+              >
+                <Globe2 size={80} strokeWidth={1} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT CONTENT */}
+
+        <div>
+          <span
+            className="
+              text-xs
+              font-bold
+              uppercase
+              tracking-[0.2em]
+              text-[#3169cf]
+            "
+          >
+            {perspective?.label || "Our Perspective"}
+          </span>
+
+          <h2
+            className="
+              mt-4
+              text-3xl
+              font-bold
+              uppercase
+              leading-tight
+              tracking-tight
+              text-[#142941]
+              sm:text-4xl
+            "
+          >
+            {perspective.title}
+          </h2>
+
+          {perspective.description && (
+            <p
+              className="
+                mt-6
+                whitespace-pre-line
+                text-[15px]
+                leading-[1.95]
+                text-[#5d6e81]
+              "
+            >
+              {perspective.description}
+            </p>
+          )}
+
+          {/* CTA */}
+
+          <a
+            href={ctaUrl}
+            {...getExternalProps(ctaUrl)}
+            className="
+              mt-8
+              inline-flex
+              items-center
+              gap-3
+              rounded-xl
+              bg-[#245fc8]
+              px-6
+              py-3.5
+              text-sm
+              font-semibold
+              text-white
+              transition-colors
+              hover:bg-[#194da8]
+            "
+          >
+            {perspective?.cta_text || "Contact Us"}
+
+            <ArrowRight size={17} />
+          </a>
+        </div>
+      </div>
+    </section>
   );
 };
 
@@ -268,112 +863,201 @@ const ArticleCard = ({ article }) => {
     format_url,
   } = article;
 
-  const isBadge = media_type === "pdf";
-  const displayTags = [category?.name, insight_topic?.name].filter(Boolean);
+  const tags = [getDisplayText(category), getDisplayText(insight_topic)].filter(
+    Boolean,
+  );
 
-  const linkUrl = format_url || "#";
-  const isExternal = linkUrl.startsWith("http");
-  const hasSourceLogo = Boolean(source_logo);
+  const articleUrl = safeLink(format_url);
+
+  const isPdf = media_type === "pdf";
+
+  const content = (
+    <article
+      className="
+        group
+        h-full
+        overflow-hidden
+        rounded-2xl
+        border
+        border-[#e5ebf4]
+        bg-white
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:shadow-xl
+      "
+    >
+      {/* ARTICLE IMAGE */}
+
+      <div
+        className="
+          relative
+          aspect-[16/9]
+          overflow-hidden
+          bg-[#eaf0f8]
+        "
+      >
+        {image_url ? (
+          <img
+            src={image_url}
+            alt={title || "Article"}
+            className="
+              h-full
+              w-full
+              object-cover
+              transition-transform
+              duration-500
+              group-hover:scale-105
+            "
+          />
+        ) : (
+          <div
+            className="
+              flex
+              h-full
+              items-center
+              justify-center
+              text-[#7b99c1]
+            "
+          >
+            <Globe2 size={44} />
+          </div>
+        )}
+
+        {image_badge && (
+          <span
+            className="
+              absolute
+              right-3
+              top-3
+              rounded-md
+              bg-[#173b65]
+              px-2.5
+              py-1
+              text-[10px]
+              font-semibold
+              uppercase
+              text-white
+            "
+          >
+            {image_badge}
+          </span>
+        )}
+      </div>
+
+      {/* ARTICLE DETAILS */}
+
+      <div className="p-6">
+        {/* DATE + SOURCE */}
+
+        <div
+          className="
+            mb-3
+            flex
+            flex-wrap
+            items-center
+            gap-2
+            text-[11px]
+            font-medium
+            text-[#718197]
+          "
+        >
+          {published_date_formatted && <span>{published_date_formatted}</span>}
+
+          {source_logo ? (
+            <img
+              src={source_logo}
+              alt={source_name || "Source"}
+              className="
+                max-h-5
+                max-w-24
+                object-contain
+              "
+            />
+          ) : source_name ? (
+            <span
+              className={
+                isPdf
+                  ? "rounded bg-[#173b65] px-2 py-1 text-[10px] text-white"
+                  : "text-[#d71920]"
+              }
+            >
+              {source_name}
+            </span>
+          ) : null}
+        </div>
+
+        {/* TITLE */}
+
+        <h3
+          className="
+            text-[16px]
+            font-bold
+            leading-[1.55]
+            text-[#172c44]
+            transition-colors
+            group-hover:text-[#245fc8]
+          "
+        >
+          {title}
+        </h3>
+
+        {/* TAGS */}
+
+        {tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className="
+                  rounded-full
+                  bg-[#eef4ff]
+                  px-3
+                  py-1
+                  text-[11px]
+                  font-medium
+                  text-[#2d65bb]
+                "
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* READ ARTICLE */}
+
+        {articleUrl && (
+          <div
+            className="
+              mt-5
+              inline-flex
+              items-center
+              gap-2
+              text-xs
+              font-semibold
+              text-[#2766d0]
+            "
+          >
+            Read Article
+            <ExternalLink size={13} />
+          </div>
+        )}
+      </div>
+    </article>
+  );
+
+  if (!articleUrl) {
+    return content;
+  }
 
   return (
     <a
-      href={linkUrl}
-      target={isExternal ? "_blank" : undefined}
-      rel={isExternal ? "noopener noreferrer" : undefined}
-      className="block group"
+      href={articleUrl}
+      {...getExternalProps(articleUrl)}
+      className="block h-full"
     >
-      <article className="flex items-start gap-4 min-w-0 bg-white p-2 -m-2 rounded-lg transition-colors duration-200 group-hover:bg-[#F8FAFC]">
-        {/* IMAGE */}
-        <div className="relative w-[135px] h-[90px] shrink-0 overflow-hidden bg-[#f2f4f5] rounded-[4px]">
-          {image_url ? (
-            <img
-              src={image_url}
-              alt={title || "Article"}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-          ) : null}
-
-          {image_badge && (
-            <span className="absolute top-1 right-1 bg-[#123c5a] text-white text-[9px] poppins-semibold px-2 py-[2px] rounded-[2px] uppercase">
-              {image_badge}
-            </span>
-          )}
-        </div>
-
-        {/* CONTENT */}
-        <div className="min-w-0 flex-1 flex flex-col justify-between min-h-[90px]">
-          {/* TITLE */}
-          <h4
-            style={{
-              fontWeight: "normal",
-              fontSize: "12px",
-              lineHeight: "18px",
-            }}
-            className="
-              poppins-medium
-              text-[#3d454b]
-              transition-colors
-              duration-200
-              group-hover:text-[#245aa8]
-              group-hover:underline
-              decoration-[#245aa8]/30
-              underline-offset-2
-            "
-          >
-            {title}
-          </h4>
-
-          {/* META */}
-          <div className="flex items-center gap-x-2 mt-2">
-            {published_date_formatted && (
-              <span className="text-[11px] sm:text-[12px] poppins-medium text-[#8b9298] whitespace-nowrap">
-                {published_date_formatted}
-              </span>
-            )}
-
-            {hasSourceLogo ? (
-              <img
-                src={source_logo}
-                alt={source_name || "Source"}
-                className="h-[18px] w-auto object-contain shrink-0"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            ) : source_name ? (
-              isBadge ? (
-                <span className="inline-flex items-center px-2 py-[3px] rounded-[2px] bg-[#123c5a] text-white text-[9px] poppins-semibold tracking-wide whitespace-nowrap">
-                  {source_name}
-                </span>
-              ) : (
-                <span className="text-[10px] sm:text-[11px] poppins-medium text-[#d71920] whitespace-nowrap">
-                  {source_name}
-                </span>
-              )
-            ) : null}
-          </div>
-
-          {/* TAGS */}
-          <div className="flex items-center flex-wrap gap-1.5 mt-1.5">
-            {displayTags.map((tag, index) => (
-              <React.Fragment key={index}>
-                <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
-                  {tag}
-                </span>
-
-                {index < displayTags.length - 1 && (
-                  <span className="text-[11px] sm:text-[12px] poppins-medium text-[#245aa8]">
-                    |
-                  </span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      </article>
+      {content}
     </a>
   );
 };
@@ -383,484 +1067,106 @@ const ArticleCard = ({ article }) => {
 ========================================================= */
 
 const ArticlesSection = ({ posts = [] }) => {
-  const [visibleCount, setVisibleCount] = React.useState(9);
+  const [visibleCount, setVisibleCount] = useState(9);
+
+  if (!Array.isArray(posts) || !posts.length) {
+    return null;
+  }
 
   const visibleArticles = posts.slice(0, visibleCount);
 
   const handleLoadMore = () => {
-    setVisibleCount((prev) => Math.min(prev + 3, posts.length));
+    setVisibleCount((current) => Math.min(current + 3, posts.length));
   };
-
-  if (!posts.length) return null;
 
   return (
     <section
-      style={{ marginBottom: "30px" }}
-      className="bg-white py-16 lg:py-0"
+      className="
+        bg-[#f5f8fc]
+        py-16
+        sm:py-20
+        lg:py-24
+      "
     >
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
-        {/* HEADING */}
-        <div className="flex items-center gap-3 mb-9">
-          <h3 className="text-[20px] poppins-semibold text-[#222b31]">
-            Articles
-          </h3>
+      <div
+        className="
+          mx-auto
+          max-w-[1320px]
+          px-5
+          sm:px-8
+          lg:px-12
+        "
+      >
+        {/* SECTION HEADING */}
 
-          <div className="h-px w-9 bg-[#dfe3e6]" />
+        <div className="mb-10">
+          <span
+            className="
+              text-xs
+              font-bold
+              uppercase
+              tracking-[0.2em]
+              text-[#3169cf]
+            "
+          >
+            Insights &amp; Updates
+          </span>
+
+          <h2
+            className="
+              mt-3
+              text-3xl
+              font-bold
+              tracking-tight
+              text-[#142941]
+              sm:text-4xl
+            "
+          >
+            Latest Articles
+          </h2>
         </div>
 
-        {/* GRID */}
+        {/* ARTICLE GRID */}
+
         <div
           className="
             grid
             grid-cols-1
-            sm:grid-cols-2
+            gap-6
+            md:grid-cols-2
             lg:grid-cols-3
-            gap-x-14
-            xl:gap-x-20
-            gap-y-8
           "
         >
-          {visibleArticles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+          {visibleArticles.map((article, index) => (
+            <ArticleCard key={article?.id || index} article={article} />
           ))}
         </div>
 
         {/* LOAD MORE */}
+
         {visibleCount < posts.length && (
-          <div className="flex justify-center mt-10">
+          <div className="mt-10 text-center">
             <button
               type="button"
               onClick={handleLoadMore}
               className="
-                px-6
-                py-2.5
-                rounded-[3px]
+                rounded-xl
                 border
-                border-[#d8e1eb]
+                border-[#b9cbed]
                 bg-white
-                text-[11px]
-                poppins-medium
-                text-[#245aa8]
-                hover:bg-[#f7f9fc]
+                px-7
+                py-3
+                text-sm
+                font-semibold
+                text-[#245fc8]
                 transition-colors
+                hover:bg-[#eaf2ff]
               "
             >
-              Load More
+              Load More Articles
             </button>
           </div>
         )}
-      </div>
-    </section>
-  );
-};
-
-/* =========================================================
-   HERO SECTION
-========================================================= */
-
-const HeroSection = ({
-  name,
-  tagline,
-  category,
-  location,
-  description,
-  logoUrl,
-  bannerUrl,
-  socialLinks,
-  perspective,
-}) => {
-  const twitterLink = getTwitterLink(socialLinks);
-  const linkedinLink = getLinkedinLink(socialLinks);
-
-  // SAME CTA URL FOR CONTACT US
-  const contactLink = getContactLink(socialLinks, perspective);
-
-  return (
-    <header
-      className="
-        relative
-        w-full
-        h-[450px]
-        sm:h-[400px]
-        lg:h-[450px]
-        overflow-hidden
-        bg-white
-      "
-    >
-      {/* BACKGROUND IMAGE */}
-      <img
-        src={bannerUrl}
-        alt={name || "Member"}
-        className="
-          absolute
-          inset-0
-          w-full
-          h-full
-          object-cover
-          object-center
-        "
-      />
-
-      {/* CONTENT */}
-      <div className="relative z-10 h-full">
-        <div
-          className="
-            max-w-[1400px]
-            mx-auto
-            h-full
-            px-6
-            lg:px-10
-          "
-        >
-          <div
-            className="
-              w-full
-              lg:w-[48%]
-              h-full
-              flex
-              flex-col
-              justify-center
-            "
-          >
-            {/* LOGO */}
-            {logoUrl && (
-              <div className="mb-5">
-                <img
-                  src={logoUrl}
-                  alt={`${name || "Member"} logo`}
-                  className="
-                    w-[165px]
-                    sm:w-[175px]
-                    lg:w-[180px]
-                    h-auto
-                    max-h-[72px]
-                    object-contain
-                    object-left
-                  "
-                />
-              </div>
-            )}
-
-            {/* TAGLINE */}
-            {tagline && (
-              <span
-                className="
-                  text-[10px]
-                  sm:text-[11px]
-                  poppins-semibold
-                  tracking-[0.04em]
-                  uppercase
-                  text-[#4c5b64]
-                  mb-1.5
-                "
-              >
-                {tagline}
-              </span>
-            )}
-
-            {/* TITLE */}
-            <h1
-              className="
-                text-[31px]
-                sm:text-[36px]
-                lg:text-[38px]
-                xl:text-[40px]
-                poppins-semibold
-                leading-[1.04]
-                tracking-[-0.02em]
-                text-[#384952]
-                mb-2
-              "
-            >
-              {name}
-            </h1>
-
-            {/* META */}
-            <div
-              className="
-                flex
-                flex-wrap
-                items-center
-                gap-x-3
-                gap-y-1
-                mb-3.5
-              "
-            >
-              {category && (
-                <span
-                  className="
-                    text-[10px]
-                    sm:text-[11px]
-                    poppins-medium
-                    text-[#59636a]
-                  "
-                >
-                  {category}
-                </span>
-              )}
-
-              {category && location && (
-                <span className="w-[3px] h-[3px] rounded-full bg-[#20282d]" />
-              )}
-
-              {location && (
-                <span
-                  className="
-                    flex
-                    items-center
-                    gap-1.5
-                    text-[10px]
-                    sm:text-[11px]
-                    poppins-medium
-                    text-[#59636a]
-                  "
-                >
-                  <MapPin size={11} strokeWidth={1.8} />
-                  {location}
-                </span>
-              )}
-            </div>
-
-            {/* DESCRIPTION */}
-            {description && (
-              <p
-                className="
-                  max-w-[475px]
-                  text-[10.5px]
-                  sm:text-[11px]
-                  lg:text-[11.5px]
-                  poppins-medium
-                  leading-[1.6]
-                  text-[#626c72]
-                  mb-4.5
-                "
-              >
-                {description}
-              </p>
-            )}
-
-            {/* BUTTONS */}
-            <div
-              className="
-                flex
-                flex-wrap
-                items-center
-                gap-x-2.5
-                gap-y-2.5
-                w-fit
-              "
-            >
-              {/* TWITTER */}
-              <ActionButton icon={XIcon} href={twitterLink}>
-                Twitter
-              </ActionButton>
-
-              {/* LINKEDIN */}
-              <ActionButton icon={Linkedin} href={linkedinLink}>
-                LinkedIn
-              </ActionButton>
-
-              <ActionButton icon={Mail} href={contactLink}>
-                Contact Us
-              </ActionButton>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
-
-/* =========================================================
-   EXPERTISE SECTION (DYNAMIC ICON FROM API)
-========================================================= */
-
-const ExpertiseSection = ({ expertises = [] }) => {
-  if (!expertises.length) return null;
-
-  return (
-    <section className="bg-white pt-20 pb-10">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-14 gap-x-0">
-          {expertises.map((item, index) => {
-            const style = ICON_STYLES[index % ICON_STYLES.length];
-            const isFirst = index % 3 === 0;
-            const isSecond = index % 3 === 1;
-            const isThird = index % 3 === 2;
-
-            /* ✅ DYNAMIC ICON FROM API */
-            const apiIcon = item?.icon || item?.icon_url || null;
-
-            return (
-              <div
-                key={item?.id || `expertise-${index}`}
-                className={`
-                  ${!isFirst ? "md:border-l md:border-[#eaeaea]" : ""}
-                  ${isFirst ? "md:pr-8" : ""}
-                  ${isSecond ? "md:px-8" : ""}
-                  ${isThird ? "md:pl-8" : ""}
-                `}
-              >
-                <FeatureCard
-                  icon={style.icon}
-                  iconUrl={apiIcon}
-                  color={style.color}
-                  bg={style.bg}
-                  title={item?.title || item?.name || ""}
-                  text={item?.description || item?.text || ""}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-/* =========================================================
-   PERSPECTIVE SECTION
-========================================================= */
-
-const PerspectiveSection = ({ perspective = {}, socialLinks = {} }) => {
-  if (!perspective || !perspective.title) {
-    return null;
-  }
-
-  // SAME CONTACT / CTA URL
-  const ctaUrl = getContactLink(socialLinks, perspective);
-
-  const images = perspective?.images || [];
-
-  const titleWords = perspective?.title
-    ? perspective.title.split(" ")
-    : [];
-
-  const firstTwoWords = titleWords.slice(0, 2).join(" ");
-  const remainingWords = titleWords.slice(2).join(" ");
-
-  const isExternal = ctaUrl.startsWith("http");
-
-  return (
-    <section className="bg-white pb-20 pt-10">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-0">
-          {/* LEFT: IMAGE */}
-          <div className="lg:col-span-1 lg:pr-8">
-            {images.length > 0 ? (
-              <div className="w-[400px] max-w-full h-auto overflow-hidden bg-[#eef1f3] rounded-[4px]">
-                <img
-                  src={images[0]}
-                  alt="Perspective"
-                  className="
-                    w-full
-                    h-full
-                    object-cover
-                    transition-transform
-                    duration-500
-                    hover:scale-[1.02]
-                  "
-                />
-              </div>
-            ) : (
-              <div className="w-full h-[250px] bg-[#eef1f3] rounded-[4px]" />
-            )}
-          </div>
-
-          {/* RIGHT: TEXT */}
-          <div className="lg:col-span-2">
-            <div>
-              {/* LABEL */}
-              <div className="mb-4">
-                <span className="text-[10px] sm:text-[11px] poppins-semibold uppercase tracking-[0.08em] text-[#56646d]">
-                  {perspective?.label || "Our Perspective"}
-                </span>
-
-                <div className="w-10 h-px bg-[#dce1e4]" />
-              </div>
-
-              {/* TITLE */}
-              <h2
-                style={{
-                  width: "400px",
-                  lineHeight: "36px",
-                }}
-                className="
-                  text-[28px]
-                  sm:text-[32px]
-                  lg:text-[30px]
-                  poppins-semibold
-                  leading-[1.15]
-                  tracking-[-0.01em]
-                  text-[#3c4d56]
-                  mb-5
-                  uppercase
-                "
-              >
-                {firstTwoWords}
-                <br />
-                {remainingWords}
-              </h2>
-
-              {/* DESCRIPTION */}
-              {perspective?.description && (
-                <p
-                  className="
-                    text-[11px]
-                    sm:text-[12px]
-                    lg:text-[13px]
-                    poppins-medium
-                    leading-[1.65]
-                    text-[#5e696f]
-                    mt-2
-                    mb-6
-                  "
-                >
-                  {perspective.description}
-                </p>
-              )}
-
-              {/* CONTACT / CTA */}
-              <div>
-                <a
-                  href={ctaUrl}
-                  target={
-                    isExternal && !ctaUrl.startsWith("mailto:")
-                      ? "_blank"
-                      : undefined
-                  }
-                  rel={
-                    isExternal && !ctaUrl.startsWith("mailto:")
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
-                  className="
-                    inline-flex
-                    items-center
-                    gap-2.5
-                    h-[34px]
-                    px-4
-                    border
-                    border-[#dfe5ea]
-                    rounded-[3px]
-                    bg-white
-                    text-[10px]
-                    sm:text-[11px]
-                    poppins-medium
-                    text-[#2c65a5]
-                    hover:bg-[#f8fafc]
-                    hover:border-[#cdd7df]
-                    transition-all
-                  "
-                >
-                  {perspective?.cta_text || "Contact Us"}
-
-                  <ArrowRight size={12} strokeWidth={1.8} />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
@@ -882,47 +1188,53 @@ const FieraRealEstate = () => {
     skip: !id,
   });
 
-  /* LOADING */
+  /* =========================
+     LOADING
+  ========================= */
+
   if (isLoading) {
     return (
       <div
         className="
-          min-h-screen
           flex
+          min-h-[70vh]
           items-center
           justify-center
-          bg-white
+          bg-[#f5f8fc]
         "
       >
         <div
           className="
-            w-10
-            h-10
-            border-4
-            border-blue-200
-            border-t-[#0B4D8C]
-            rounded-full
+            h-12
+            w-12
             animate-spin
+            rounded-full
+            border-4
+            border-blue-100
+            border-t-[#245fc8]
           "
+          role="status"
+          aria-label="Loading member"
         />
       </div>
     );
   }
 
-  /* ERROR */
+  /* =========================
+     ERROR
+  ========================= */
+
   if (isError) {
     return (
       <div
         className="
-          min-h-screen
           flex
+          min-h-[70vh]
           items-center
           justify-center
-          px-6
-          bg-white
-          text-red-500
+          px-5
           text-center
-          poppins-medium
+          text-red-600
         "
       >
         Error: {error?.data?.message || "Failed to load member."}
@@ -930,17 +1242,32 @@ const FieraRealEstate = () => {
     );
   }
 
-  /* DATA */
+  /* =========================
+     API DATA
+  ========================= */
+
   const member = response?.data;
 
   if (!member) {
-    return null;
+    return (
+      <div
+        className="
+          flex
+          min-h-[50vh]
+          items-center
+          justify-center
+          text-slate-500
+        "
+      >
+        Member not found.
+      </div>
+    );
   }
 
   const {
     name,
-    category,
     tagline,
+    category,
     location,
     description,
     logo_url,
@@ -951,38 +1278,51 @@ const FieraRealEstate = () => {
     posts = [],
   } = member;
 
+  /* =========================
+     FINAL PAGE
+  ========================= */
+
   return (
-    <>
-      <div
-        className="
-          fiera-real-estate-page
-          min-h-screen
-          bg-white
-          text-[#3d474d]
-        "
-      >
-        <HeroSection
-          name={name}
-          tagline={tagline}
-          category={category}
-          location={location}
-          description={description}
-          logoUrl={logo_url}
-          bannerUrl={banner_url}
-          socialLinks={social_links}
-          perspective={perspective}
-        />
+    <main
+      className="
+        fiera-real-estate-page
+        min-h-screen
+        bg-white
+        text-[#3d474d]
+      "
+      style={{
+        paddingTop: NAVBAR_IS_FIXED ? `${NAVBAR_HEIGHT}px` : undefined,
+      }}
+    >
+      {/* HERO */}
 
-        <ExpertiseSection expertises={expertises} />
+      <HeroSection
+        name={name}
+        tagline={tagline}
+        category={category}
+        location={location}
+        description={description}
+        logoUrl={logo_url}
+        bannerUrl={banner_url}
+        socialLinks={social_links}
+        perspective={perspective}
+      />
 
-        <PerspectiveSection
-          perspective={perspective}
-          socialLinks={social_links}
-        />
+      {/* EXPERTISE */}
 
-        <ArticlesSection posts={posts} />
-      </div>
-    </>
+      <ExpertiseSection expertises={expertises} />
+
+      {/* PERSPECTIVE */}
+
+      <PerspectiveSection
+        perspective={perspective}
+        socialLinks={social_links}
+      />
+
+      {/* ARTICLES */}
+
+      <ArticlesSection posts={posts} />
+    </main>
   );
 };
 
