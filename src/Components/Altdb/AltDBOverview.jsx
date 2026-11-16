@@ -22,7 +22,6 @@ import { useSendGetSubscriptionMutation } from "../../Redux/api/privateApiSlice"
 
 import FundPerformance from "./FundPerformance";
 import { CustomSelect } from "./CustomSelect";
-import Login from "../Authscreens/Login";
 
 import {
   TrendingUp,
@@ -41,6 +40,7 @@ import {
   Info,
   Mail,
 } from "lucide-react";
+import LoginAuth from "../Authscreens/LoginAuth";
 
 // =========================================================
 // CONSTANTS
@@ -1400,7 +1400,7 @@ const AltDBOverview = () => {
       )}
 
       {/* LOGIN */}
-      <Login isOpen={isLoginModalOpen} onClose={handleLoginClose} />
+      <LoginAuth isOpen={isLoginModalOpen} onClose={handleLoginClose} />
     </>
   );
 };

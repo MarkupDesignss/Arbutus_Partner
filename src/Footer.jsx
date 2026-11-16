@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShieldAlert } from "lucide-react";
+import {
+  ShieldAlert,
+  Linkedin,
+  Youtube,
+  Twitter,
+  Facebook,
+} from "lucide-react";
 import {
   useSendSubscribeMutation,
   useGetFooterQuery,
 } from "./Redux/api/publicApiSlice";
 import Swal from "sweetalert2";
 
-// Poppins font stack
 const POPPINS = "'Poppins', sans-serif";
 
 /* =========================================================
@@ -261,26 +266,10 @@ const Footer = () => {
   const footer = footerRes?.data || {};
 
   const socialLinks = [
-    {
-      key: "linkedin",
-      src: "/arbutus-web/assets/Footer/linkedin.png",
-      alt: "LinkedIn",
-    },
-    {
-      key: "youtube",
-      src: "/arbutus-web/assets/Footer/youtube.png",
-      alt: "YouTube",
-    },
-    {
-      key: "twitter",
-      src: "/arbutus-web/assets/Footer/twitter.png",
-      alt: "Twitter",
-    },
-    {
-      key: "facebook",
-      src: "/arbutus-web/assets/Footer/facebook.png",
-      alt: "Facebook",
-    },
+    { key: "linkedin", alt: "LinkedIn", Icon: Linkedin },
+    { key: "youtube", alt: "YouTube", Icon: Youtube },
+    { key: "twitter", alt: "Twitter", Icon: Twitter },
+    { key: "facebook", alt: "Facebook", Icon: Facebook },
   ].filter((item) => footer[item.key]);
 
   const mail = footer.mail || "info@altdb.ca";
@@ -415,13 +404,13 @@ const Footer = () => {
                 </p>
 
                 <div className="flex gap-2.5">
-                  {socialLinks.map((item) => (
+                  {socialLinks.map(({ key, alt, Icon }) => (
                     <a
-                      key={item.key}
-                      href={footer[item.key]}
+                      key={key}
+                      href={footer[key]}
                       target="_blank"
                       rel="noreferrer"
-                      aria-label={item.alt}
+                      aria-label={alt}
                       className="
                         flex h-9 w-9 items-center justify-center
                         rounded-full border border-white/20
@@ -435,7 +424,7 @@ const Footer = () => {
                         focus-visible:outline-white
                       "
                     >
-                      <img src={item.src} alt="" className="h-3.5 w-3.5" />
+                      <Icon size={15} strokeWidth={2} aria-hidden="true" />
                     </a>
                   ))}
                 </div>
